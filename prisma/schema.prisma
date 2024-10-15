@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Cliente {
+  id            Int               @id @default(autoincrement())
+  hash          String            @unique
+  nombres       String
+  apellidos     String
+  alias         String
+  telefono      String
+  correo        String
+  dui           String
+  cpe_hash      String?
+
+  contratos     Contrato[]
+  configs       ConfigCPE[]
+  pagos         PagoCliente[]
+  facturas      Factura[]
+  movimientos   Movimiento[]
+}
+
+model Contrato {
+  id             Int                @id @default(autoincrement())
+  anexo          String
+  fecha_contrato DateTime
+  activo         Boolean            @default(true)
+
+  clienteId      Int
+  cliente        Cliente            @relation(fields: [clienteId], references: [id])
+
+  servicios      ContratoServicio[]
+}
+
+model Servicio {
+  id          Int                  @id @default(autoincrement())
+  hash        String               @unique
+  servicio    String
+  precio      Float
+  descripcion String
+  tipo_pago   String
+
+  contratos   ContratoServicio[]
+}
+
+model ContratoServicio {
+  contratoId  Int
+  servicioId  Int
+
+  contrato    Contrato             @relation(fields: [contratoId], references: [id])
+  servicio    Servicio             @relation(fields: [servicioId], references: [id])
+
+  @@id([contratoId, servicioId])
+}
+
+model EquipoCPE {
+  id            Int                @id @default(autoincrement())
+  hash          String             @unique
+  img_equipo    String
+  nombre_equipo String
+  marca         String
+  tipo          String
+  descripcion   String
+
+  configsAntena ConfigCPE[]        @relation("antena")
+  configsRouter ConfigCPE[]        @relation("router")
+}
+
+model ConfigCPE {
+  id               Int              @id @default(autoincrement())
+  hash             String           @unique
+  user_antena      String
+  pass_antena      String
+  ip_antena        String
+  user_router      String
+  pass_admin_router String
+  ssid             String
+  pass_pin_router  String
+  pass_wifi_router String
+  lat              String
+  clong            String
+
+  clienteId        Int
+  cliente          Cliente           @relation(fields: [clienteId], references: [id])
+
+  cpe_antenaId     Int
+  cpe_antena       EquipoCPE         @relation("antena", fields: [cpe_antenaId], references: [id])
+
+  cpe_routerId     Int
+  cpe_router       EquipoCPE         @relation("router", fields: [cpe_routerId], references: [id])
+}
+
+model Movimiento {
+  id         Int          @id @default(autoincrement())
+  tipocc     String
+  anio       Int
+  mes        Int
+  monto      Float
+  concepto   String
+  fecha      DateTime     @default(now())
+  id_cliente Int?
+  id_factura Int?
+
+  cliente    Cliente?      @relation(fields: [id_cliente], references: [id])
+  factura    Factura?      @relation(fields: [id_factura], references: [id])
+}
+
+model Factura {
+  id            Int             @id @default(autoincrement())
+  fecha         DateTime        @default(now())
+  cancelada     Boolean         @default(false)
+  id_cliente    Int
+  cliente       Cliente         @relation(fields: [id_cliente], references: [id])
+  detalles      DetalleFactura[]
+  pagos         PagoCliente[]
+  movimiento    Movimiento[]
+}
+
+model DetalleFactura {
+  id            Int             @id @default(autoincrement())
+  id_factura    Int
+  factura       Factura          @relation(fields: [id_factura], references: [id])
+  concepto      String
+  subtotal      Float
+}
+
+model PagoCliente {
+  id            Int             @id @default(autoincrement())
+  id_factura    Int
+  factura       Factura          @relation(fields: [id_factura], references: [id])
+  anexo         String
+  fecha_pago    DateTime
+  id_cliente    Int
+  cliente       Cliente          @relation(fields: [id_cliente], references: [id])
+  alias         String
+  nombre_completo String
+  contacto      String
+  total         Float
+  concepto      String
+}

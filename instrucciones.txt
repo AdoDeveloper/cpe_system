@@ -1,0 +1,61 @@
+## PARA DOCKER ##
+
+
+# Construir la imagen:
+
+docker build -t cpe_db .
+
+# Ejecutar el contenedor y crear ambas bases de datos:
+
+docker run --name cpe_db_container -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=cpe_system -p 5432:5432 -d cpe_db
+
+# Acceder al contenedor y crear la base de datos cpe_system_shadow manualmente (opcional si no lo hace init-db.sh):
+
+docker exec -it cpe_db_container bash
+psql -U username -d postgres -c "CREATE DATABASE cpe_system_shadow;"
+
+# Salir de la consola del contenedor:
+
+Crtl + D
+
+# Iniciar el contenedor:
+
+docker start cpe_db_container
+
+# Ver contenedor en ejecucion:
+
+docker ps
+
+# Acceder al contenedor:
+
+docker exec -it cpe_db_container bash
+
+# Detener el contenedor:
+
+docker stop cpe_db_container
+
+
+## PARA PRISMA ##
+
+1-Agregar el archivo .env en la raiz del proyecto con su contenido
+
+2-Ejecutar la creacion del contenedor para las bases de datos postgreSQL
+
+3-Ejecutar el siguiente comando para Generar el Cliente de Prisma:
+
+npx prisma generate
+
+4-Ejecutar el siguiente comando para  Aplicar las Migraciones:
+
+npx prisma migrate dev --name init
+
+
+## PARA APLICACION ##
+
+--VERSION Node.js 20.17.0 LTS
+
+1- Ejecutar el comando de instalacion de dependencias
+
+npm install o npm imagen
+
+2- Ejecutar npm run dev y acceder en localhost:4000/servicios
