@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const serviciosController = require('../controllers/serviciosController');
 const { body } = require('express-validator');
+const { authMiddleware } = require('../middlewares/middleware');
+
+// Middleware para proteger rutas de servicios solo para administradores
+router.use(authMiddleware);
 
 // Ruta para obtener y mostrar todos los servicios
 router.get('/', serviciosController.listServicios);

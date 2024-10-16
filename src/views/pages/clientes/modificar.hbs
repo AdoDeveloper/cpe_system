@@ -1,0 +1,56 @@
+{{!-- src\views\pages\clientes\modificar.hbs --}}
+
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Cliente</h1>
+  </div>
+  
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para modificar cliente --}}
+      <form method="POST" action="/clientes/edit/{{cliente.id}}">
+        
+        <div class="form-group">
+          <input type="text" class="form-control" name="nombres" placeholder="Nombres" value="{{cliente.nombres}}" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="apellidos" placeholder="Apellidos" value="{{cliente.apellidos}}" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="alias" placeholder="Alias" value="{{cliente.alias}}" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="telefono" placeholder="Teléfono" value="{{cliente.telefono}}" required>
+        </div>
+
+        <div class="form-group">
+          <input type="email" class="form-control" name="correo" placeholder="Correo Electrónico" value="{{cliente.correo}}" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="dui" placeholder="DUI" value="{{cliente.dui}}" required>
+        </div>
+        
+        <div class="form-group">
+          <button class="btn btn-primary btn-block">Guardar Cambios</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

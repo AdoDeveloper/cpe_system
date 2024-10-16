@@ -1,0 +1,97 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Usuario</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      <form method="POST" action="/usuarios/edit/{{usuario.id}}">
+        <label for="email">Correo electrónico</label>
+        <div class="form-group">
+          <input type="email" class="form-control" name="email" value="{{usuario.email}}" placeholder="example@airlink.com.sv" required autofocus>
+        </div>
+        
+          <label for="nombre">Nombre</label>
+        <div class="form-group">
+          <input type="text" class="form-control" name="nombre" value="{{usuario.nombre}}" placeholder="Nombre" required>
+        </div>
+
+        <div class="form-group">
+          <label for="rolId">Rol</label>
+          <select class="form-control" name="rolId" id="rolSelect" required>
+            <option value="" disabled>Seleccione un rol</option>
+            {{#each roles}}
+              <option value="{{this.id}}" {{#eq this.id ../usuario.rolId}}selected{{/eq}}>{{this.nombre}}</option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="form-group" id="clienteSelectGroup" style="display:none;">
+          <label for="clienteId">Asignar Cliente</label>
+          <select class="form-control" name="clienteId">
+            <option value="" disabled selected>Seleccione un cliente</option>
+            {{#each clientes}}
+              <option value="{{this.id}}" {{#eq this.id ../usuario.clienteId}}selected{{/eq}}>{{this.nombres}} {{this.apellidos}}</option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="currentPassword">Contraseña actual (si desea cambiar la contraseña)</label>
+          <input type="password" class="form-control" name="currentPassword" placeholder="Ingrese su contraseña actual">
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">Nueva contraseña</label>
+          <input type="password" class="form-control" name="newPassword" placeholder="Ingrese una nueva contraseña">
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmar nueva contraseña</label>
+          <input type="password" class="form-control" name="confirmPassword" placeholder="Confirme la nueva contraseña">
+        </div>
+        
+        <div class="form-group">
+          <button class="btn btn-primary btn-block">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mostrar el selector de cliente solo si el rol no es Admin
+  document.getElementById('rolSelect').addEventListener('change', function() {
+    const selectedRole = this.options[this.selectedIndex].text;
+    const clienteSelectGroup = document.getElementById('clienteSelectGroup');
+    
+    if (selectedRole === 'Administrador') {
+      clienteSelectGroup.style.display = 'none'; // Ocultar el campo cliente si es Admin
+    } else {
+      clienteSelectGroup.style.display = 'block'; // Mostrar el campo cliente si no es Admin
+    }
+  });
+
+  // Inicialmente mostrar/ocultar el campo cliente según el rol seleccionado al cargar la página
+  window.onload = function() {
+    const rolSelect = document.getElementById('rolSelect');
+    const selectedRole = rolSelect.options[rolSelect.selectedIndex].text;
+    const clienteSelectGroup = document.getElementById('clienteSelectGroup');
+    
+    if (selectedRole === 'Administrador') {
+      clienteSelectGroup.style.display = 'none'; // Ocultar si el rol inicial es Admin
+    } else {
+      clienteSelectGroup.style.display = 'block'; // Mostrar si el rol inicial no es Admin
+    }
+  };
+</script>

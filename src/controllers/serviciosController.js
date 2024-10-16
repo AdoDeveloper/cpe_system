@@ -1,3 +1,4 @@
+// src\controllers\serviciosController.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
@@ -11,6 +12,8 @@ exports.listServicios = async (req, res) => {
     } catch (error) {
         console.error('Error al listar los servicios:', error);
         return res.status(500).send('Error al cargar la página de servicios');
+    } finally {
+        await prisma.$disconnect(); // Cierra la conexión
     }
 };
 
@@ -44,7 +47,9 @@ exports.createServicio = async (req, res) => {
   } catch (error) {
       console.error('Error al crear el servicio:', error);
       res.status(500).send('Error al crear el servicio');
-  }
+  } finally {
+    await prisma.$disconnect(); // Cierra la conexión
+}
 };
 
 // Renderiza el formulario para editar un servicio existente
@@ -59,6 +64,8 @@ exports.renderEditForm = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener el servicio para editar:', error);
         return res.status(500).send('Error al obtener el servicio');
+    } finally {
+        await prisma.$disconnect(); // Cierra la conexión
     }
 };
 
@@ -80,6 +87,8 @@ exports.updateServicio = async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar el servicio:', error);
         return res.status(500).send('Error al actualizar el servicio');
+    } finally {
+        await prisma.$disconnect(); // Cierra la conexión
     }
 };
 
@@ -92,5 +101,7 @@ exports.deleteServicio = async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar el servicio:', error);
         return res.status(500).send('Error al eliminar el servicio');
+    } finally {
+        await prisma.$disconnect(); // Cierra la conexión
     }
 };

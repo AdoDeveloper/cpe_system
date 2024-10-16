@@ -12,7 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^5.21.0",
     "admin-lte": "^4.0.0-beta2",
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
@@ -24,10 +24,10 @@
     "express-validator": "^7.2.0",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
-    "passport-local": "^1.0.0",
-    "prisma": "^5.20.0"
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "prisma": "^5.21.0"
   }
 }

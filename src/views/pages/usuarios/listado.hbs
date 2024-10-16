@@ -1,0 +1,46 @@
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <h3>Listado de Usuarios</h3>
+        </div>
+        <div class="col-12 col-md-6 text-md-right text-center">
+            <a href="/usuarios/new" class="btn btn-success mb-2">Agregar Usuario</a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NOMBRE</th>
+                            <th>CORREO</th>
+                            <th>ROL</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each usuarios}}
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{nombre}}</td>
+                                <td>{{email}}</td>
+                                <td>{{rol.nombre}}</td>
+                                <td>
+                                    <a href="/usuarios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/usuarios/delete/{{id}}" class="btn btn-danger btn-sm" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

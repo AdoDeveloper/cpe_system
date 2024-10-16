@@ -30,6 +30,27 @@ model Cliente {
   pagos         PagoCliente[]
   facturas      Factura[]
   movimientos   Movimiento[]
+
+  usuario       Usuario?          @relation("ClienteUsuario")
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  password     String
+  nombre       String
+  rolId        Int
+  clienteId    Int?     @unique // El campo clienteId debe ser único para una relación uno a uno
+
+  cliente      Cliente? @relation("ClienteUsuario", fields: [clienteId], references: [id])
+  rol          Rol      @relation(fields: [rolId], references: [id])
+}
+
+model Rol {
+  id       Int      @id @default(autoincrement())
+  nombre   String   @unique
+  
+  usuarios Usuario[]
 }
 
 model Contrato {

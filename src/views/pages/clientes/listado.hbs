@@ -1,0 +1,52 @@
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <h3>Listado de Clientes</h3>
+        </div>
+        <div class="col-12 col-md-6 text-md-right text-center">
+            <a href="/clientes/new" class="btn btn-success mb-2">Agregar Cliente</a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>No. Cliente</th>
+                            <th>NOMBRES</th>
+                            <th>APELLIDOS</th>
+                            <th>ALIAS</th>
+                            <th>TELÉFONO</th>
+                            <th>CORREO</th>
+                            <th>DUI</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each clientes}}
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{nombres}}</td>
+                                <td>{{apellidos}}</td>
+                                <td>{{alias}}</td>
+                                <td>{{telefono}}</td>
+                                <td>{{correo}}</td>
+                                <td>{{dui}}</td>
+                                <td>
+                                    <a href="/clientes/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/clientes/delete/{{id}}" class="btn btn-danger btn-sm" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

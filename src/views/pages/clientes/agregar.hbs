@@ -1,0 +1,56 @@
+{{!-- src\views\pages\clientes\agregar.hbs --}}
+
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Agregar Nuevo Cliente</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para agregar un nuevo cliente --}}
+      <form method="POST" action="/clientes/new">
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="nombres" placeholder="Nombres" value="" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="apellidos" placeholder="Apellidos" value="" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="alias" placeholder="Alias" value="" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="telefono" placeholder="Teléfono" value="" required>
+        </div>
+
+        <div class="form-group">
+          <input type="email" class="form-control" name="correo" placeholder="Correo Electrónico" value="" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" name="dui" placeholder="DUI" value="" required>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-success btn-block">Agregar Cliente</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
