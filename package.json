@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "express-handlebars": "^8.0.1",
     "express-session": "^1.18.1",
     "express-validator": "^7.2.0",
+    "helmet": "^8.0.0",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0"

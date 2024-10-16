@@ -5,10 +5,31 @@ const session = require('express-session'); // Para manejar sesiones del usuario
 const flash = require('connect-flash'); // Para manejar mensajes flash en la sesión
 const morgan = require('morgan'); // Middleware para ver las solicitudes en la consola
 const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
+const helmet = require('helmet'); // Middleware de seguridad
 
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 
 const app = express(); // Inicializar la aplicación express
+
+// Configurar Helmet para proteger la aplicación
+app.use(helmet()); // Usa todas las configuraciones predeterminadas de Helmet
+
+// Opciones adicionales de seguridad con Helmet
+// app.use(helmet.hidePoweredBy()); // Elimina el encabezado X-Powered-By para evitar revelar que estás usando Express
+// app.use(helmet.frameguard({ action: 'deny' })); // Previene el uso de iframes para evitar ataques de clickjacking
+// app.use(helmet.xssFilter()); // Habilita el filtro XSS para proteger contra ataques de cross-site scripting
+// app.use(helmet.noSniff()); // Previene que los navegadores intenten adivinar el tipo de contenido
+// app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true })); // Fuerza el uso de HTTPS (si tu servidor está en HTTPS)
+// app.use(helmet.contentSecurityPolicy({
+//   directives: {
+//     defaultSrc: ["'self'"], // Permite recursos solo desde el mismo origen
+//     scriptSrc: ["'self'", "'unsafe-inline'", 'trusted-scripts.com'], // Permite scripts solo desde el origen y scripts inline seguros
+//     styleSrc: ["'self'", "'unsafe-inline'", 'trusted-styles.com'], // Permite estilos solo desde el origen y estilos inline seguros
+//     imgSrc: ["'self'", "data:", 'trusted-images.com'], // Permite imágenes del mismo origen y URLs de datos
+//     connectSrc: ["'self'"], // Permite conexiones sólo del mismo origen
+//     upgradeInsecureRequests: [] // Fuerza la actualización de solicitudes HTTP a HTTPS
+//   }
+// }));
 
 // Ajustes del servidor
 app.set("port", process.env.PORT || 4500); // Establecer el puerto del servidor
