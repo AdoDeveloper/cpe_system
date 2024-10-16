@@ -5,6 +5,7 @@ const session = require('express-session'); // Para manejar sesiones del usuario
 const flash = require('connect-flash'); // Para manejar mensajes flash en la sesión
 const morgan = require('morgan'); // Middleware para ver las solicitudes en la consola
 const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
+
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 
 const app = express(); // Inicializar la aplicación express
@@ -35,7 +36,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Configuración del middleware de sesión
 app.use(session({
-  secret: 'tu_clave_secreta', // Cambia esto a una clave secreta más fuerte en producción
+  secret: process.env.SESSION_SECRET, // Utiliza la clave secreta del archivo .env
   resave: false, // No guarda la sesión si no hay cambios
   saveUninitialized: false, // No guarda sesiones no inicializadas
   cookie: {
@@ -73,7 +74,6 @@ app.use((req, res, next) => {
   next(); // Continuar con la siguiente middleware
 });
 
-
 // Rutas
 const loginRoutes = require('./routes/loginRoutes');
 const serviciosRoutes = require('./routes/serviciosRoutes');
@@ -88,15 +88,19 @@ app.use('/login', redirectIfAuthenticated, loginRoutes);
 // Rutas protegidas para usuarios admin
 app.use('/servicios', authMiddleware, serviciosRoutes);
 app.use('/clientes', authMiddleware, clientesRoutes);
-app.use('/usuarios',authMiddleware, usuariosRoutes);
+app.use('/usuarios', authMiddleware, usuariosRoutes);
 app.use('/roles', authMiddleware, rolesRoutes);
 
 // Rutas protegidas para usuarios no admin
-app.use('/', authMiddleware, homeRoutes); 
-
+app.use('/', authMiddleware, homeRoutes, loginRoutes); 
 
 // Archivos públicos (aquí se coloca todo el código al que el navegador puede acceder)
 app.use(express.static(path.join(__dirname, "public"))); // Archivos estáticos
+
+// Manejo de errores 404
+app.use((req, res, next) => {
+  res.status(404).render('errors/404', { layout: 'error', title: '404 - Página no encontrada' });
+});
 
 // Iniciar el servidor
 app.listen(app.get("port"), () => {

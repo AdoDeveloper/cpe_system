@@ -14,7 +14,7 @@ exports.listUsuarios = async (req, res) => {
         res.render('pages/usuarios/listado', { usuarios });
     } catch (error) {
         console.error('Error al listar los usuarios:', error);
-        res.status(500).send('Error al listar los usuarios');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al listar los usuarios' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -28,7 +28,7 @@ exports.renderCreateForm = async (req, res) => {
         res.render('pages/usuarios/agregar', { roles, clientes, usuario: {}, errors: [] });
     } catch (error) {
         console.error('Error al cargar el formulario de usuario:', error);
-        res.status(500).send('Error al cargar el formulario de usuario');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cargar el formulario de usuario' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -64,7 +64,7 @@ exports.createUsuario = async (req, res) => {
         res.redirect('/usuarios');
     } catch (error) {
         console.error('Error al crear el usuario:', error);
-        res.status(500).send('Error al crear el usuario');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al crear el usuario' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -89,7 +89,7 @@ exports.renderEditForm = async (req, res) => {
         res.render('pages/usuarios/modificar', { usuario, roles, clientes, isAdmin, errors: [] });
     } catch (error) {
         console.error('Error al cargar el formulario de usuario:', error);
-        res.status(500).send('Error al cargar el formulario de usuario');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cargar el formulario de usuario' });
     }
 };
 
@@ -186,7 +186,7 @@ exports.updateUsuario = async (req, res) => {
         res.redirect('/usuarios');
     } catch (error) {
         console.error('Error al actualizar el usuario:', error);
-        res.status(500).send('Error al actualizar el usuario');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al actualizar el usuario' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -200,7 +200,7 @@ exports.deleteUsuario = async (req, res) => {
         res.redirect('/usuarios');
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
-        res.status(500).send('Error al eliminar el usuario');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al eliminar el usuario' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }

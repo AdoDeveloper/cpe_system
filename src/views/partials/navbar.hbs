@@ -56,20 +56,25 @@
       </div>
     </li>
 
-    <!-- Menú desplegable de perfil de usuario -->
-    <li class="nav-item dropdown">
-      <a class="nav-link" data-toggle="dropdown" href="#">
-        <i class="far fa-user"></i>
+     <!-- Menú desplegable de perfil de usuario -->
+  <li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#">
+      <i class="far fa-user"></i>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right">
+      <a href="#" class="dropdown-item">
+        <i class="fas fa-user-cog"></i> Perfil
       </a>
-      <div class="dropdown-menu dropdown-menu-right">
-        <a href="#" class="dropdown-item">
-          <i class="fas fa-user-cog"></i> Perfil
-        </a>
-        <div class="dropdown-divider"></div>
-        <a href="/logout" class="dropdown-item">
-          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-        </a>
-      </div>
-    </li>
+      <div class="dropdown-divider"></div>
+      
+      <!-- Formulario para el cierre de sesión -->
+      <form id="logout-form" action="/logout" method="GET" style="display: none;">
+      </form>
+      
+      <a href="#" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">
+        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+      </a>
+    </div>
+  </li>
   </ul>
 </nav>

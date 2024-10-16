@@ -11,7 +11,7 @@ exports.listClientes = async (req, res) => {
         res.render('pages/clientes/listado', { clientes });
     } catch (error) {
         console.error('Error al listar los clientes:', error);
-        return res.status(500).send('Error al cargar la página de clientes');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -49,7 +49,7 @@ exports.createCliente = async (req, res) => {
       res.redirect('/clientes');
   } catch (error) {
       console.error('Error al crear el cliente:', error);
-      res.status(500).send('Error al crear el cliente');
+      return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
   } finally {
     await prisma.$disconnect(); // Cierra la conexión
 }
@@ -66,7 +66,7 @@ exports.renderEditForm = async (req, res) => {
         res.render('pages/clientes/modificar', { action: 'edit', cliente, errors: [] });
     } catch (error) {
         console.error('Error al obtener el cliente para editar:', error);
-        return res.status(500).send('Error al obtener el cliente');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -92,7 +92,7 @@ exports.updateCliente = async (req, res) => {
         res.redirect('/clientes');
     } catch (error) {
         console.error('Error al actualizar el cliente:', error);
-        return res.status(500).send('Error al actualizar el cliente');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -106,7 +106,7 @@ exports.deleteCliente = async (req, res) => {
         res.redirect('/clientes');
     } catch (error) {
         console.error('Error al eliminar el cliente:', error);
-        return res.status(500).send('Error al eliminar el cliente');
+        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }

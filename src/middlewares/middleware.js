@@ -8,15 +8,15 @@ module.exports = {
 
     // Si la ruta requiere ser administrador y el usuario no lo es
     if (req.originalUrl.startsWith('/servicios') && req.session.role !== 'Administrador') {
-      return res.status(403).send('Acceso prohibido: No tienes permisos para acceder a esta ruta.'); 
+      return res.status(403).render('errors/403', {layout: 'error', title: '403 - Acceso denegado' });
     }
 
     if (req.originalUrl.startsWith('/usuarios') && req.session.role !== 'Administrador') {
-      return res.status(403).send('Acceso prohibido: No tienes permisos para acceder a esta ruta.'); 
+      return res.status(403).render('errors/403', {layout: 'error', title: '403 - Acceso denegado' });
     }
 
     if (req.originalUrl.startsWith('/roles') && req.session.role !== 'Administrador') {
-      return res.status(403).send('Acceso prohibido: No tienes permisos para acceder a esta ruta.'); 
+      return res.status(403).render('errors/403', {layout: 'error', title: '403 - Acceso denegado' });
     }
 
     // Continuar con la ruta si el usuario está autenticado

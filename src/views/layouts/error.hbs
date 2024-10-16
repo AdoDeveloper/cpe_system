@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <!-- AdminLTE -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+
+  <style>
+    /* Estilos para centrar todo el contenido */
+    .error-wrapper {
+      height: 100vh; /* 100% de la altura de la ventana */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .error-page h2 {
+      font-size: 5rem;
+    }
+  </style>
+</head>
+<body class="hold-transition layout-top-nav">
+  <div class="wrapper">
+    <!-- Centrado del contenido -->
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="container error-wrapper"> <!-- Aplicamos el contenedor centrado -->
+          {{{body}}} <!-- Este es el contenido que será cargado en la vista (por ejemplo, el error 404) -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AdminLTE Scripts -->
+  <script src="/plugins/jquery/jquery.min.js"></script>
+  <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/dist/js/adminlte.min.js"></script>
+</body>
+</html>

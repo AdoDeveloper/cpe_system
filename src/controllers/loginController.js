@@ -6,7 +6,8 @@ const loginController = {};
 
 // Renderiza el formulario de login
 loginController.renderLoginForm = (req, res) => {
-  res.render('pages/login', { layout: 'auth', title: 'Log in' });
+  res.setHeader('Cache-Control', 'no-store'); // Desactivar caché para esta página
+    res.render('pages/login', { layout: 'auth', title: 'Iniciar Sesion | Airlink' });
 };
 
 // Procesa el formulario de login
@@ -51,11 +52,7 @@ loginController.processLogin = async (req, res) => {
     }
   } catch (error) {
     console.error('Error al procesar el login:', error);
-    res.status(500).render('pages/login', {
-      layout: 'auth',
-      title: 'Iniciar Sesion | Airlink',
-      error_msg: 'Ocurrió un error, por favor intenta nuevamente.',
-    });
+    return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al procesar el login' });
   } finally {
     await prisma.$disconnect();
   }
@@ -64,11 +61,14 @@ loginController.processLogin = async (req, res) => {
 // Procesar el logout
 loginController.logout = (req, res) => {
   req.session.destroy((err) => {
-    if (err) {
-      console.error('Error al cerrar sesión:', err);
-    }
-    res.redirect('/login'); // Redirigir a la página de login después de cerrar sesión
+      if (err) {
+          console.error('Error al cerrar sesión:', err);
+          res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cerrar sesión' });
+      }
+      res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
+      res.redirect('/login'); // Redirigir a login después de cerrar sesión
   });
 };
+
 
 module.exports = loginController;
