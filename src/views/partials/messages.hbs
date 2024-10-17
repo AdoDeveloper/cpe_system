@@ -1,11 +1,70 @@
+<style>
+  .flash-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    max-width: 400px;
+    opacity: 1;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: opacity 2s ease-in-out; /* Transición de 2 segundos para el desvanecimiento */
+  }
+
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.5);
+    animation: progressBar 4s linear forwards;
+  }
+
+  @keyframes progressBar {
+    0% {
+      width: 100%;
+    }
+    100% {
+      width: 0;
+    }
+  }
+
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+</style>
+
+<!-- Mensajes Flash -->
 {{#if success_msg}}
-  <div class="alert alert-success" role="alert">
+  <div class="alert alert-success alert-dismissible flash-message" role="alert">
     {{success_msg}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <div class="progress-bar"></div>
   </div>
 {{/if}}
 
 {{#if error_msg}}
-  <div class="alert alert-danger" role="alert">
+  <div class="alert alert-danger alert-dismissible flash-message" role="alert">
     {{error_msg}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <div class="progress-bar"></div>
   </div>
 {{/if}}
+
+<script>
+  // Cerrar automáticamente las alertas después de 4 segundos con un desvanecimiento más lento (2 segundos)
+  setTimeout(function() {
+    $('.flash-message').fadeOut(2000, function() { // El desvanecimiento dura 2 segundos
+      $(this).remove();
+    });
+  }, 2000); // Espera de 2 segundos antes de comenzar el desvanecimiento
+</script>

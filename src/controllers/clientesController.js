@@ -46,7 +46,8 @@ exports.createCliente = async (req, res) => {
       });
       
       // Redirigir a la lista de clientes después de crear el cliente
-      res.redirect('/clientes');
+      req.flash('success_msg', 'Cliente creado exitosamente.');
+      res.status(201).redirect('/clientes');
   } catch (error) {
       console.error('Error al crear el cliente:', error);
       return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
@@ -89,7 +90,8 @@ exports.updateCliente = async (req, res) => {
                 cpe_hash: cpe_hash || null
             }
         });
-        res.redirect('/clientes');
+        req.flash('success_msg', 'Cliente actualizado exitosamente.');
+        res.status(201).redirect('/clientes');
     } catch (error) {
         console.error('Error al actualizar el cliente:', error);
         return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
@@ -103,7 +105,8 @@ exports.deleteCliente = async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.cliente.delete({ where: { id: parseInt(id) } });
-        res.redirect('/clientes');
+        req.flash('success_msg', 'Cliente eliminado exitosamente.');
+        res.status(200).redirect('/clientes');
     } catch (error) {
         console.error('Error al eliminar el cliente:', error);
         return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });

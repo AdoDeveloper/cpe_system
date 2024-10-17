@@ -61,7 +61,8 @@ exports.createUsuario = async (req, res) => {
                 clienteId: clienteIdValue, // Relación con cliente si aplica
             },
         });
-        res.redirect('/usuarios');
+        req.flash('success_msg', 'Usuario creado exitosamente.');
+        res.status(201).redirect('/usuarios');
     } catch (error) {
         console.error('Error al crear el usuario:', error);
         return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al crear el usuario' });
@@ -182,8 +183,8 @@ exports.updateUsuario = async (req, res) => {
                 data: updatedData,
             });
         }
-
-        res.redirect('/usuarios');
+        req.flash('success_msg', 'Usuario actualizado exitosamente.');
+        res.status(201).redirect('/usuarios');
     } catch (error) {
         console.error('Error al actualizar el usuario:', error);
         return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al actualizar el usuario' });
@@ -197,7 +198,8 @@ exports.deleteUsuario = async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.usuario.delete({ where: { id: parseInt(id) } });
-        res.redirect('/usuarios');
+        req.flash('success_msg', 'Usuario eliminado exitosamente.');
+        res.status(200).redirect('/usuarios');
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
         return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al eliminar el usuario' });

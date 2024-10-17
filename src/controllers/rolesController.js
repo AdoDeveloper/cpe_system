@@ -8,7 +8,8 @@ exports.listRoles = async (req, res) => {
         res.render('pages/roles/listado', { roles });
     } catch (error) {
         console.error('Error al listar los roles:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al listar los roles' });
+        req.flash('error_msg', 'Error al listar los roles.'); // Guardar el mensaje de error flash
+        res.status(500).redirect('/servicios'); // Redirigir a la página de roles
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -22,7 +23,8 @@ exports.createRol = async (req, res) => {
         res.redirect('/roles');
     } catch (error) {
         console.error('Error al crear el rol:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al crear el rol' });
+        req.flash('error_msg', 'Error al crear el rol.'); // Guardar el mensaje de error flash
+        res.status(500).redirect('/servicios'); // Redirigir a la página de roles
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -36,7 +38,8 @@ exports.deleteRol = async (req, res) => {
         res.redirect('/roles');
     } catch (error) {
         console.error('Error al eliminar el rol:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al eliminar el rol' });
+        req.flash('error_msg', 'Error al eliminar el rol.'); // Guardar el mensaje de error flash
+        res.status(500).redirect('/servicios'); // Redirigir a la página de roles
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }

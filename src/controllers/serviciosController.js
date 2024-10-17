@@ -1,4 +1,3 @@
-// src\controllers\serviciosController.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
@@ -11,7 +10,8 @@ exports.listServicios = async (req, res) => {
         res.render('pages/servicios/listado', { servicios });
     } catch (error) {
         console.error('Error al listar los servicios:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cargar la página de servicios' });
+        req.flash('error_msg', 'Error al listar los servicios.'); // Guardar el mensaje de error flash
+        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -43,13 +43,15 @@ exports.createServicio = async (req, res) => {
       });
       
       // Redirigir a la lista de servicios después de crear el servicio
-      res.redirect('/servicios');
+      req.flash('success_msg', 'Servicio creado exitosamente.');
+      res.status(201).redirect('/servicios');
   } catch (error) {
       console.error('Error al crear el servicio:', error);
-      return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al crear el servicio' });
+      req.flash('error_msg', 'Error al crear el servicio.'); // Guardar el mensaje de error flash
+      return res.status(500).redirect('/servicios'); // Redirigir con estado 500
   } finally {
     await prisma.$disconnect(); // Cierra la conexión
-}
+  }
 };
 
 // Renderiza el formulario para editar un servicio existente
@@ -63,7 +65,8 @@ exports.renderEditForm = async (req, res) => {
         res.render('pages/servicios/modificar', { action: 'edit', servicio, errors: [] });
     } catch (error) {
         console.error('Error al obtener el servicio para editar:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al obtener el servicio' });
+        req.flash('error_msg', 'Error al obtener el servicio.'); // Guardar el mensaje de error flash
+        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -83,10 +86,12 @@ exports.updateServicio = async (req, res) => {
                 tipo_pago
             }
         });
-        res.redirect('/servicios');
+        req.flash('success_msg', 'Servicio actualizado exitosamente.');
+        res.status(201).redirect('/servicios');
     } catch (error) {
         console.error('Error al actualizar el servicio:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al actualizar el servicio' });
+        req.flash('error_msg', 'Error al actualizar el servicio.'); // Guardar el mensaje de error flash
+        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -97,10 +102,12 @@ exports.deleteServicio = async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.servicio.delete({ where: { id: parseInt(id) } });
-        res.redirect('/servicios');
+        req.flash('success_msg', 'Servicio eliminado exitosamente.');
+        res.status(200).redirect('/servicios');
     } catch (error) {
         console.error('Error al eliminar el servicio:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al eliminar el servicio' });
+        req.flash('error_msg', 'Error al eliminar el servicio.'); // Guardar el mensaje de error flash
+        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
