@@ -1,0 +1,165 @@
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const path = require('path');
+
+// Configuración de Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configuración de Multer para subir imágenes
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /png|jpg|jpeg|webp/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten imágenes de tipo png, jpg, jpeg, webp.'));
+    }
+  }
+});
+
+// Función para subir archivos a Cloudinary con el hash como nombre de archivo
+const uploadFileToCloudinary = async (file, folder, hash) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream({
+      folder: folder,
+      format: 'webp', // Formato estandarizado
+      public_id: hash // Usar el hash como el nombre público del archivo
+    }, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    }).end(file.buffer); // Usar el buffer del archivo cargado
+  });
+};
+
+// Función para eliminar archivos de Cloudinary
+const deleteFileFromCloudinary = async (folder, publicId) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(`${folder}/${publicId}`, (error, result) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
+  });
+};
+
+exports.listEquipos = async (req, res) => {
+  try {
+    const equipos = await prisma.equipoCPE.findMany();
+    res.render('pages/equipos/listado', { equipos });
+  } catch (error) {
+    console.error('Error al listar equipos:', error);
+    req.flash('error_msg', 'Error al listar los equipos.');
+    res.redirect('/equipos');
+  }
+};
+
+exports.renderCreateForm = (req, res) => {
+  res.render('pages/equipos/agregar', { equipo: {}, errors: [] });
+};
+
+exports.createEquipo = async (req, res) => {
+  try {
+    const { nombre_equipo, marca, tipo, descripcion, hash } = req.body;
+
+    // Subir imagen a Cloudinary usando el hash como nombre del archivo
+    const result = await uploadFileToCloudinary(req.file, 'equiposCPE', hash);
+
+    // Crear equipo en la base de datos
+    await prisma.equipoCPE.create({
+      data: {
+        nombre_equipo,
+        marca,
+        tipo,
+        descripcion,
+        img_equipo: result.secure_url, // URL de la imagen en Cloudinary
+        hash, // Almacenar el hash como identificador del archivo
+      },
+    });
+
+    req.flash('success_msg', 'Equipo creado correctamente');
+    res.redirect('/equipos');
+  } catch (error) {
+    console.error('Error al crear el equipo:', error);
+    req.flash('error_msg', 'Error al crear el equipo.');
+    res.redirect('/equipos');
+  }
+};
+
+exports.renderEditForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
+    res.render('pages/equipos/modificar', { equipo });
+  } catch (error) {
+    console.error('Error al obtener el equipo:', error);
+    req.flash('error_msg', 'Error al obtener el equipo.');
+    res.redirect('/equipos');
+  }
+};
+
+exports.updateEquipo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre_equipo, marca, tipo, descripcion, hash } = req.body;
+    let updatedData = { nombre_equipo, marca, tipo, descripcion, hash };
+
+    const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
+
+    // Verificar si se sube una nueva imagen
+    if (req.file) {
+      // Eliminar la imagen antigua si existe
+      if (equipo.img_equipo) {
+        await deleteFileFromCloudinary('equiposCPE', equipo.hash);
+      }
+
+      // Subir la nueva imagen a Cloudinary usando el hash como nombre del archivo
+      const result = await uploadFileToCloudinary(req.file, 'equiposCPE', hash);
+      updatedData.img_equipo = result.secure_url;
+    }
+
+    await prisma.equipoCPE.update({
+      where: { id: parseInt(id) },
+      data: updatedData,
+    });
+
+    req.flash('success_msg', 'Equipo actualizado correctamente');
+    res.redirect('/equipos');
+  } catch (error) {
+    console.error('Error al actualizar el equipo:', error);
+    req.flash('error_msg', 'Error al actualizar el equipo.');
+    res.redirect('/equipos');
+  }
+};
+
+exports.deleteEquipo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
+
+    // Eliminar la imagen de Cloudinary si existe
+    if (equipo.img_equipo) {
+      await deleteFileFromCloudinary('equiposCPE', equipo.hash);
+    }
+
+    await prisma.equipoCPE.delete({ where: { id: parseInt(id) } });
+
+    req.flash('success_msg', 'Equipo eliminado correctamente');
+    res.redirect('/equipos');
+  } catch (error) {
+    console.error('Error al eliminar el equipo:', error);
+    req.flash('error_msg', 'Error al eliminar el equipo.');
+    res.redirect('/equipos');
+  }
+};

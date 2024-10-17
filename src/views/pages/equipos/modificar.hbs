@@ -1,0 +1,74 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Equipo CPE</h1>
+  </div>
+  
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para modificar equipo CPE --}}
+      <form method="POST" action="/equipos/edit/{{equipo.id}}" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label for="hash">Hash del Equipo</label>
+          <input type="text" class="form-control" id="hash" name="hash" value="{{equipo.hash}}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre_equipo">Nombre del Equipo</label>
+          <input type="text" class="form-control" id="nombre_equipo" name="nombre_equipo" placeholder="Nombre del Equipo" value="{{equipo.nombre_equipo}}" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="marca">Marca</label>
+          <input type="text" class="form-control" id="marca" name="marca" placeholder="Marca" value="{{equipo.marca}}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo</label>
+          <input type="text" class="form-control" id="tipo" name="tipo" placeholder="Tipo (ej. Router, Antena)" value="{{equipo.tipo}}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción" rows="3" required>{{equipo.descripcion}}</textarea>
+        </div>
+
+        {{!-- Mostrar la imagen actual del equipo --}}
+        <div class="form-group">
+          <label>Imagen Actual</label>
+          <div>
+            {{#if equipo.img_equipo}}
+              <img src="{{equipo.img_equipo}}" alt="Imagen del equipo" class="img-fluid img-thumbnail" style="max-width: 300px;">
+            {{else}}
+              <p>No hay imagen disponible para este equipo.</p>
+            {{/if}}
+          </div>
+        </div>
+
+        {{!-- Campo para subir una nueva imagen --}}
+        <div class="form-group">
+          <label for="img_equipo">Subir Nueva Imagen del Equipo</label>
+          <input type="file" class="form-control-file" id="img_equipo" name="img_equipo" accept="image/*">
+          <small class="form-text text-muted">Deja este campo en blanco si no deseas cambiar la imagen.</small>
+        </div>
+        
+        <div class="form-group">
+          <button class="btn btn-primary btn-block">Guardar Cambios</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

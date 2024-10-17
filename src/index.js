@@ -81,6 +81,7 @@ const homeRoutes = require('./routes/homeRoutes');
 const clientesRoutes = require('./routes/clientesRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
+const equiposRoutes = require('./routes/equiposRoutes');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -90,6 +91,7 @@ app.use('/servicios', authMiddleware, serviciosRoutes);
 app.use('/clientes', authMiddleware, clientesRoutes);
 app.use('/usuarios', authMiddleware, usuariosRoutes);
 app.use('/roles', authMiddleware, rolesRoutes);
+app.use('/equipos',authMiddleware, equiposRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 

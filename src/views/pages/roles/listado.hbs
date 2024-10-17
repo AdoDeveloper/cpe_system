@@ -25,7 +25,7 @@
                                 <td>{{id}}</td>
                                 <td>{{nombre}}</td>
                                 <td>
-                                    <a href="/roles/delete/{{id}}" class="btn btn-danger btn-sm" title="Eliminar">
+                                    <a href="javascript:void(0);" onclick="confirmDeleteRol('{{id}}', '{{nombre}}')" class="btn btn-danger btn-sm" title="Eliminar">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </td>
@@ -63,3 +63,25 @@
         </div>
     </div>
 </div>
+
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+  function confirmDeleteRol(id, nombreRol) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Estás a punto de eliminar el rol: ${nombreRol}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Redirigir a la ruta de eliminación si se confirma
+        window.location.href = `/roles/delete/${id}`;
+      }
+    });
+  }
+</script>
+

@@ -1,0 +1,60 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Agregar Nuevo Equipo CPE</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para agregar un nuevo equipo CPE --}}
+      <form method="POST" action="/equipos/new" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label for="hash">Hash del Equipo</label>
+          <input type="text" class="form-control" name="hash" id="hash" placeholder="Hash" value="" required>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre_equipo">Nombre del Equipo</label>
+          <input type="text" class="form-control" name="nombre_equipo" id="nombre_equipo" placeholder="Nombre del Equipo" value="" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="marca">Marca</label>
+          <input type="text" class="form-control" name="marca" id="marca" placeholder="Marca" value="" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo</label>
+          <input type="text" class="form-control" name="tipo" id="tipo" placeholder="Tipo" value="" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea class="form-control" name="descripcion" id="descripcion" placeholder="Descripción" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="img_equipo">Subir Imagen del Equipo</label>
+          <input type="file" class="form-control-file" name="img_equipo" id="img_equipo" accept="image/png, image/jpeg, image/webp" required>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-success btn-block">Agregar Equipo CPE</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
