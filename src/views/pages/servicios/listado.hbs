@@ -4,7 +4,7 @@
             <h3>Listado de Servicios</h3>
         </div>
         <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/servicios/new" class="btn btn-success mb-2">Agregar Servicio</a>
+            <a href="/servicios/new" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Agregar Servicio</a>
         </div>
     </div>
 
@@ -34,9 +34,11 @@
                                     <a href="/servicios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0);" onclick="confirmDeleteServicio('{{id}}', '{{servicio}}')" class="btn btn-danger btn-sm" title="Eliminar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST" action="/servicios/delete/{{id}}?_method=DELETE" style="display:inline;" onsubmit="return confirmDeleteServicio(event, '{{id}}', '{{servicio}}')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         {{/each}}
@@ -48,7 +50,8 @@
 </div>
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script>
-  function confirmDeleteServicio(id, nombreServicio) {
+  function confirmDeleteServicio(event, id, nombreServicio) {
+    event.preventDefault(); // Evitar el envío del formulario inmediatamente
     Swal.fire({
       title: '¿Estás seguro?',
       text: `Estás a punto de eliminar el servicio: ${nombreServicio}. Esta acción no se puede deshacer.`,
@@ -60,8 +63,8 @@
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Redirigir a la ruta de eliminación si se confirma
-        window.location.href = `/servicios/delete/${id}`;
+        // Si el usuario confirma, enviar el formulario manualmente
+        document.getElementById(`deleteForm-${id}`).submit();
       }
     });
   }

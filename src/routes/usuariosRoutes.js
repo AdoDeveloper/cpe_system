@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const usuariosController = require('../controllers/usuariosController');
 
+// ruta /usuarios/
+
 // Listar usuarios
 router.get('/', usuariosController.listUsuarios);
 
@@ -15,9 +17,9 @@ router.post('/new', usuariosController.createUsuario);
 router.get('/edit/:id', usuariosController.renderEditForm);
 
 // Actualizar usuario
-router.post('/edit/:id', usuariosController.updateUsuario);
+router.put('/edit/:id', usuariosController.updateUsuario);
 
 // Eliminar usuario
-router.get('/delete/:id', usuariosController.deleteUsuario);
+router.delete('/delete/:id', usuariosController.deleteUsuario);
 
 module.exports = router;

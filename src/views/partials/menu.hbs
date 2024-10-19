@@ -1,5 +1,7 @@
 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+  
   <!-- Dashboard -->
+  {{#if modulos_active.dashboard}}
   <li class="nav-header">DASHBOARD</li>
   <li class="nav-item">
     <a href="/" class="nav-link">
@@ -7,8 +9,10 @@
       <p>Inicio</p>
     </a>
   </li>
+  {{/if}}
 
   <!-- Facturación -->
+  {{#if modulos_active.facturacion}}
   <li class="nav-header">FACTURACIÓN</li>
   <li class="nav-item">
     <a href="/facturacion/generar" class="nav-link">
@@ -28,8 +32,10 @@
       <p>Historial de pagos</p>
     </a>
   </li>
+  {{/if}}
 
   <!-- Contratos y Servicios -->
+  {{#if modulos_active.contratos_servicios}}
   <li class="nav-header">CONTRATOS Y SERVICIOS</li>
   <li class="nav-item">
     <a href="/servicios" class="nav-link">
@@ -43,8 +49,10 @@
       <p>Contratos de clientes</p>
     </a>
   </li>
+  {{/if}}
 
   <!-- Gestión de Clientes -->
+  {{#if modulos_active.clientes}}
   <li class="nav-header">GESTIÓN DE CLIENTES</li>
   <li class="nav-item">
     <a href="/clientes" class="nav-link">
@@ -58,8 +66,10 @@
       <p>CPE Asignados</p>
     </a>
   </li>
+  {{/if}}
 
   <!-- Gestión de CPEs -->
+  {{#if modulos_active.gestion_cpes}}
   <li class="nav-header">GESTIÓN DE CPES</li>
   <li class="nav-item">
     <a href="/equipos" class="nav-link">
@@ -73,8 +83,10 @@
       <p>Configuraciones</p>
     </a>
   </li>
+  {{/if}}
 
   <!-- Gestión de Usuarios -->
+  {{#if modulos_active.gestion_usuarios}}
   <li class="nav-header">GESTIÓN DE USUARIOS</li>
   <li class="nav-item">
     <a href="/usuarios" class="nav-link">
@@ -88,4 +100,17 @@
       <p>Roles</p>
     </a>
   </li>
+  {{/if}}
+
+  <!-- Gestión de Módulos -->
+  {{#if modulos_active.gestion_modulos}}
+  <li class="nav-header">GESTIÓN DE MÓDULOS</li>
+  <li class="nav-item">
+    <a href="/modulos" class="nav-link">
+      <i class="nav-icon fas fa-th-large"></i>
+      <p>Módulos</p>
+    </a>
+  </li>
+  {{/if}}
+
 </ul>

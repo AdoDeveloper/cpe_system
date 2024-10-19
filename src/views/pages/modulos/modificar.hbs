@@ -1,0 +1,69 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Módulo</h1>
+  </div>
+  
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para modificar módulo --}}
+      <form method="POST" action="/modulos/edit/{{modulo.id}}?_method=PUT" id="moduloEditForm">
+        
+        <div class="form-group">
+          <label for="nombre">Nombre del Módulo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Módulo" value="{{modulo.nombre}}" required autofocus>
+        </div>
+        
+        <div class="form-group">
+          <label for="descripcion">Descripción del Módulo</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Módulo" required>{{modulo.descripcion}}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="activo">Estado</label>
+          <select class="form-control" id="activo" name="activo" required>
+            <option value="" disabled>Seleccione el estado</option>
+            <option value="true" {{#if modulo.activo}}selected{{/if}}>Activo</option>
+            <option value="false" {{#unless modulo.activo}}selected{{/unless}}>Inactivo</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          <a href="/modulos" class="btn btn-secondary btn-block">Cancelar</a>
+        </div>
+        
+      </form>
+
+      <!-- Spinner de carga, oculto inicialmente -->
+      <div id="loadingSpinnerEdit" class="text-center mt-4" style="display: none;">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Cargando...</span>
+        </div>
+        <p>Procesando solicitud...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('moduloEditForm').addEventListener('submit', function() {
+    // Mostrar el spinner
+    document.getElementById('loadingSpinnerEdit').style.display = 'block';
+    
+    // Ocultar el formulario
+    document.getElementById('moduloEditForm').style.display = 'none';
+  });
+</script>

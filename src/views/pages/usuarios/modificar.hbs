@@ -15,13 +15,14 @@
         </div>
       {{/if}}
 
-      <form method="POST" action="/usuarios/edit/{{usuario.id}}">
+      {{!-- Formulario para modificar usuario --}}
+      <form method="POST" action="/usuarios/edit/{{usuario.id}}?_method=PUT" id="modificarUsuarioForm">
         <label for="email">Correo electrónico</label>
         <div class="form-group">
           <input type="email" class="form-control" name="email" value="{{usuario.email}}" placeholder="example@airlink.com.sv" required autofocus>
         </div>
         
-          <label for="nombre">Nombre</label>
+        <label for="nombre">Nombre</label>
         <div class="form-group">
           <input type="text" class="form-control" name="nombre" value="{{usuario.nombre}}" placeholder="Nombre" required>
         </div>
@@ -61,8 +62,9 @@
           <input type="password" class="form-control" name="confirmPassword" placeholder="Confirme la nueva contraseña">
         </div>
         
-        <div class="form-group">
-          <button class="btn btn-primary btn-block">Guardar Cambios</button>
+       <div class="form-group text-center mt-4">
+          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+          <a href="/usuarios" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
         </div>
       </form>
     </div>
@@ -94,4 +96,20 @@
       clienteSelectGroup.style.display = 'block'; // Mostrar si el rol inicial no es Admin
     }
   };
+
+  // Mostrar el spinner al enviar el formulario
+  document.getElementById('modificarUsuarioForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío del formulario
+    Swal.fire({
+      title: 'Guardando cambios...',
+      text: 'Por favor, espera mientras se procesan los cambios.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Enviar el formulario después de mostrar el spinner
+    this.submit();
+  });
 </script>

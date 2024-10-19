@@ -1,5 +1,3 @@
-{{!-- src\views\pages\clientes\modificar.hbs --}}
-
 <div class="container p-4">
   <div class="row justify-content-center">
     <h1>Modificar Cliente</h1>
@@ -20,8 +18,8 @@
       {{/if}}
 
       {{!-- Formulario para modificar cliente --}}
-      <form method="POST" action="/clientes/edit/{{cliente.id}}">
-        
+      <form method="POST" action="/clientes/edit/{{cliente.id}}?_method=PUT" id="clienteForm">
+
         <div class="form-group">
           <input type="text" class="form-control" name="nombres" placeholder="Nombres" value="{{cliente.nombres}}" required autofocus>
         </div>
@@ -47,10 +45,37 @@
         </div>
         
         <div class="form-group">
-          <button class="btn btn-primary btn-block">Guardar Cambios</button>
+          <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
         </div>
-
       </form>
+
+      <!-- Spinner de carga, oculto inicialmente -->
+      <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Cargando...</span>
+        </div>
+        <p>Procesando solicitud...</p>
+      </div>
     </div>
   </div>
 </div>
+
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+  document.getElementById('clienteForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío del formulario
+
+    // Mostrar el spinner de SweetAlert2
+    Swal.fire({
+      title: 'Guardando cambios...',
+      text: 'Por favor, espera mientras se procesan los cambios.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Enviar el formulario después de mostrar el spinner
+    this.submit();
+  });
+</script>

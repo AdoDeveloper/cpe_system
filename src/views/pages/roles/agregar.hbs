@@ -1,0 +1,161 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1 class="text-center mb-4">Agregar Nuevo Rol</h1>
+  </div>
+  
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para agregar nuevo rol --}}
+      <form method="POST" action="/roles/new" id="rolForm">
+        
+        <div class="form-group">
+          <input type="text" class="form-control" name="nombre" placeholder="Nombre del Rol" value="" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label>Permisos</label>
+          <div id="permisosRutas" class="border p-3 bg-light">
+            <div class="permisoRuta" id="permiso-0">
+              <div class="form-group">
+                <label>Ruta</label>
+                <input type="text" class="form-control" name="permisos[0][ruta]" placeholder="/ruta" required>
+              </div>
+
+              <div class="form-group">
+                <label>Descripción del Permiso</label>
+                <input type="text" class="form-control" name="permisos[0][descripcion]" placeholder="Descripción del permiso" required>
+              </div>
+
+              <div class="form-group">
+                <label>Método HTTP</label>
+                <select class="form-control" name="permisos[0][metodo]" required>
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Tipo de Permiso</label>
+                <select class="form-control" name="permisos[0][tipo]" required>
+                  <option value="lectura">Lectura</option>
+                  <option value="escritura">Escritura</option>
+                  <option value="eliminación">Eliminación</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Módulo (opcional)</label>
+                <select class="form-control" name="permisos[0][moduloId]">
+                  <option value="">Sin módulo</option>
+                  {{#each modulosDisponibles}}
+                    <option value="{{this.id}}">{{this.nombre}}</option>
+                  {{/each}}
+                </select>
+              </div>
+              <!-- Botón de eliminar ruta -->
+              <button type="button" class="btn btn-danger btn-sm" onclick="eliminarPermiso(0)">Eliminar Ruta</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-info mt-2" onclick="agregarPermiso()">Agregar Ruta</button>
+        </div>
+        
+        <div class="form-group text-center mt-4">
+          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+          <a href="/roles" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
+        </div>
+        
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+  // Función para agregar dinámicamente más permisos
+  function agregarPermiso() {
+    const index = document.querySelectorAll('.permisoRuta').length;
+    const newPermiso = `
+      <div class="permisoRuta mt-3 border p-3 bg-light" id="permiso-${index}">
+        <div class="form-group">
+          <label>Ruta</label>
+          <input type="text" class="form-control" name="permisos[${index}][ruta]" placeholder="/ruta" required>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción del Permiso</label>
+          <input type="text" class="form-control" name="permisos[${index}][descripcion]" placeholder="Descripción del permiso" required>
+        </div>
+
+        <div class="form-group">
+          <label>Método HTTP</label>
+          <select class="form-control" name="permisos[${index}][metodo]" required>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de Permiso</label>
+          <select class="form-control" name="permisos[${index}][tipo]" required>
+            <option value="lectura">Lectura</option>
+            <option value="escritura">Escritura</option>
+            <option value="eliminación">Eliminación</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Módulo (opcional)</label>
+          <select class="form-control" name="permisos[${index}][moduloId]">
+            <option value="">Sin módulo</option>
+            {{#each modulosDisponibles}}
+              <option value="{{this.id}}">{{this.nombre}}</option>
+            {{/each}}
+          </select>
+        </div>
+        <!-- Botón de eliminar ruta -->
+        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarPermiso(${index})">Eliminar Ruta</button>
+      </div>
+    `;
+    document.getElementById('permisosRutas').insertAdjacentHTML('beforeend', newPermiso);
+  }
+
+  // Función para eliminar un permiso
+  function eliminarPermiso(index) {
+    const permisoElement = document.getElementById(`permiso-${index}`);
+    permisoElement.remove();
+  }
+
+  // Mostrar el spinner con SweetAlert al enviar el formulario
+  document.getElementById('rolForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío inmediato del formulario
+    
+    // Mostrar SweetAlert con spinner
+    Swal.fire({
+      title: 'Guardando...',
+      text: 'Por favor, espera mientras se procesa tu solicitud.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Enviar el formulario después de mostrar el spinner
+    this.submit();
+  });
+</script>

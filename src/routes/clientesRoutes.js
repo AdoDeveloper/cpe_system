@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const clientesController = require('../controllers/clientesController');
 
+// ruta /clientes/
+
 // Listar clientes
 router.get('/', clientesController.listClientes);
 
@@ -16,9 +18,9 @@ router.post('/new', clientesController.createCliente);
 router.get('/edit/:id', clientesController.renderEditForm);
 
 // Actualizar cliente
-router.post('/edit/:id', clientesController.updateCliente);
+router.put('/edit/:id', clientesController.updateCliente);
 
 // Eliminar cliente
-router.get('/delete/:id', clientesController.deleteCliente);
+router.delete('/delete/:id', clientesController.deleteCliente);
 
 module.exports = router;

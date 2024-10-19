@@ -1,0 +1,72 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Agregar Nuevo Módulo</h1>
+  </div>
+  
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      
+      {{!-- Mostrar errores si existen --}}
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para agregar nuevo módulo --}}
+      <form method="POST" action="/modulos/new" id="moduloForm">
+        
+        <div class="form-group">
+          <label for="nombre">Nombre del Módulo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Módulo" required autofocus>
+        </div>
+        
+        <div class="form-group">
+          <label for="descripcion">Descripción del Módulo</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Módulo" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="activo">Estado</label>
+          <select class="form-control" id="activo" name="activo" required>
+            <option value="" disabled selected>Seleccione el estado</option>
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <button class="btn btn-success btn-block" type="submit">Agregar Módulo</button>
+          <a href="/modulos" class="btn btn-secondary btn-block">Cancelar</a>
+        </div>
+        
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+  // Mostrar el spinner con SweetAlert al enviar el formulario
+  document.getElementById('moduloForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío inmediato del formulario
+    
+    // Mostrar SweetAlert con spinner
+    Swal.fire({
+      title: 'Guardando...',
+      text: 'Por favor, espera mientras se procesa tu solicitud.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Enviar el formulario después de mostrar el spinner
+    this.submit();
+  });
+</script>

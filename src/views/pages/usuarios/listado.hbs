@@ -4,7 +4,7 @@
             <h3>Listado de Usuarios</h3>
         </div>
         <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/usuarios/new" class="btn btn-success mb-2">Agregar Usuario</a>
+            <a href="/usuarios/new" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Agregar Usuario</a>
         </div>
     </div>
 
@@ -32,9 +32,12 @@
                                     <a href="/usuarios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0);" onclick="confirmDeleteUsuario('{{id}}', '{{nombre}}')" class="btn btn-danger btn-sm" title="Eliminar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST" action="/usuarios/delete/{{id}}" style="display:inline;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar" onclick="confirmDeleteUsuario('{{id}}', '{{nombre}}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         {{/each}}
@@ -44,6 +47,7 @@
         </div>
     </div>
 </div>
+
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script>
   function confirmDeleteUsuario(id, nombreUsuario) {
@@ -58,8 +62,8 @@
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Redirigir a la ruta de eliminación si se confirma
-        window.location.href = `/usuarios/delete/${id}`;
+        // Enviar el formulario si se confirma la eliminación
+        document.getElementById(`deleteForm-${id}`).submit();
       }
     });
   }

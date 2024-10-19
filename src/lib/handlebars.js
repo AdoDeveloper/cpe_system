@@ -1,13 +1,26 @@
-// src\lib\handlebars.js
-const helpers = require('handlebars');
+// src/lib/handlebars.js
+const Handlebars = require('handlebars');
 
-// Este helper nos permite comparar 2 valores en la plantilla handlebars
-helpers.registerHelper('eq', function (a, b, options) {
-    return a === b ? options.fn(this) : options.inverse(this);
+// Helper para comparar dos valores
+Handlebars.registerHelper('eq', function (a, b) {
+    const resultado = a === b;
+    console.log(`Comparando: ${a} === ${b} -> ${resultado}`);
+    return resultado;
+});
+
+// Helper para serializar objetos a JSON
+Handlebars.registerHelper('json', function (context) {
+    return new Handlebars.SafeString(JSON.stringify(context));
+});
+
+// Registrar el helper `capitalize`
+Handlebars.registerHelper('capitalize', function(str) {
+    if (typeof str !== 'string') return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
 });
 
 // Helper para formatear fechas en formato dd/mm/aaaa
-helpers.registerHelper('formatDate', function (date) {
+Handlebars.registerHelper('formatDate', function (date) {
     if (!date) return '';
     const d = new Date(date);
     const day = (`0${d.getDate()}`).slice(-2);
@@ -17,7 +30,7 @@ helpers.registerHelper('formatDate', function (date) {
 });
 
 // Helper para formatear fechas en formato aaaa-mm-dd para inputs de tipo date
-helpers.registerHelper('formatDateForInput', function (date) {
+Handlebars.registerHelper('formatDateForInput', function (date) {
     if (!date) return '';
     const d = new Date(date);
     const day = (`0${d.getDate()}`).slice(-2);
@@ -26,4 +39,19 @@ helpers.registerHelper('formatDateForInput', function (date) {
     return `${year}-${month}-${day}`;
 });
 
-module.exports = helpers;
+// Helper para verificar si un array contiene un valor
+Handlebars.registerHelper('contains', function(array, value) {
+    return array && array.includes(value);
+});
+
+// Helper para verificar si un array de módulos contiene un módulo específico
+Handlebars.registerHelper('containsModulos', function(modulos, idModulo) {
+    // Verificar si 'modulos' es un array válido
+    if (!Array.isArray(modulos)) {
+        return false; // Si no es un array, devolver false
+    }
+    return modulos.some(modulo => modulo.id === idModulo); // Verificar si el módulo está presente
+});
+
+
+module.exports = Handlebars;

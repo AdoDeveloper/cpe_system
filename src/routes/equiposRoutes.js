@@ -19,6 +19,8 @@ const upload = multer({
   }
 });
 
+// ruta /equipos/
+
 // Listar equipos
 router.get('/', equiposController.listEquipos);
 
@@ -32,9 +34,9 @@ router.post('/new', upload.single('img_equipo'), equiposController.createEquipo)
 router.get('/edit/:id', equiposController.renderEditForm);
 
 // Actualizar equipo (Permitir actualización de la imagen usando multer)
-router.post('/edit/:id', upload.single('img_equipo'), equiposController.updateEquipo);
+router.put('/edit/:id', upload.single('img_equipo'), equiposController.updateEquipo);
 
 // Eliminar equipo
-router.get('/delete/:id', equiposController.deleteEquipo);
+router.delete('/delete/:id', equiposController.deleteEquipo);
 
 module.exports = router;

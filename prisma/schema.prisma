@@ -29,7 +29,7 @@ model Cliente {
   configs       ConfigCPE[]
   pagos         PagoCliente[]
   facturas      Factura[]
-  movimientos   Movimiento[]
+  movimientos   Movimiento[]       // Relación con Movimiento
 
   usuario       Usuario?          @relation("ClienteUsuario")
 }
@@ -39,6 +39,7 @@ model Usuario {
   email        String   @unique
   password     String
   nombre       String
+  activo       Boolean            @default(false)
   rolId        Int
   clienteId    Int?     @unique // El campo clienteId debe ser único para una relación uno a uno
 
@@ -47,10 +48,39 @@ model Usuario {
 }
 
 model Rol {
-  id       Int      @id @default(autoincrement())
-  nombre   String   @unique
-  
-  usuarios Usuario[]
+  id          Int          @id @default(autoincrement())
+  nombre      String       @unique
+  usuarios    Usuario[]    // Relación uno a muchos con Usuario
+  permisos    RolPermiso[] // Relación muchos a muchos con Permiso a través de RolPermiso
+  modulos     Modulo[]     @relation("RolModulo") // Relación muchos a muchos con Modulo
+}
+
+model Permiso {
+  id          Int          @id @default(autoincrement())
+  ruta        String
+  metodo      String
+  descripcion String
+  tipo        String       // Ejemplo: "lectura", "escritura", etc.
+  modulos     Modulo[]     @relation("ModuloPermiso") // Relación muchos a muchos con Modulo
+  roles       RolPermiso[] // Relación muchos a muchos con Rol a través de RolPermiso
+}
+
+model RolPermiso {
+  rolId       Int
+  permisoId   Int
+  rol         Rol          @relation(fields: [rolId], references: [id])
+  permiso     Permiso      @relation(fields: [permisoId], references: [id])
+
+  @@id([rolId, permisoId]) // Llave compuesta para la tabla intermedia
+}
+
+model Modulo {
+  id          Int        @id @default(autoincrement())
+  nombre      String     @unique
+  descripcion String
+  activo      Boolean    @default(true)
+  roles       Rol[]      @relation("RolModulo")
+  permisos    Permiso[]  @relation("ModuloPermiso") // Relación muchos a muchos con Permiso
 }
 
 model Contrato {
@@ -131,11 +161,12 @@ model Movimiento {
   monto      Float
   concepto   String
   fecha      DateTime     @default(now())
-  id_cliente Int?
-  id_factura Int?
-
-  cliente    Cliente?      @relation(fields: [id_cliente], references: [id])
-  factura    Factura?      @relation(fields: [id_factura], references: [id])
+  
+  clienteId  Int          // Relación directa con Cliente
+  cliente    Cliente      @relation(fields: [clienteId], references: [id]) // Relación inversa hacia Cliente
+  
+  facturaId  Int
+  factura    Factura      @relation(fields: [facturaId], references: [id])
 }
 
 model Factura {

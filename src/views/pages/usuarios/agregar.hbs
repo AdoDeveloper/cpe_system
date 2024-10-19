@@ -15,7 +15,8 @@
         </div>
       {{/if}}
 
-      <form method="POST" action="/usuarios/new">
+      {{!-- Formulario para agregar nuevo usuario --}}
+      <form method="POST" action="/usuarios/new" id="agregarUsuarioForm">
         <label for="email">Correo electrónico</label>
         <div class="form-group">
           <input type="email" class="form-control" name="email" placeholder="example@airlink.com.sv" required autofocus>
@@ -26,7 +27,7 @@
           <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
         </div>
         
-         <label for="nombre">Nombre</label>
+        <label for="nombre">Nombre</label>
         <div class="form-group">
           <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
         </div>
@@ -51,10 +52,20 @@
           </select>
         </div>
         
-        <div class="form-group">
-          <button class="btn btn-success btn-block">Agregar Usuario</button>
+        <div class="form-group text-center mt-4">
+          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+          <a href="/usuarios" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
         </div>
+
       </form>
+
+      <!-- Spinner de carga, oculto inicialmente -->
+      <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Cargando...</span>
+        </div>
+        <p>Procesando solicitud...</p>
+      </div>
     </div>
   </div>
 </div>
@@ -70,5 +81,21 @@
     } else {
       clienteSelectGroup.style.display = 'block'; // Mostrar el campo cliente si no es Admin
     }
+  });
+
+  // Mostrar el spinner al enviar el formulario
+  document.getElementById('agregarUsuarioForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevenir el envío del formulario
+    Swal.fire({
+      title: 'Guardando...',
+      text: 'Por favor, espera mientras se procesa tu solicitud.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Enviar el formulario después de mostrar el spinner
+    this.submit();
   });
 </script>

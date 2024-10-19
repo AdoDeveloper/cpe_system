@@ -6,7 +6,7 @@ const crypto = require('crypto');
 exports.listServicios = async (req, res) => {
     try {
         const servicios = await prisma.servicio.findMany(); // Prisma para obtener los servicios
-        console.log("Datos de servicios: ", servicios); // Verifica que los datos estén presentes
+       // console.log("Datos de servicios: ", servicios); // Verifica que los datos estén presentes
         res.render('pages/servicios/listado', { servicios });
     } catch (error) {
         console.error('Error al listar los servicios:', error);

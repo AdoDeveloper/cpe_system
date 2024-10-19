@@ -5,10 +5,14 @@ const session = require('express-session'); // Para manejar sesiones del usuario
 const flash = require('connect-flash'); // Para manejar mensajes flash en la sesión
 const morgan = require('morgan'); // Middleware para ver las solicitudes en la consola
 const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
+const methodOverride = require('method-override'); // Importar method-override
 
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 
 const app = express(); // Inicializar la aplicación express
+
+// Configurar method-override
+app.use(methodOverride('_method')); // Usa el query parameter
 
 // Ajustes del servidor
 app.set("port", process.env.PORT || 4500); // Establecer el puerto del servidor
@@ -22,7 +26,7 @@ app.engine(
     layoutsDir: path.join(app.get("views"), "layouts"), // Configuración de la ruta de los layouts
     partialsDir: path.join(app.get("views"), "partials"), // Configuración de vistas parciales
     extname: ".hbs", // Configura la extensión que tendrán los archivos
-    helpers: require("./lib/handlebars"), // Configuración de funciones (helpers) personalizadas
+    Handlebars: require("./lib/handlebars"), // Configuración de funciones (helpers) personalizadas
   })
 );
 app.set("view engine", ".hbs"); // Configuración para ejecutar el motor de plantillas
@@ -76,15 +80,20 @@ app.use((req, res, next) => {
 
 // Rutas
 const loginRoutes = require('./routes/loginRoutes');
+const logoutRoute = require('./routes/logoutRoute');
 const serviciosRoutes = require('./routes/serviciosRoutes');
 const homeRoutes = require('./routes/homeRoutes');
 const clientesRoutes = require('./routes/clientesRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
 const equiposRoutes = require('./routes/equiposRoutes');
+const modulosRoutes = require('./routes/modulosRoutes');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
+
+// Ruta pública para logout
+app.use('/logout', authMiddleware, logoutRoute);
 
 // Rutas protegidas para usuarios admin
 app.use('/servicios', authMiddleware, serviciosRoutes);
@@ -92,6 +101,7 @@ app.use('/clientes', authMiddleware, clientesRoutes);
 app.use('/usuarios', authMiddleware, usuariosRoutes);
 app.use('/roles', authMiddleware, rolesRoutes);
 app.use('/equipos',authMiddleware, equiposRoutes);
+app.use('/modulos',authMiddleware, modulosRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 
