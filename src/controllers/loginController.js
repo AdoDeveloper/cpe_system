@@ -12,7 +12,7 @@ loginController.renderLoginForm = (req, res) => {
 
 // Procesa el formulario de login
 loginController.processLogin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
 
   try {
     // Buscar al usuario por email e incluir el rol con el campo esAdmin
@@ -23,39 +23,45 @@ loginController.processLogin = async (req, res) => {
 
     // Verificar si el usuario existe
     if (!usuario) {
-      req.flash('error_msg', 'Credenciales incorrectas'); // Agregar mensaje flash de error
+      req.flash('error_msg', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
 
     // Verificar si el usuario está activo
     if (!usuario.activo) {
-      req.flash('error_msg', 'Cuenta deshabilitada, ponte en contacto con el administrador.'); // Mensaje si la cuenta está deshabilitada
+      req.flash('error_msg', 'Cuenta deshabilitada, ponte en contacto con el administrador.');
       return res.redirect('/login');
     }
 
     // Verificar la contraseña
     const validPassword = await bcrypt.compare(password, usuario.password);
     if (!validPassword) {
-      req.flash('error_msg', 'Credenciales incorrectas'); // Agregar mensaje flash de error
+      req.flash('error_msg', 'Credenciales incorrectas');
       return res.redirect('/login');
     }
 
-    // Guardar el usuario y rol en la sesión
+    // Guardar el usuario en la sesión
     req.session.user = usuario.email;
-    req.session.isAdmin = usuario.rol.esAdmin; // Guardar si es administrador en la sesión
+    req.session.isAdmin = usuario.rol.esAdmin;
 
-    // Agregar mensaje flash de éxito
-    req.flash('success_msg', 'Inicio de sesión exitoso');
+    // Si el checkbox "Recuérdame" está marcado, establecer una cookie persistente
+    if (remember) {
+      // Establecer cookie con una duración de 7 días
+      res.cookie('user_email', usuario.email, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true }); // 7 días
+    } else {
+      // Asegurarse de que no se establezca una cookie persistente
+      res.clearCookie('user_email');
+    }
 
     // Redirigir según si es administrador o no
     if (usuario.rol.esAdmin) {
-      return res.status(200).redirect('/servicios'); // Redirigir a servicios si es administrador
+      return res.status(200).redirect('/servicios');
     } else {
-      return res.status(200).redirect('/'); // Redirigir al home si no es administrador
+      return res.status(200).redirect('/');
     }
   } catch (error) {
     console.error('Error al procesar el login:', error);
-    req.flash('error_msg', 'Error al procesar el login'); // Mensaje flash de error
+    req.flash('error_msg', 'Error al procesar el login');
     return res.status(200).redirect('/login');
   } finally {
     await prisma.$disconnect();
@@ -67,11 +73,12 @@ loginController.logout = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error('Error al cerrar sesión:', err);
-      req.flash('error_msg', 'Error al cerrar sesión'); // Mensaje flash de error 500
+      req.flash('error_msg', 'Error al cerrar sesión');
       return res.redirect('/login');
     }
     res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
-    res.status(200).redirect('/login'); // Redirigir a login después de cerrar sesión
+    res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
+    res.status(200).redirect('/login');
   });
 };
 
