@@ -18,52 +18,47 @@
       {{/if}}
 
       {{!-- Formulario para modificar servicio --}}
-      <form method="POST" action="/servicios/edit/{{servicio.id}}?_method=PUT" id="servicioForm">
+      <form method="POST" action="/servicios/edit/{{servicio.id}}?_method=PUT" id="alertFormEdit">
         
         <div class="form-group">
-          <input type="text" class="form-control" name="servicio" placeholder="Nombre del Servicio" value="{{servicio.servicio}}" required autofocus>
+          <label for="servicio">Nombre del Servicio</label>
+          <input type="text" class="form-control" id="servicio" name="servicio" placeholder="Nombre del Servicio" value="{{servicio.servicio}}" required autofocus>
         </div>
         
         <div class="form-group">
-          <input type="number" step="0.01" class="form-control" name="precio" placeholder="Precio" value="{{servicio.precio}}" required>
+          <label for="precio">Precio</label>
+          <input type="number" step="0.01" class="form-control" id="precio" name="precio" placeholder="Precio" value="{{servicio.precio}}" required>
         </div>
         
         <div class="form-group">
-          <textarea class="form-control" name="descripcion" placeholder="Descripción del Servicio" required>{{servicio.descripcion}}</textarea>
+          <label for="descripcion">Descripción del Servicio</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Servicio" required>{{servicio.descripcion}}</textarea>
         </div>
         
         <div class="form-group">
-          <select class="form-control" name="tipo_pago" required>
+          <label for="tipo_pago">Tipo de pago</label>
+          <select class="form-control" id="tipo_pago" name="tipo_pago" required>
             <option value="" disabled>Seleccione el tipo de pago</option>
             <option value="Mensual" {{#eq servicio.tipo_pago 'Mensual'}}selected{{/eq}}>Mensual</option>
             <option value="Anual" {{#eq servicio.tipo_pago 'Anual'}}selected{{/eq}}>Anual</option>
           </select>
         </div>
+
+        <div class="form-group">
+          <label for="hash">Hash</label>
+          <input type="text" class="form-control" id="hash" name="hash" placeholder="Ingrese el hash" value="{{servicio.hash}}" required>
+        </div>
         
-        <div class="form-group text-center mt-4">
-          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-          <a href="/servicios" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
+        <div class="form-group row">
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+          <div class="col-6 pl-1">
+            <a href="/servicios" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
         </div>
         
       </form>
     </div>
   </div>
 </div>
-
-<script>
-  // Mostrar el spinner al enviar el formulario
-  document.getElementById('servicioForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío del formulario
-    Swal.fire({
-     title: 'Guardando cambios...',
-      text: 'Por favor, espera mientras se procesan los cambios.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
-</script>

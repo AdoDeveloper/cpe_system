@@ -18,7 +18,7 @@
       {{/if}}
 
       {{!-- Formulario para agregar un nuevo equipo CPE --}}
-      <form method="POST" action="/equipos/new" enctype="multipart/form-data" id="equipoForm">
+      <form method="POST" action="/equipos/new" enctype="multipart/form-data" id="alertFormSave">
 
         <div class="form-group">
           <label for="hash">Hash del Equipo</label>
@@ -50,40 +50,16 @@
           <input type="file" class="form-control-file" name="img_equipo" id="img_equipo" accept="image/png, image/jpeg, image/webp" required>
         </div>
 
-        <div class="form-group">
-          <button class="btn btn-success btn-block" type="submit">Agregar Equipo CPE</button>
+        <div class="form-group row">
+          <div class="col-6 pr-1">
+           <button class="btn btn-success btn-block" type="submit">Agregar Equipo CPE</button>
+          </div>
+          <div class="col-6 pl-1">
+            <a href="/equipos" class="btn btn-secondary btn-block">Cancelar</a> <!-- Botón para cancelar -->
+          </div>
         </div>
 
       </form>
-
-      <!-- Spinner de carga, oculto inicialmente -->
-      <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
-        <div class="spinner-border" role="status">
-          <span class="sr-only">Cargando...</span>
-        </div>
-        <p>Procesando solicitud...</p>
-      </div>
-
     </div>
   </div>
 </div>
-
-<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
-<script>
-  document.getElementById('equipoForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío inmediato del formulario
-    
-    // Mostrar SweetAlert con spinner
-    Swal.fire({
-      title: 'Guardando...',
-      text: 'Por favor, espera mientras se procesa tu solicitud.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
-</script>

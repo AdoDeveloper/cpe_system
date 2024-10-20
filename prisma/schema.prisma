@@ -50,6 +50,7 @@ model Usuario {
 model Rol {
   id          Int          @id @default(autoincrement())
   nombre      String       @unique
+  esAdmin     Boolean      @default(false) // Nuevo campo para determinar si el rol es administrador
   usuarios    Usuario[]    // Relación uno a muchos con Usuario
   permisos    RolPermiso[] // Relación muchos a muchos con Permiso a través de RolPermiso
   modulos     Modulo[]     @relation("RolModulo") // Relación muchos a muchos con Modulo

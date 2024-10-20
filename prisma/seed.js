@@ -70,6 +70,7 @@ async function main() {
     const adminRole = await prisma.rol.create({
       data: {
         nombre: 'Administrador',
+        esAdmin: true,
         modulos: {
           connect: [
             { id: dashboardModulo.id },

@@ -64,7 +64,7 @@ app.use((req, res, next) => {
 
   // Determinar el layout según si el usuario está autenticado y su rol
   if (req.session.user) {
-    if (req.session.role === 'Administrador') {
+    if (req.session.isAdmin) { // Validar si es admin con el campo `isAdmin`
       res.locals.layout = 'main'; // Layout principal para admin
       res.locals.isAdmin = true; // Variable para validar si es admin
     } else {
@@ -100,8 +100,8 @@ app.use('/servicios', authMiddleware, serviciosRoutes);
 app.use('/clientes', authMiddleware, clientesRoutes);
 app.use('/usuarios', authMiddleware, usuariosRoutes);
 app.use('/roles', authMiddleware, rolesRoutes);
-app.use('/equipos',authMiddleware, equiposRoutes);
-app.use('/modulos',authMiddleware, modulosRoutes);
+app.use('/equipos', authMiddleware, equiposRoutes);
+app.use('/modulos', authMiddleware, modulosRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 

@@ -1,19 +1,17 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const crypto = require('crypto');
 
 // Controlador para listar los servicios
 exports.listServicios = async (req, res) => {
     try {
-        const servicios = await prisma.servicio.findMany(); // Prisma para obtener los servicios
-       // console.log("Datos de servicios: ", servicios); // Verifica que los datos estén presentes
+        const servicios = await prisma.servicio.findMany(); // Obtener servicios
         res.render('pages/servicios/listado', { servicios });
     } catch (error) {
         console.error('Error al listar los servicios:', error);
-        req.flash('error_msg', 'Error al listar los servicios.'); // Guardar el mensaje de error flash
-        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
+        req.flash('error_msg', 'Error al listar los servicios.');
+        return res.status(500).redirect('/servicios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
@@ -25,13 +23,13 @@ exports.renderCreateForm = (req, res) => {
 // Controlador para crear un nuevo servicio
 exports.createServicio = async (req, res) => {
   try {
-      // Extraer los datos del formulario
-      const { servicio, precio, descripcion, tipo_pago } = req.body;
-      
-      // Generar un hash único para el nuevo servicio
-      const hash = crypto.randomBytes(16).toString('hex');
-      
-      // Crear el nuevo servicio en la base de datos
+      const { servicio, precio, descripcion, tipo_pago, hash } = req.body;
+
+      if (!hash) {
+          req.flash('error_msg', 'El campo hash es obligatorio.');
+          return res.redirect('/servicios/new');
+      }
+
       await prisma.servicio.create({
           data: {
               servicio,
@@ -41,16 +39,15 @@ exports.createServicio = async (req, res) => {
               hash
           }
       });
-      
-      // Redirigir a la lista de servicios después de crear el servicio
+
       req.flash('success_msg', 'Servicio creado exitosamente.');
       res.status(201).redirect('/servicios');
   } catch (error) {
       console.error('Error al crear el servicio:', error);
-      req.flash('error_msg', 'Error al crear el servicio.'); // Guardar el mensaje de error flash
-      return res.status(500).redirect('/servicios'); // Redirigir con estado 500
+      req.flash('error_msg', 'Error al crear el servicio.');
+      return res.status(500).redirect('/servicios');
   } finally {
-    await prisma.$disconnect(); // Cierra la conexión
+    await prisma.$disconnect();
   }
 };
 
@@ -65,35 +62,43 @@ exports.renderEditForm = async (req, res) => {
         res.render('pages/servicios/modificar', { action: 'edit', servicio, errors: [] });
     } catch (error) {
         console.error('Error al obtener el servicio para editar:', error);
-        req.flash('error_msg', 'Error al obtener el servicio.'); // Guardar el mensaje de error flash
-        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
+        req.flash('error_msg', 'Error al obtener el servicio.');
+        return res.status(500).redirect('/servicios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
-// Controlador para actualizar un servicio existente
+// Controlador para actualizar un servicio existente (incluyendo el hash)
 exports.updateServicio = async (req, res) => {
     try {
         const { id } = req.params;
-        const { servicio, precio, descripcion, tipo_pago } = req.body;
+        const { servicio, precio, descripcion, tipo_pago, hash } = req.body;
+
+        if (!hash) {
+            req.flash('error_msg', 'El campo hash es obligatorio.');
+            return res.redirect(`/servicios/edit/${id}`);
+        }
+
         await prisma.servicio.update({
             where: { id: parseInt(id) },
             data: {
                 servicio,
                 precio: parseFloat(precio),
                 descripcion,
-                tipo_pago
+                tipo_pago,
+                hash // Incluir el hash actualizado
             }
         });
+
         req.flash('success_msg', 'Servicio actualizado exitosamente.');
         res.status(201).redirect('/servicios');
     } catch (error) {
         console.error('Error al actualizar el servicio:', error);
-        req.flash('error_msg', 'Error al actualizar el servicio.'); // Guardar el mensaje de error flash
-        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
+        req.flash('error_msg', 'Error al actualizar el servicio.');
+        return res.status(500).redirect('/servicios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
@@ -106,9 +111,9 @@ exports.deleteServicio = async (req, res) => {
         res.status(200).redirect('/servicios');
     } catch (error) {
         console.error('Error al eliminar el servicio:', error);
-        req.flash('error_msg', 'Error al eliminar el servicio.'); // Guardar el mensaje de error flash
-        return res.status(500).redirect('/servicios'); // Redirigir con estado 500
+        req.flash('error_msg', 'Error al eliminar el servicio.');
+        return res.status(500).redirect('/servicios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };

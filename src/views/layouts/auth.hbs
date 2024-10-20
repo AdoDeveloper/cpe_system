@@ -12,30 +12,34 @@
   <link rel="stylesheet" href="/plugins/bootstrap/css/bootstrap.min.css">
 </head>
 <body class="hold-transition login-page">
-  {{> messages}}
-  <div class="login-box">
-    <div class="login-logo">
-      <a href="#"><b  class="text-bold">Airlink</b> WISP</a>
+<div class="login-box">
+  <!-- /.login-logo -->
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <div class="login-logo" style="margin-bottom: 0;"> <!-- Remover el margen inferior -->
+        <a href="#"><b class="text-bold">Airlink</b> WISP</a>
+      </div>
     </div>
     <!-- /.login-logo -->
-    <div class="card elevation-3">
-      <div class="card-body login-card-body">
-        
-        <img src="https://res.cloudinary.com/dldgicsdi/image/upload/v1729269371/img/login.webp" class="img-fluid mx-auto d-block elevation-1 login-image mb-3" alt="Image">
-        
-        <p class="login-box-msg">Ingresa tus credenciales</p>
-        
-        {{{body}}} <!-- El contenido del formulario de login se inyectará aquí -->
-      </div>
-      <!-- /.login-card-body -->
+    <div class="card-body login-card-body">
+      {{> messages}} <!-- Aquí se incluirán los mensajes de error o éxito -->
+      
+      <img src="https://res.cloudinary.com/dldgicsdi/image/upload/v1729269371/img/login.webp" class="img-fluid mx-auto d-block elevation-1 login-image mb-3" alt="Login Image">
+      
+      <p class="login-box-msg">Ingresa tus credenciales</p>
+      
+      {{{body}}} <!-- El contenido del formulario de login se inyectará aquí -->
+      
     </div>
+    <!-- /.login-card-body -->
   </div>
-  
-  <!-- jQuery -->
-  <script src="/plugins/jquery/jquery.min.js"></script>
-  <!-- Bootstrap 4 -->
-  <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <!-- AdminLTE App -->
-  <script src="/dist/js/adminlte.min.js"></script>
+</div>
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
 </body>
 </html>

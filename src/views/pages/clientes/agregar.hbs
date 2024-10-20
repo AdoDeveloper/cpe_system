@@ -1,4 +1,4 @@
-<div class="container p-4">
+<div class="container p-4"> 
   <div class="row justify-content-center">
     <h1>Agregar Nuevo Cliente</h1>
   </div>
@@ -18,66 +18,48 @@
       {{/if}}
 
       {{!-- Formulario para agregar un nuevo cliente --}}
-      <form method="POST" action="/clientes/new" id="clienteForm">
+      <form method="POST" action="/clientes/new" id="alertFormSave">
 
         <div class="form-group">
-          <input type="text" class="form-control" name="nombres" placeholder="Nombres" value="" required autofocus>
+          <label for="nombres">Nombres</label>
+          <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Ejemplo: Juan Carlos" value="" required autofocus>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="apellidos" placeholder="Apellidos" value="" required>
+          <label for="apellidos">Apellidos</label>
+          <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Ejemplo: Pérez García" value="" required>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="alias" placeholder="Alias" value="" required>
+          <label for="alias">Alias</label>
+          <input type="text" class="form-control" id="alias" name="alias" placeholder="Ejemplo: FAMILIA PEREZ" value="" required>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="telefono" placeholder="Teléfono" value="" required>
+          <label for="telefono">Teléfono</label>
+          <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ejemplo: 12345678" value="" required>
         </div>
 
         <div class="form-group">
-          <input type="email" class="form-control" name="correo" placeholder="Correo Electrónico" value="" required>
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" class="form-control" id="correo" name="correo" placeholder="Ejemplo: juan.perez@gmail.com" value="" required>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="dui" placeholder="DUI" value="" required>
+          <label for="dui">DUI</label>
+          <input type="text" class="form-control" id="dui" name="dui" placeholder="Ejemplo: 01234567-8" value="" required>
         </div>
 
-        <div class="form-group">
-          <button class="btn btn-success btn-block" type="submit">Agregar Cliente</button>
+        <div class="form-group row">
+            <div class="col-6 pr-1">
+              <button class="btn btn-success btn-block" type="submit">Agregar Cliente</button>
+            </div>
+            <div class="col-6 pl-1">
+              <a href="/clientes" class="btn btn-secondary btn-block">Cancelar</a> <!-- Botón para cancelar -->
+            </div>
         </div>
 
       </form>
-
-      <!-- Spinner de carga, oculto inicialmente -->
-      <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
-        <div class="spinner-border" role="status">
-          <span class="sr-only">Cargando...</span>
-        </div>
-        <p>Procesando solicitud...</p>
-      </div>
-
     </div>
   </div>
 </div>
-
-<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
-<script>
-  document.getElementById('clienteForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío inmediato del formulario
-    
-    // Mostrar SweetAlert con spinner
-    Swal.fire({
-      title: 'Guardando...',
-      text: 'Por favor, espera mientras se procesa tu solicitud.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
-</script>

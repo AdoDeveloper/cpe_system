@@ -18,10 +18,20 @@
       {{/if}}
 
       {{!-- Formulario para modificar rol --}}
-      <form method="POST" action="/roles/edit/{{rol.id}}?_method=PUT" id="rolForm">
+      <form method="POST" action="/roles/edit/{{rol.id}}?_method=PUT" id="alertFormEdit">
         
         <div class="form-group">
-          <input type="text" class="form-control" name="nombre" placeholder="Nombre del Rol" value="{{rol.nombre}}" required autofocus>
+          <label>Nombre del Rol</label>
+          <input type="text" class="form-control" name="nombre" placeholder="Nombre" value="{{rol.nombre}}" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 1.2em;">¿Es un rol de Administrador?</label><br>
+          <label class="switch">
+            <input type="checkbox" name="esAdmin" {{#if rol.esAdmin}}checked{{/if}}>
+            <span class="slider round"></span>
+          </label><br>
+          <small class="text-danger" style="font-size: 1.1em;">* Esto da acceso a rutas de administrador</small>
         </div>
 
         {{!-- Permisos --}}
@@ -76,9 +86,13 @@
           <button type="button" class="btn btn-info mt-2" onclick="agregarPermiso()">Agregar Ruta</button>
         </div>
 
-        <div class="form-group text-center mt-4">
-          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-          <a href="/roles" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
+        <div class="form-group row">
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+          <div class="col-6 pl-1">
+            <a href="/roles" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
         </div>
 
       </form>
@@ -144,21 +158,4 @@
     permisoElement.remove();
   }
 
-  // Mostrar SweetAlert2 spinner al enviar el formulario
-  document.getElementById('rolForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío automático
-
-    // Mostrar spinner con SweetAlert2
-    Swal.fire({
-      title: 'Guardando cambios...',
-      text: 'Por favor, espera mientras se procesan los cambios.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
 </script>

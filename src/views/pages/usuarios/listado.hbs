@@ -18,6 +18,7 @@
                             <th>NOMBRE</th>
                             <th>CORREO</th>
                             <th>ROL</th>
+                            <th>ESTADO</th>
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
@@ -28,6 +29,13 @@
                                 <td>{{nombre}}</td>
                                 <td>{{email}}</td>
                                 <td>{{rol.nombre}}</td>
+                                <td>
+                                    {{#if activo}}
+                                        <span class="badge badge-success">Activo</span>
+                                    {{else}}
+                                        <span class="badge badge-danger">Inactivo</span>
+                                    {{/if}}
+                                </td>
                                 <td>
                                     <a href="/usuarios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>

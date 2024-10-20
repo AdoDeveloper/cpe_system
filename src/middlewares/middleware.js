@@ -107,8 +107,8 @@ module.exports = {
   // Middleware para redirigir al dashboard si el usuario está autenticado
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
-      // Si el usuario está autenticado, redirigir según su rol
-      if (req.session.role === 'Administrador') {
+      // Verificar si el rol del usuario tiene la propiedad `esAdmin`
+      if (req.session.role?.esAdmin) {
         return res.redirect('/servicios');
       }
       return res.redirect('/'); // Redirigir a la página de usuario normal

@@ -53,5 +53,9 @@ Handlebars.registerHelper('containsModulos', function(modulos, idModulo) {
     return modulos.some(modulo => modulo.id === idModulo); // Verificar si el módulo está presente
 });
 
+// Definir helper 'and' para Handlebars
+Handlebars.registerHelper('and', function (a, b) {
+    return a && b;
+  });
 
 module.exports = Handlebars;

@@ -37,7 +37,7 @@ exports.renderCreateForm = async (req, res) => {
 // Controlador para crear un nuevo usuario
 exports.createUsuario = async (req, res) => {
     try {
-        const { email, password, nombre, rolId, clienteId } = req.body;
+        const { email, password, nombre, rolId, clienteId, activo } = req.body;
 
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -51,7 +51,7 @@ exports.createUsuario = async (req, res) => {
             clienteIdValue = parseInt(clienteId);
         }
 
-        // Crear el usuario con los datos proporcionados
+        // Crear el usuario con los datos proporcionados, incluyendo el estado (activo)
         await prisma.usuario.create({
             data: {
                 email,
@@ -59,6 +59,7 @@ exports.createUsuario = async (req, res) => {
                 nombre,
                 rolId: parseInt(rolId),
                 clienteId: clienteIdValue, // Relación con cliente si aplica
+                activo: activo === 'true' // Guardar el estado como booleano
             },
         });
         req.flash('success_msg', 'Usuario creado exitosamente.');
@@ -98,7 +99,7 @@ exports.renderEditForm = async (req, res) => {
 exports.updateUsuario = async (req, res) => {
     try {
         const { id } = req.params;
-        const { email, nombre, rolId, clienteId, currentPassword, newPassword, confirmPassword } = req.body;
+        const { email, nombre, rolId, clienteId, activo, currentPassword, newPassword, confirmPassword } = req.body;
 
         // Buscar al usuario actual en la base de datos
         const usuario = await prisma.usuario.findUnique({ where: { id: parseInt(id) }, include: { rol: true } });
@@ -141,7 +142,8 @@ exports.updateUsuario = async (req, res) => {
                     nombre, 
                     rolId: parseInt(rolId), 
                     clienteId: clienteId ? parseInt(clienteId) : null,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    activo: activo === 'true' // Actualizar el estado
                 },
             });
         } else {
@@ -170,7 +172,8 @@ exports.updateUsuario = async (req, res) => {
                 email,
                 nombre,
                 rolId: parseInt(rolId),
-                clienteId: clienteId ? parseInt(clienteId) : null
+                clienteId: clienteId ? parseInt(clienteId) : null,
+                activo: activo === 'true' // Actualizar el estado
             };
 
             if (rolId === '1') { // Si el rol es Administrador, desvincular cliente

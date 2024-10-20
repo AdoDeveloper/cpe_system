@@ -18,64 +18,48 @@
       {{/if}}
 
       {{!-- Formulario para modificar cliente --}}
-      <form method="POST" action="/clientes/edit/{{cliente.id}}?_method=PUT" id="clienteForm">
+      <form method="POST" action="/clientes/edit/{{cliente.id}}?_method=PUT" id="alertFormEdit">
 
         <div class="form-group">
-          <input type="text" class="form-control" name="nombres" placeholder="Nombres" value="{{cliente.nombres}}" required autofocus>
-        </div>
-
-        <div class="form-group">
-          <input type="text" class="form-control" name="apellidos" placeholder="Apellidos" value="{{cliente.apellidos}}" required>
+          <label for="nombres">Nombres</label>
+          <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Ejemplo: Juan Carlos" value="{{cliente.nombres}}" required autofocus>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="alias" placeholder="Alias" value="{{cliente.alias}}" required>
+          <label for="apellidos">Apellidos</label>
+          <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Ejemplo: Pérez García" value="{{cliente.apellidos}}" required>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="telefono" placeholder="Teléfono" value="{{cliente.telefono}}" required>
+          <label for="alias">Alias</label>
+          <input type="text" class="form-control" id="alias" name="alias" placeholder="Ejemplo: FAMILIA PEREZ" value="{{cliente.alias}}" required>
         </div>
 
         <div class="form-group">
-          <input type="email" class="form-control" name="correo" placeholder="Correo Electrónico" value="{{cliente.correo}}" required>
+          <label for="telefono">Teléfono</label>
+          <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ejemplo: 12345678" value="{{cliente.telefono}}" required>
         </div>
 
         <div class="form-group">
-          <input type="text" class="form-control" name="dui" placeholder="DUI" value="{{cliente.dui}}" required>
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" class="form-control" id="correo" name="correo" placeholder="Ejemplo: juan.perez@gmail.com" value="{{cliente.correo}}" required>
         </div>
-        
+
         <div class="form-group">
-          <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          <label for="dui">DUI</label>
+          <input type="text" class="form-control" id="dui" name="dui" placeholder="Ejemplo: 01234567-8" value="{{cliente.dui}}" required>
         </div>
+
+        <div class="form-group row">
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+          <div class="col-6 pl-1">
+            <a href="/clientes" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
+        </div>
+
       </form>
-
-      <!-- Spinner de carga, oculto inicialmente -->
-      <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
-        <div class="spinner-border" role="status">
-          <span class="sr-only">Cargando...</span>
-        </div>
-        <p>Procesando solicitud...</p>
-      </div>
     </div>
   </div>
 </div>
-
-<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
-<script>
-  document.getElementById('clienteForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío del formulario
-
-    // Mostrar el spinner de SweetAlert2
-    Swal.fire({
-      title: 'Guardando cambios...',
-      text: 'Por favor, espera mientras se procesan los cambios.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
-</script>

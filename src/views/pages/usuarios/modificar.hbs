@@ -16,15 +16,15 @@
       {{/if}}
 
       {{!-- Formulario para modificar usuario --}}
-      <form method="POST" action="/usuarios/edit/{{usuario.id}}?_method=PUT" id="modificarUsuarioForm">
+      <form method="POST" action="/usuarios/edit/{{usuario.id}}?_method=PUT" id="alertFormEdit">
         <label for="email">Correo electrónico</label>
         <div class="form-group">
           <input type="email" class="form-control" name="email" value="{{usuario.email}}" placeholder="example@airlink.com.sv" required autofocus>
         </div>
-        
+
         <label for="nombre">Nombre</label>
         <div class="form-group">
-          <input type="text" class="form-control" name="nombre" value="{{usuario.nombre}}" placeholder="Nombre" required>
+          <input type="text" class="form-control" name="nombre" value="{{usuario.nombre}}" placeholder="Juan Pérez" required>
         </div>
 
         <div class="form-group">
@@ -32,7 +32,7 @@
           <select class="form-control" name="rolId" id="rolSelect" required>
             <option value="" disabled>Seleccione un rol</option>
             {{#each roles}}
-              <option value="{{this.id}}" {{#eq this.id ../usuario.rolId}}selected{{/eq}}>{{this.nombre}}</option>
+              <option value="{{this.id}}" {{#if (eq this.id ../usuario.rolId)}}selected{{/if}}>{{this.nombre}}</option>
             {{/each}}
           </select>
         </div>
@@ -42,8 +42,16 @@
           <select class="form-control" name="clienteId">
             <option value="" disabled selected>Seleccione un cliente</option>
             {{#each clientes}}
-              <option value="{{this.id}}" {{#eq this.id ../usuario.clienteId}}selected{{/eq}}>{{this.nombres}} {{this.apellidos}}</option>
+              <option value="{{this.id}}" {{#if (eq this.id ../usuario.clienteId)}}selected{{/if}}>{{this.nombres}} {{this.apellidos}}</option>
             {{/each}}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <select class="form-control" name="activo" required>
+            <option value="true" {{#if usuario.activo}}selected{{/if}}>Activo</option>
+            <option value="false" {{#unless usuario.activo}}selected{{/unless}}>Inactivo</option>
           </select>
         </div>
 
@@ -61,10 +69,14 @@
           <label for="confirmPassword">Confirmar nueva contraseña</label>
           <input type="password" class="form-control" name="confirmPassword" placeholder="Confirme la nueva contraseña">
         </div>
-        
-       <div class="form-group text-center mt-4">
-          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-          <a href="/usuarios" class="btn btn-secondary ml-2">Cancelar</a> <!-- Botón para cancelar -->
+
+        <div class="form-group row">
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+          <div class="col-6 pl-1">
+            <a href="/usuarios" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
         </div>
       </form>
     </div>
@@ -76,8 +88,8 @@
   document.getElementById('rolSelect').addEventListener('change', function() {
     const selectedRole = this.options[this.selectedIndex].text;
     const clienteSelectGroup = document.getElementById('clienteSelectGroup');
-    
-    if (selectedRole === 'Administrador') {
+
+    if (selectedRole.toLowerCase() === 'administrador') {
       clienteSelectGroup.style.display = 'none'; // Ocultar el campo cliente si es Admin
     } else {
       clienteSelectGroup.style.display = 'block'; // Mostrar el campo cliente si no es Admin
@@ -89,27 +101,11 @@
     const rolSelect = document.getElementById('rolSelect');
     const selectedRole = rolSelect.options[rolSelect.selectedIndex].text;
     const clienteSelectGroup = document.getElementById('clienteSelectGroup');
-    
-    if (selectedRole === 'Administrador') {
+
+    if (selectedRole.toLowerCase() === 'administrador') {
       clienteSelectGroup.style.display = 'none'; // Ocultar si el rol inicial es Admin
     } else {
       clienteSelectGroup.style.display = 'block'; // Mostrar si el rol inicial no es Admin
     }
   };
-
-  // Mostrar el spinner al enviar el formulario
-  document.getElementById('modificarUsuarioForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevenir el envío del formulario
-    Swal.fire({
-      title: 'Guardando cambios...',
-      text: 'Por favor, espera mientras se procesan los cambios.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Enviar el formulario después de mostrar el spinner
-    this.submit();
-  });
 </script>
