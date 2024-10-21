@@ -23,20 +23,14 @@ exports.renderCreateForm = (req, res) => {
 // Controlador para crear un nuevo servicio
 exports.createServicio = async (req, res) => {
   try {
-      const { servicio, precio, descripcion, tipo_pago, hash } = req.body;
-
-      if (!hash) {
-          req.flash('error_msg', 'El campo hash es obligatorio.');
-          return res.redirect('/servicios/new');
-      }
+      const { servicio, precio, descripcion, tipo_pago} = req.body;
 
       await prisma.servicio.create({
           data: {
               servicio,
               precio: parseFloat(precio),
               descripcion,
-              tipo_pago,
-              hash
+              tipo_pago
           }
       });
 
@@ -69,16 +63,11 @@ exports.renderEditForm = async (req, res) => {
     }
 };
 
-// Controlador para actualizar un servicio existente (incluyendo el hash)
+// Controlador para actualizar un servicio existente
 exports.updateServicio = async (req, res) => {
     try {
         const { id } = req.params;
-        const { servicio, precio, descripcion, tipo_pago, hash } = req.body;
-
-        if (!hash) {
-            req.flash('error_msg', 'El campo hash es obligatorio.');
-            return res.redirect(`/servicios/edit/${id}`);
-        }
+        const { servicio, precio, descripcion, tipo_pago} = req.body;
 
         await prisma.servicio.update({
             where: { id: parseInt(id) },
@@ -86,8 +75,7 @@ exports.updateServicio = async (req, res) => {
                 servicio,
                 precio: parseFloat(precio),
                 descripcion,
-                tipo_pago,
-                hash // Incluir el hash actualizado
+                tipo_pago
             }
         });
 

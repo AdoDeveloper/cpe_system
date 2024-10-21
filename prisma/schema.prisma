@@ -16,14 +16,12 @@ generator client {
 
 model Cliente {
   id            Int               @id @default(autoincrement())
-  hash          String            @unique
   nombres       String
   apellidos     String
   alias         String
   telefono      String
   correo        String
   dui           String
-  cpe_hash      String?
 
   contratos     Contrato[]
   configs       ConfigCPE[]
@@ -39,9 +37,9 @@ model Usuario {
   email        String   @unique
   password     String
   nombre       String
-  activo       Boolean            @default(false)
+  activo       Boolean  @default(false)
   rolId        Int
-  clienteId    Int?     @unique // El campo clienteId debe ser único para una relación uno a uno
+  clienteId    Int?     @unique // Relación uno a uno con Cliente
 
   cliente      Cliente? @relation("ClienteUsuario", fields: [clienteId], references: [id])
   rol          Rol      @relation(fields: [rolId], references: [id])
@@ -50,10 +48,10 @@ model Usuario {
 model Rol {
   id          Int          @id @default(autoincrement())
   nombre      String       @unique
-  esAdmin     Boolean      @default(false) // Nuevo campo para determinar si el rol es administrador
+  esAdmin     Boolean      @default(false) // Nuevo campo para rol administrador
   usuarios    Usuario[]    // Relación uno a muchos con Usuario
-  permisos    RolPermiso[] // Relación muchos a muchos con Permiso a través de RolPermiso
-  modulos     Modulo[]     @relation("RolModulo") // Relación muchos a muchos con Modulo
+  permisos    RolPermiso[] // Relación muchos a muchos con Permiso
+  modulos     Modulo[]     @relation("RolModulo")
 }
 
 model Permiso {
@@ -62,8 +60,8 @@ model Permiso {
   metodo      String
   descripcion String
   tipo        String       // Ejemplo: "lectura", "escritura", etc.
-  modulos     Modulo[]     @relation("ModuloPermiso") // Relación muchos a muchos con Modulo
-  roles       RolPermiso[] // Relación muchos a muchos con Rol a través de RolPermiso
+  modulos     Modulo[]     @relation("ModuloPermiso")
+  roles       RolPermiso[] // Relación muchos a muchos con Rol
 }
 
 model RolPermiso {
@@ -72,7 +70,7 @@ model RolPermiso {
   rol         Rol          @relation(fields: [rolId], references: [id])
   permiso     Permiso      @relation(fields: [permisoId], references: [id])
 
-  @@id([rolId, permisoId]) // Llave compuesta para la tabla intermedia
+  @@id([rolId, permisoId]) // Llave compuesta
 }
 
 model Modulo {
@@ -81,7 +79,7 @@ model Modulo {
   descripcion String
   activo      Boolean    @default(true)
   roles       Rol[]      @relation("RolModulo")
-  permisos    Permiso[]  @relation("ModuloPermiso") // Relación muchos a muchos con Permiso
+  permisos    Permiso[]  @relation("ModuloPermiso")
 }
 
 model Contrato {
@@ -98,7 +96,6 @@ model Contrato {
 
 model Servicio {
   id          Int                  @id @default(autoincrement())
-  hash        String               @unique
   servicio    String
   precio      Float
   descripcion String
@@ -119,7 +116,6 @@ model ContratoServicio {
 
 model EquipoCPE {
   id            Int                @id @default(autoincrement())
-  hash          String             @unique
   img_equipo    String
   nombre_equipo String
   marca         String
@@ -132,7 +128,6 @@ model EquipoCPE {
 
 model ConfigCPE {
   id               Int              @id @default(autoincrement())
-  hash             String           @unique
   user_antena      String
   pass_antena      String
   ip_antena        String

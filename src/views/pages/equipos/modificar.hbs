@@ -20,10 +20,10 @@
       {{!-- Formulario para modificar equipo CPE --}}
       <form method="POST" action="/equipos/edit/{{equipo.id}}?_method=PUT" enctype="multipart/form-data" id="alertFormEdit">
 
-        <div class="form-group">
+        {{!-- <div class="form-group">
           <label for="hash">Hash del Equipo</label>
           <input type="text" class="form-control" id="hash" name="hash" value="{{equipo.hash}}" readonly>
-        </div>
+        </div> --}}
 
         <div class="form-group">
           <label for="nombre_equipo">Nombre del Equipo</label>

@@ -27,13 +27,13 @@ const upload = multer({
   }
 });
 
-// Función para subir archivos a Cloudinary con el hash como nombre de archivo
-const uploadFileToCloudinary = async (file, folder, hash) => {
+// Función para subir archivos a Cloudinary con el nombre_equipo como nombre de archivo
+const uploadFileToCloudinary = async (file, folder, nombre_equipo) => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream({
       folder: folder,
       format: 'webp', // Formato estandarizado
-      public_id: hash // Usar el hash como el nombre público del archivo
+      public_id: nombre_equipo // Usar el hash como el nombre público del archivo
     }, (error, result) => {
       if (error) {
         reject(error);
@@ -71,10 +71,10 @@ exports.renderCreateForm = (req, res) => {
 
 exports.createEquipo = async (req, res) => {
   try {
-    const { nombre_equipo, marca, tipo, descripcion, hash } = req.body;
+    const { nombre_equipo, marca, tipo, descripcion } = req.body;
 
     // Subir imagen a Cloudinary usando el hash como nombre del archivo
-    const result = await uploadFileToCloudinary(req.file, 'equiposCPE', hash);
+    const result = await uploadFileToCloudinary(req.file, 'equiposCPE', nombre_equipo);
 
     // Crear equipo en la base de datos
     await prisma.equipoCPE.create({
@@ -84,7 +84,6 @@ exports.createEquipo = async (req, res) => {
         tipo,
         descripcion,
         img_equipo: result.secure_url, // URL de la imagen en Cloudinary
-        hash, // Almacenar el hash como identificador del archivo
       },
     });
 
@@ -112,8 +111,8 @@ exports.renderEditForm = async (req, res) => {
 exports.updateEquipo = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre_equipo, marca, tipo, descripcion, hash } = req.body;
-    let updatedData = { nombre_equipo, marca, tipo, descripcion, hash };
+    const { nombre_equipo, marca, tipo, descripcion } = req.body;
+    let updatedData = { nombre_equipo, marca, tipo, descripcion };
 
     const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
 
@@ -121,11 +120,11 @@ exports.updateEquipo = async (req, res) => {
     if (req.file) {
       // Eliminar la imagen antigua si existe
       if (equipo.img_equipo) {
-        await deleteFileFromCloudinary('equiposCPE', equipo.hash);
+        await deleteFileFromCloudinary('equiposCPE', equipo.nombre_equipo);
       }
 
       // Subir la nueva imagen a Cloudinary usando el hash como nombre del archivo
-      const result = await uploadFileToCloudinary(req.file, 'equiposCPE', hash);
+      const result = await uploadFileToCloudinary(req.file, 'equiposCPE', nombre_equipo);
       updatedData.img_equipo = result.secure_url;
     }
 
@@ -150,7 +149,7 @@ exports.deleteEquipo = async (req, res) => {
 
     // Eliminar la imagen de Cloudinary si existe
     if (equipo.img_equipo) {
-      await deleteFileFromCloudinary('equiposCPE', equipo.hash);
+      await deleteFileFromCloudinary('equiposCPE', equipo.nombre_equipo);
     }
 
     await prisma.equipoCPE.delete({ where: { id: parseInt(id) } });

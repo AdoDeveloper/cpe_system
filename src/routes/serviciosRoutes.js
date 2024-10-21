@@ -12,15 +12,13 @@ router.get('/', serviciosController.listServicios);
 router.get('/new', serviciosController.renderCreateForm);
 
 // Ruta para crear un nuevo servicio
-router.post('/new', [
-], serviciosController.createServicio);
+router.post('/new', serviciosController.createServicio);
 
 // Ruta para mostrar el formulario de edición de un servicio
 router.get('/edit/:id', serviciosController.renderEditForm);
 
 // Ruta para actualizar un servicio
-router.put('/edit/:id', [
-], serviciosController.updateServicio);
+router.put('/edit/:id', serviciosController.updateServicio);
 
 // Ruta para eliminar un servicio
 router.delete('/delete/:id', serviciosController.deleteServicio);

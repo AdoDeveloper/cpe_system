@@ -26,22 +26,17 @@ exports.renderCreateForm = (req, res) => {
 exports.createCliente = async (req, res) => {
   try {
       // Extraer los datos del formulario
-      const { nombres, apellidos, alias, telefono, correo, dui, cpe_hash } = req.body;
-      
-      // Generar un hash único para el nuevo cliente
-      const hash = crypto.randomBytes(16).toString('hex');
-      
+      const { nombres, apellidos, alias, telefono, correo, dui} = req.body;
+
       // Crear el nuevo cliente en la base de datos
       await prisma.cliente.create({
           data: {
-              hash,
               nombres,
               apellidos,
               alias,
               telefono,
               correo,
-              dui,
-              cpe_hash: cpe_hash || null
+              dui
           }
       });
       
@@ -77,7 +72,7 @@ exports.renderEditForm = async (req, res) => {
 exports.updateCliente = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombres, apellidos, alias, telefono, correo, dui, cpe_hash } = req.body;
+        const { nombres, apellidos, alias, telefono, correo, dui } = req.body;
         await prisma.cliente.update({
             where: { id: parseInt(id) },
             data: {
@@ -86,8 +81,7 @@ exports.updateCliente = async (req, res) => {
                 alias,
                 telefono,
                 correo,
-                dui,
-                cpe_hash: cpe_hash || null
+                dui
             }
         });
         req.flash('success_msg', 'Cliente actualizado exitosamente.');

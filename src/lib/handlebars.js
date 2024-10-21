@@ -53,9 +53,15 @@ Handlebars.registerHelper('containsModulos', function(modulos, idModulo) {
     return modulos.some(modulo => modulo.id === idModulo); // Verificar si el módulo está presente
 });
 
+// Helper para verificar si un servicio está en la lista de servicios del contrato
+Handlebars.registerHelper('containsServicios', function(servicios, idServicio) {
+    return servicios.some(servicio => servicio.servicioId === idServicio);
+});
+
+
 // Definir helper 'and' para Handlebars
 Handlebars.registerHelper('and', function (a, b) {
     return a && b;
-  });
+});
 
 module.exports = Handlebars;

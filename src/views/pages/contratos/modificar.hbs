@@ -1,0 +1,65 @@
+<div class="container p-4">
+    <div class="row justify-content-center">
+        <h1>Modificar Contrato</h1>
+    </div>
+  
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+        
+            {{#if errors}}
+                <div class="alert alert-danger">
+                    <ul>
+                        {{#each errors}}
+                            <li>{{this.msg}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{/if}}
+
+            <form method="POST" action="/contratos/edit/{{contrato.id}}?_method=PUT" id="alertFormEdit">
+                <div class="form-group">
+                    <label for="clienteId">Cliente</label>
+                    <select class="form-control" name="clienteId" required>
+                        {{#each clientes}}
+                            <option value="{{this.id}}" {{#eq this.id ../contrato.clienteId}}selected{{/eq}}>{{this.nombres}} {{this.apellidos}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="servicios">Seleccione los Servicios</label>
+                    <div class="form-check">
+                        {{#each servicios}}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="servicioIds" value="{{this.id}}" id="servicio-{{this.id}}" {{#if (containsServicios ../contrato.servicios this.id)}}checked{{/if}}>
+                                <label class="form-check-label" for="servicio-{{this.id}}">
+                                    {{this.servicio}} - ${{this.precio}} ({{this.tipo_pago}})
+                                </label>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="anexo">Anexo</label>
+                    <input type="text" class="form-control" name="anexo" value="{{contrato.anexo}}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha_contrato">Fecha de Contrato</label>
+                    <input type="date" class="form-control" name="fecha_contrato" value="{{formatDateForInput contrato.fecha_contrato}}" required>
+                </div>
+                
+                <div class="form-group row">
+                    <div class="col-6 pr-1">
+                        <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+                    </div>
+                    <div class="col-6 pl-1">
+                        <a href="/contratos" class="btn btn-secondary btn-block">Cancelar</a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

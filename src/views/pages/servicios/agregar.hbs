@@ -39,15 +39,9 @@
           <label for="tipo_pago">Tipo de pago</label>
           <select class="form-control" name="tipo_pago" required>
             <option value="" disabled selected>Seleccione el tipo de pago</option>
-            <option value="Mensual">Mensual</option>
-            <option value="Anual">Anual</option>
+            <option value="Recurrente">Recurrente</option>
+            <option value="Unico">Unico</option>
           </select>
-        </div>
-
-        {{!-- Campo para que el usuario ingrese el hash --}}
-        <div class="form-group">
-          <label for="hash">Hash</label>
-          <input type="text" class="form-control" name="hash" placeholder="Ingrese el hash" value="" required>
         </div>
         
         <div class="form-group row">
