@@ -1,0 +1,288 @@
+<!-- Hojas de estilo -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css">
+<link rel="stylesheet" href="/plugins/summernote/summernote-bs4.min.css">
+<link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
+
+<!-- Mapbox -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Configuración CPE</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+      <!-- Mostrar errores si existen -->
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      <div class="bs-stepper">
+        <div class="bs-stepper-header" role="tablist">
+          <div class="step" data-target="#logins-part">
+            <button type="button" class="step-trigger" role="tab" aria-controls="logins-part" id="logins-part-trigger">
+              <span class="bs-stepper-circle">1</span>
+              <span class="bs-stepper-label">Estación CPE</span>
+            </button>
+          </div>
+          <div class="line"></div>
+          <div class="step" data-target="#information-part">
+            <button type="button" class="step-trigger" role="tab" aria-controls="information-part" id="information-part-trigger">
+              <span class="bs-stepper-circle">2</span>
+              <span class="bs-stepper-label">Router (módem) CPE</span>
+            </button>
+          </div>
+          <div class="line"></div>
+          <div class="step" data-target="#clientmap-part">
+            <button type="button" class="step-trigger" role="tab" aria-controls="clientmap-part" id="clientmap-part-trigger">
+              <span class="bs-stepper-circle">3</span>
+              <span class="bs-stepper-label">Cliente y Ubicación</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bs-stepper-content">
+          <form action="/configuraciones/edit/{{configuracion.id}}?_method=PUT" id="alertFormEdit" method="POST">
+            <!-- Paso 1: Estación CPE -->
+            <div id="logins-part" class="content" role="tabpanel" aria-labelledby="logins-part-trigger">
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="user_antena">Usuario</label>
+                  <input required name="user_antena" type="text" class="form-control stepclass-1" id="user_antena" value="{{configuracion.user_antena}}">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="pass_antena">Password</label>
+                  <div class="input-group">
+                    <input required name="pass_antena" type="text" class="form-control stepclass-1" id="pass_antena" value="{{configuracion.pass_antena}}">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="button" onclick="generar('pass_antena')">Generar <i class="fas fa-sync"></i></button>
+                      <button id="pass_antena_btn" class="btn btn-outline-secondary" type="button" onclick="copiar('pass_antena')">Copiar <i class="far fa-copy"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Dirección IP:</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-laptop"></i></span>
+                  </div>
+                  <input required name="ip_antena" type="text" class="form-control stepclass-1" value="{{configuracion.ip_antena}}" data-inputmask="'alias': 'ip'" data-mask="" inputmode="decimal">
+                </div>
+              </div>
+             <div class="form-group">
+                <label>Tipo CPE (Antena):</label>
+                <select name="cpe_antenaId" class="custom-select stepclass-1">
+                    <option value="" disabled>Seleccione una antena</option>
+                    {{#each antenas}}
+                        <option value="{{this.id}}" {{#if (eq this.id ../configuracion.cpe_antenaId)}}selected{{/if}}>{{this.nombre_equipo}}</option>
+                    {{/each}}
+                </select>
+            </div>
+              <button id="stepbtn-1" type="button" class="btn btn-primary" onclick="next()">Siguiente</button>
+            </div>
+
+            <!-- Paso 2: Router CPE -->
+            <div id="information-part" class="content" role="tabpanel" aria-labelledby="information-part-trigger">
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="user_router">Usuario administrador</label>
+                  <input name="user_router" type="text" class="form-control stepclass-2" id="user_router" value="{{configuracion.user_router}}">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="pass_admin_router">Password Administrador</label>
+                  <div class="input-group">
+                    <input name="pass_admin_router" type="text" class="form-control stepclass-2" id="pass_admin_router" value="{{configuracion.pass_admin_router}}">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="button" onclick="generar('pass_admin_router')">Generar <i class="fas fa-sync"></i></button>
+                      <button id="pass_admin_router_btn" class="btn btn-outline-secondary" type="button" onclick="copiar('pass_admin_router')">Copiar <i class="far fa-copy"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label>SSID:</label>
+                  <input name="ssid" type="text" class="form-control stepclass-2" value="{{configuracion.ssid}}">
+                </div>
+                <div class="form-group col-md-4">
+                  <label>Módem PIN:</label>
+                  <input name="pass_pin_router" type="number" class="form-control stepclass-2" value="{{configuracion.pass_pin_router}}">
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="pass_wifi_router">Módem password</label>
+                  <div class="input-group">
+                    <input name="pass_wifi_router" type="text" class="form-control stepclass-2" id="pass_wifi_router" value="{{configuracion.pass_wifi_router}}">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="button" onclick="generar('pass_wifi_router')">Generar <i class="fas fa-sync"></i></button>
+                      <button id="pass_wifi_router_btn" class="btn btn-outline-secondary" type="button" onclick="copiar('pass_wifi_router')">Copiar <i class="far fa-copy"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                  <label>Tipo CPE (Router):</label>
+                  <select name="cpe_routerId" class="custom-select stepclass-2">
+                      <option value="" disabled>Seleccione un router</option>
+                      {{#each routers}}
+                          <option value="{{this.id}}" {{#if (eq this.id ../configuracion.cpe_routerId)}}selected{{/if}}>{{this.nombre_equipo}}</option>
+                      {{/each}}
+                  </select>
+              </div>
+              <button type="button" class="btn btn-light" onclick="previous()">Anterior</button>
+              <button id="stepbtn-2" type="button" class="btn btn-primary" onclick="next(); displayMap();">Siguiente</button>
+            </div>
+
+            <!-- Paso 3: Cliente y Ubicación -->
+            <div id="clientmap-part" class="content" role="tabpanel" aria-labelledby="clientmap-part-trigger">
+              <div class="form-group">
+                <label>Seleccionar cliente:</label>
+                <select name="clienteId" class="form-control select2 stepclass-3" id="select-cliente" style="width: 100%;">
+                  <option value="" disabled>Seleccione un cliente</option>
+                  {{#each clientes}}
+                    <option value="{{this.id}}" {{#if (eq this.id ../configuracion.clienteId)}}selected{{/if}}>{{this.alias}} - {{this.nombres}} {{this.apellidos}}</option>
+                  {{/each}}
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Latitud:</label>
+                  <input id="lat" class="form-control stepclass-3" name="lat" type="text" value="{{configuracion.lat}}">
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Longitud:</label>
+                  <input id="long" class="form-control stepclass-3" name="clong" type="text" value="{{configuracion.clong}}">
+                </div>
+              </div>
+              <div class="col-12 mb-3">
+                <label>Mueve el marcador para obtener las coordenadas:</label>
+                <div id='map'></div>
+              </div>
+              <button type="button" class="btn btn-light" onclick="previous()">Anterior</button>
+              <input id="stepbtn-3" type="submit" class="btn btn-success" value="Guardar Cambios">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Incluir jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
+<script src="/plugins/inputmask/jquery.inputmask.min.js"></script>
+<script src="/plugins/select2/js/select2.full.min.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+
+<script>
+// Validación del formulario
+document.getElementById('stepbtn-1').disabled = false; // Inicialmente habilitados
+document.getElementById('stepbtn-2').disabled = false;
+document.getElementById('stepbtn-3').disabled = false;
+
+function validateField(step) {
+    const inputs = document.querySelectorAll(`.stepclass-${step}`);
+    let doNext = true;
+    inputs.forEach(element => {
+        if (element.value.trim() === "") {
+            doNext = false;
+        }
+    });
+    document.getElementById(`stepbtn-${step}`).disabled = !doNext;
+}
+
+// Verificar estado de los campos al cargar la página
+function checkInitialState() {
+    validateField(1); // Verifica el paso 1
+    validateField(2); // Verifica el paso 2
+    validateField(3); // Verifica el paso 3
+}
+
+  // Eventos para validar campos
+  document.querySelectorAll('.stepclass-1').forEach(input => {
+    input.addEventListener('change', () => validateField(1));
+  });
+  document.querySelectorAll('.stepclass-2').forEach(input => {
+    input.addEventListener('change', () => validateField(2));
+  });
+  document.querySelectorAll('.stepclass-3').forEach(input => {
+    input.addEventListener('change', () => validateField(3));
+  });
+
+// Inicialización del mapa y controles
+checkInitialState(); // Verificar los botones al cargar la página
+
+  // Configuración de Mapbox
+  const coordenadas = { lat: {{configuracion.lat}}, long: {{configuracion.clong}} };
+  const marker = new mapboxgl.Marker({ draggable: true });
+  marker.on('dragend', onDragEnd);
+
+  function onDragEnd() {
+    const lngLat = marker.getLngLat();
+    document.getElementById('lat').value = lngLat.lat;
+    document.getElementById('long').value = lngLat.lng;
+    document.getElementById('lat').dispatchEvent(new Event('change'));
+    document.getElementById('long').dispatchEvent(new Event('change'));
+  }
+
+  function displayMap() {
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      center: [coordenadas.long, coordenadas.lat],
+      zoom: 16,
+    });
+    marker.setLngLat([coordenadas.long, coordenadas.lat]).addTo(map);
+  }
+
+// Inicializar select2 y bs-stepper
+$('#select-cliente').select2();
+$('[data-mask]').inputmask();
+var stepper = new Stepper(document.querySelector('.bs-stepper'));
+
+function next() {
+    stepper.next();
+}
+
+function previous() {
+    stepper.previous();
+}
+
+function generar(inputId) {
+    const inputElement = document.getElementById(inputId);
+    inputElement.value = generarPassword();
+    inputElement.dispatchEvent(new Event('input'));
+}
+
+function copiar(inputId) {
+    const inputElement = document.getElementById(inputId);
+    inputElement.select();
+    document.execCommand('copy');
+    const tooltip = $(`#${inputId}_btn`).tooltip({ title: "Copiado!" });
+    tooltip.tooltip('show');
+}
+
+  // Generador de contraseñas
+  function generarPassword() {
+    const length = 8;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let retVal = "";
+    for (let i = 0, n = charset.length; i < length; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+  }
+
+  displayMap();
+</script>

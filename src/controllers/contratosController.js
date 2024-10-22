@@ -49,9 +49,9 @@ exports.renderCreateForm = async (req, res) => {
 
 exports.createContrato = async (req, res) => {
     try {
-        console.log(req.body); // Para depuración
+        //console.log(req.body); // Para depuración
 
-        const { clienteId, servicioIds, anexo, fecha_contrato } = req.body;
+        const { clienteId, servicioIds, anexo, fecha_contrato, activo } = req.body;
 
         // Verificar si se seleccionaron servicios
         if (!servicioIds) {
@@ -79,6 +79,7 @@ exports.createContrato = async (req, res) => {
                 anexo,
                 fecha_contrato: new Date(fecha_contrato),
                 clienteId: parseInt(clienteId),
+                activo: activo === 'true',
                 servicios: {
                     create: serviciosValidos.map(servicioId => ({
                         servicio: { connect: { id: servicioId } }
@@ -128,7 +129,7 @@ exports.renderEditForm = async (req, res) => {
 exports.updateContrato = async (req, res) => {
     try {
         const { id } = req.params;
-        const { clienteId, servicioIds, anexo, fecha_contrato } = req.body;
+        const { clienteId, servicioIds, anexo, fecha_contrato, activo} = req.body;
 
         // Asegurarse de que servicioIds sea un array, igual que en la creación
         const serviciosSeleccionados = Array.isArray(servicioIds) ? servicioIds : [servicioIds];
@@ -138,6 +139,7 @@ exports.updateContrato = async (req, res) => {
             data: {
                 anexo,
                 fecha_contrato: new Date(fecha_contrato),
+                activo: activo === 'true',
                 clienteId: parseInt(clienteId),
                 servicios: {
                     deleteMany: {}, // Eliminar servicios existentes

@@ -44,3 +44,13 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+
+#map {
+  width: 100%;
+  height: 350px;
+}
+
+.select2-container .select2-selection--single {
+  width: 100%;
+  height: auto !important;
+}

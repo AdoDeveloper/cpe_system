@@ -49,6 +49,14 @@
                     <label for="fecha_contrato">Fecha de Contrato</label>
                     <input type="date" class="form-control" name="fecha_contrato" value="{{formatDateForInput contrato.fecha_contrato}}" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="estado">Estado</label>
+                    <select class="form-control" name="activo" required>
+                        <option value="true" {{#if contrato.activo}}selected{{/if}}>Activo</option>
+                        <option value="false" {{#unless contrato.activo}}selected{{/unless}}>Inactivo</option>
+                    </select>
+                </div>
                 
                 <div class="form-group row">
                     <div class="col-6 pr-1">
