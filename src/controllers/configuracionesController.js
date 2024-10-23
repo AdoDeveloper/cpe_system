@@ -11,7 +11,8 @@ exports.listConfiguraciones = async (req, res) => {
                 cliente: true,
                 cpe_antena: true,
                 cpe_router: true
-            }
+            },
+            orderBy: { id: 'asc' },
         });
 
         res.render('pages/configuraciones/listado', { configuraciones });

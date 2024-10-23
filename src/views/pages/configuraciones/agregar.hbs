@@ -49,7 +49,7 @@
         </div>
 
         <div class="bs-stepper-content">
-          <form id="form-conf" action="/configuraciones/new" method="POST">
+          <form id="form-conf" action="/configuraciones/new" method="POST" id="alertFormSave">
             <!-- Paso 1: Estación CPE -->
             <div id="logins-part" class="content" role="tabpanel" aria-labelledby="logins-part-trigger">
               <div class="form-row">
@@ -86,6 +86,7 @@
                   {{/each}}
                 </select>
               </div>
+              <a href="/configuraciones" class="btn btn-secondary">Cancelar</a>
               <button id="stepbtn-1" type="button" class="btn btn-primary" onclick="next()">Siguiente</button>
             </div>
 

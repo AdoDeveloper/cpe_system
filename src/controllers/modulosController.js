@@ -25,6 +25,7 @@ exports.listModulos = async (req, res) => {
         permisos: true, // Incluir permisos relacionados si es necesario
         rutas: true,    // Incluir las rutas asociadas
       },
+      orderBy: { id: 'asc' },
     });
     res.render('pages/modulos/listado', { modulos });
   } catch (error) {

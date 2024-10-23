@@ -17,6 +17,7 @@ exports.listRoles = async (req, res) => {
           },
         },
       },
+      orderBy: { id: 'asc' },
     });
 
     // Contar cuántos roles tienen esAdmin = true

@@ -4,7 +4,9 @@ const prisma = new PrismaClient();
 // Controlador para listar los servicios
 exports.listServicios = async (req, res) => {
     try {
-        const servicios = await prisma.servicio.findMany(); // Obtener servicios
+        const servicios = await prisma.servicio.findMany({
+            orderBy: { id: 'asc' },
+        }); // Obtener servicios
         res.render('pages/servicios/listado', { servicios });
     } catch (error) {
         console.error('Error al listar los servicios:', error);

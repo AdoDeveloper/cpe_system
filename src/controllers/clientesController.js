@@ -6,8 +6,14 @@ const crypto = require('crypto');
 // Controlador para listar los clientes
 exports.listClientes = async (req, res) => {
     try {
-        const clientes = await prisma.cliente.findMany(); // Obtener todos los clientes
-        console.log("Datos de clientes: ", clientes); // Verifica que los datos estén presentes
+        const clientes = await prisma.cliente.findMany({
+            orderBy: [
+                { id: 'asc' }, // Primer criterio de ordenamiento
+                { nombres: 'asc' },     // Segundo criterio de ordenamiento
+            ],
+        });
+        
+        //console.log("Datos de clientes: ", clientes); // Verifica que los datos estén presentes
         res.render('pages/clientes/listado', { clientes });
     } catch (error) {
         console.error('Error al listar los clientes:', error);

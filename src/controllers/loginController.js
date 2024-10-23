@@ -53,6 +53,9 @@ loginController.processLogin = async (req, res) => {
       res.clearCookie('user_email');
     }
 
+     // Agregar mensaje flash de éxito
+     req.flash('success_msg', 'Inicio de sesión exitoso');
+
     // Redirigir según si es administrador o no
     if (usuario.rol.esAdmin) {
       return res.status(200).redirect('/servicios');

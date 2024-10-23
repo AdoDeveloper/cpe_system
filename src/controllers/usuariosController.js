@@ -10,6 +10,7 @@ exports.listUsuarios = async (req, res) => {
                 rol: true, // Incluir el rol relacionado
                 cliente: true, // Incluir el cliente relacionado si aplica
             },
+            orderBy: { id: 'asc' },
         });
         res.render('pages/usuarios/listado', { usuarios });
     } catch (error) {

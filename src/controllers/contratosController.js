@@ -14,7 +14,8 @@ exports.listContratos = async (req, res) => {
                         servicio: true // Incluir detalles del servicio
                     }
                 }
-            }
+            },
+            orderBy: { id: 'asc' },
         });
 
         // Filtrar servicios que sean solo recurrentes

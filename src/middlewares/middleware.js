@@ -64,6 +64,7 @@ module.exports = {
           where: {
             moduloId: modulo.id,
           },
+          orderBy: { id: 'asc' },
         });
         modulo.rutas = rutas;
       }

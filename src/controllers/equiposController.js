@@ -56,7 +56,9 @@ const deleteFileFromCloudinary = async (folder, publicId) => {
 
 exports.listEquipos = async (req, res) => {
   try {
-    const equipos = await prisma.equipoCPE.findMany();
+    const equipos = await prisma.equipoCPE.findMany({
+      orderBy: { id: 'asc' },
+    });
     res.render('pages/equipos/listado', { equipos });
   } catch (error) {
     console.error('Error al listar equipos:', error);
