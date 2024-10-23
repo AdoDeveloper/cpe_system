@@ -11,9 +11,9 @@ try {
   const iconsFilePath = path.join(__dirname, '../data/icons.json');
   const iconsData = fs.readFileSync(iconsFilePath, 'utf8');
   allowedIcons = JSON.parse(iconsData);
-  console.log("Íconos cargados:", allowedIcons); // Debug para verificar íconos cargados
+  //console.log("Íconos cargados:", allowedIcons); // Debug para verificar íconos cargados
 } catch (error) {
-  console.error('Error al cargar icons.json:', error);
+  //console.error('Error al cargar icons.json:', error);
   allowedIcons = [];
 }
 
@@ -122,8 +122,8 @@ exports.renderEditForm = async (req, res) => {
     }
     
     // Debug para verificar el módulo cargado y los íconos antes de renderizar
-    console.log("Módulo cargado:", modulo);
-    console.log("Íconos pasados a la vista:", allowedIcons);
+    //console.log("Módulo cargado:", modulo);
+    //console.log("Íconos pasados a la vista:", allowedIcons);
     
     res.render('pages/modulos/modificar', { 
       action: 'edit', 
