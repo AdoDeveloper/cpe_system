@@ -103,6 +103,14 @@ async function main() {
       { ruta: '/equipos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar equipo', tipo: 'eliminación', moduloId: gestionCpesModulo.id },
 
+      // Permisos de configuraciones CPE
+      { ruta: '/configuraciones', metodo: 'GET', descripcion: 'Listar configuracion', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/configuraciones/new', metodo: 'GET', descripcion: 'Formulario agregar configuracion', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/configuraciones/new', metodo: 'POST', descripcion: 'Crear configuracion', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/configuraciones/edit/:id', metodo: 'GET', descripcion: 'Formulario editar configuracion', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/configuraciones/edit/:id', metodo: 'PUT', descripcion: 'Actualizar configuracion', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/configuraciones/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar configuracion', tipo: 'eliminación', moduloId: gestionCpesModulo.id },
+
       // Permisos de roles
       { ruta: '/roles', metodo: 'GET', descripcion: 'Listar roles', tipo: 'lectura', moduloId: gestionUsuariosModulo.id },
       { ruta: '/roles/new', metodo: 'GET', descripcion: 'Formulario agregar rol', tipo: 'lectura', moduloId: gestionUsuariosModulo.id },
@@ -147,7 +155,7 @@ async function main() {
       { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id },
       { ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura', moduloId: dashboardModulo.id },
       { ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura', moduloId: dashboardModulo.id },
-      { ruta: '/login/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura', moduloId: dashboardModulo.id },
+      { ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura', moduloId: dashboardModulo.id },
     ];
 
     const createdPermisos = [];

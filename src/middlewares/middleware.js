@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { isMatch } = require('../lib/pathMatcher'); // Importa la función personalizada
+const { getModulosActivos } = require('../lib/modulosHelper');
 const prisma = new PrismaClient();
 
 module.exports = {
@@ -56,13 +57,18 @@ module.exports = {
       const rol = usuario.rol;
       const permisos = rol.permisos || []; // Array de RolPermiso objects
 
-      // Filtrar permisos cuyos módulos están activos o que no tienen módulos asociados (rutas sin módulo)
-      const permisosActivos = permisos.filter(p => p.permiso.modulos.length === 0 || p.permiso.modulos.some(modulo => modulo.activo));
+      // Obtener los permisos activos, filtrando los módulos que están activos
+      const permisosActivos = permisos.filter(p => 
+        p.permiso.modulos.length === 0 || p.permiso.modulos.some(modulo => modulo.activo)
+      );
+
+      // Obtener los módulos activos
+      const modulos = await getModulosActivos(permisos);
+
+      // Guardar los módulos accesibles en la respuesta para mostrarlos en el menú
+      res.locals.modulos_active = modulos; // Objeto con módulos activos
 
       const method = req.method; // Obtener el método HTTP usado
-
-      //console.log('Ruta solicitada (normalizada):', path, 'Método:', method);
-      //console.log('Permisos activos del rol:', permisosActivos.map(p => `${p.permiso.ruta}:${p.permiso.metodo}`));
 
       // Función para verificar si el rol tiene permisos para la ruta actual
       const hasPermission = permisosActivos.some((rolPermiso) => {
@@ -71,7 +77,6 @@ module.exports = {
         // Verificar si la ruta solicitada coincide con el patrón del permiso
         const isRouteMatch = isMatch(ruta, path);
 
-        //console.log(`Verificando permiso para la ruta: ${ruta}, método: ${metodo}, es coincidencia: ${isRouteMatch}`);
         return isRouteMatch && metodo === method;
       });
 
@@ -80,21 +85,6 @@ module.exports = {
       if (!hasPermission) {
         return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
       }
-
-      // Crear un objeto de módulos para el menú (con presencia de módulos activos)
-      const modulosActivos = permisosActivos.map(p => p.permiso.modulos.map(m => m.nombre)).flat();
-      const modulos = {
-        dashboard: modulosActivos.includes('dashboard'),
-        facturacion: modulosActivos.includes('facturacion'),
-        contratos_servicios: modulosActivos.includes('contratos_servicios'),
-        clientes: modulosActivos.includes('clientes'),
-        gestion_cpes: modulosActivos.includes('gestion_cpes'),
-        gestion_usuarios: modulosActivos.includes('gestion_usuarios'),
-        gestion_modulos: modulosActivos.includes('gestion_modulos'),
-      };
-
-      // Guardar los módulos accesibles en la respuesta para mostrarlos en el menú
-      res.locals.modulos_active = modulos; // Objeto con módulos activos
 
       // Continuar con la ruta si el usuario está autenticado y tiene permisos
       next();

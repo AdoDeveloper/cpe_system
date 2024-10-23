@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { getModulosActivos } = require('../lib/modulosHelper');
 const crypto = require('crypto');
 
 // Controlador para listar los módulos
@@ -27,32 +28,43 @@ exports.renderCreateForm = (req, res) => {
 
 // Controlador para crear un nuevo módulo
 exports.createModulo = async (req, res) => {
-  try {
-      // Extraer los datos del formulario
-      const { nombre, descripcion, activo} = req.body;
-
-      // Convertir el valor de "activo" a booleano
-    const isActive = activo === 'true';
-
-    // Crear el nuevo módulo en la base de datos
-    await prisma.modulo.create({
-      data: {
-        nombre,
-        descripcion,
-        activo: isActive  // Asegurarse de que sea booleano
-      }
-    });
-
-      // Redirigir a la lista de módulos después de crear el módulo
-      req.flash('success_msg', 'Módulo creado exitosamente.');
-      res.status(201).redirect('/modulos');
-  } catch (error) {
-      console.error('Error al crear el módulo:', error);
-      req.flash('error_msg', 'Error al crear el módulo.'); // Guardar el mensaje de error flash
-      return res.status(500).redirect('/modulos'); // Redirigir con estado 500
-  } finally {
-    await prisma.$disconnect(); // Cierra la conexión
-  }
+    try {
+        const { nombre, descripcion, activo } = req.body;
+        const isActive = activo === 'true';
+  
+        // Crear el nuevo módulo
+        await prisma.modulo.create({
+          data: {
+            nombre,
+            descripcion,
+            activo: isActive
+          }
+        });
+  
+        // Obtener los permisos y recalcular los módulos activos
+        const permisos = await prisma.rolPermiso.findMany({
+          include: {
+            permiso: {
+              include: {
+                modulos: true
+              }
+            }
+          }
+        });
+        const modulos = await getModulosActivos(permisos);
+  
+        // Guardar los módulos activos en res.locals para el menú
+        res.locals.modulos_active = modulos;
+  
+        req.flash('success_msg', 'Módulo creado exitosamente.');
+        res.status(201).redirect('/modulos');
+    } catch (error) {
+        console.error('Error al crear el módulo:', error);
+        req.flash('error_msg', 'Error al crear el módulo.');
+        return res.status(500).redirect('/modulos');
+    } finally {
+      await prisma.$disconnect();
+    }
 };
 
 // Renderiza el formulario para editar un módulo existente
@@ -73,31 +85,45 @@ exports.renderEditForm = async (req, res) => {
     }
 };
 
-// Controlador para actualizar un módulo existente
+// Controlador para actualizar un módulo
 exports.updateModulo = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, activo} = req.body;
-
-        // Convertir el valor de "activo" a booleano
+        const { nombre, descripcion, activo } = req.body;
         const isActive = activo === 'true';
-
+  
         await prisma.modulo.update({
-            where: { id: parseInt(id) },
-            data: {
-                nombre,
-                descripcion,
-                activo: isActive  // Asegurarse de que sea booleano
-            }
+          where: { id: parseInt(id) },
+          data: {
+            nombre,
+            descripcion,
+            activo: isActive
+          }
         });
+  
+        // Obtener los permisos y recalcular los módulos activos
+        const permisos = await prisma.rolPermiso.findMany({
+          include: {
+            permiso: {
+              include: {
+                modulos: true
+              }
+            }
+          }
+        });
+        const modulos = await getModulosActivos(permisos);
+  
+        // Guardar los módulos activos en res.locals para el menú
+        res.locals.modulos_active = modulos;
+  
         req.flash('success_msg', 'Módulo actualizado exitosamente.');
         res.status(201).redirect('/modulos');
     } catch (error) {
         console.error('Error al actualizar el módulo:', error);
-        req.flash('error_msg', 'Error al actualizar el módulo.'); // Guardar el mensaje de error flash
-        return res.status(500).redirect('/modulos'); // Redirigir con estado 500
+        req.flash('error_msg', 'Error al actualizar el módulo.');
+        return res.status(500).redirect('/modulos');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+      await prisma.$disconnect();
     }
 };
 

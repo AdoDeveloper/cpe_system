@@ -145,13 +145,32 @@ exports.updateEquipo = async (req, res) => {
 exports.deleteEquipo = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Buscar el equipo por ID
     const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
+
+    // Verificar si el equipo está en uso en configuraciones
+    const configuracionesEnUso = await prisma.configCPE.findMany({
+      where: {
+        OR: [
+          { cpe_antenaId: parseInt(id) },
+          { cpe_routerId: parseInt(id) }
+        ]
+      }
+    });
+
+    // Si hay configuraciones que usan este equipo, no permitir la eliminación
+    if (configuracionesEnUso.length > 0) {
+      req.flash('error_msg', 'No se puede eliminar el equipo porque está en uso en configuraciones de CPE.');
+      return res.redirect('/equipos');
+    }
 
     // Eliminar la imagen de Cloudinary si existe
     if (equipo.img_equipo) {
       await deleteFileFromCloudinary('equiposCPE', equipo.nombre_equipo);
     }
 
+    // Eliminar el equipo si no está en uso
     await prisma.equipoCPE.delete({ where: { id: parseInt(id) } });
 
     req.flash('success_msg', 'Equipo eliminado correctamente');
@@ -162,3 +181,4 @@ exports.deleteEquipo = async (req, res) => {
     res.redirect('/equipos');
   }
 };
+

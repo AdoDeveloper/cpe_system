@@ -94,11 +94,32 @@ exports.updateCliente = async (req, res) => {
     }
 };
 
-// Controlador para eliminar un cliente
 exports.deleteCliente = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        // Verificar si el cliente tiene contratos, pagos, o configuraciones que lo estén utilizando
+        const contratos = await prisma.contrato.findMany({
+            where: { clienteId: parseInt(id) }
+        });
+
+        const pagos = await prisma.pagoCliente.findMany({
+            where: { id_cliente: parseInt(id) }
+        });
+
+        const configuraciones = await prisma.configCPE.findMany({
+            where: { clienteId: parseInt(id) }
+        });
+
+        // Si el cliente tiene relaciones, mostrar un mensaje de error
+        if (contratos.length > 0 || pagos.length > 0 || configuraciones.length > 0) {
+            req.flash('error_msg', 'No se puede eliminar el cliente porque tiene contratos, pagos o configuraciones asociadas.');
+            return res.status(400).redirect('/clientes');
+        }
+
+        // Si no tiene relaciones, proceder a eliminar
         await prisma.cliente.delete({ where: { id: parseInt(id) } });
+        
         req.flash('success_msg', 'Cliente eliminado exitosamente.');
         res.status(200).redirect('/clientes');
     } catch (error) {
