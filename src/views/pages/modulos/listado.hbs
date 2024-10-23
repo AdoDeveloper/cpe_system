@@ -1,3 +1,4 @@
+<!-- views/pages/modulos/listado.hbs -->
 <div class="container-fluid p-4">
     <div class="row">
         <div class="col-12 col-md-6">
@@ -18,6 +19,7 @@
                             <th>NOMBRE</th>
                             <th>DESCRIPCIÓN</th>
                             <th>ESTADO</th>
+                            <th>RUTAS</th> <!-- Nueva columna para rutas -->
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
@@ -27,11 +29,27 @@
                                 <td>{{id}}</td>
                                 <td>{{nombre}}</td>
                                 <td>{{descripcion}}</td>
-                                <td>{{#if activo}}
+                                <td>
+                                    {{#if activo}}
                                         <span class="badge badge-success">Activo</span>
                                     {{else}}
                                         <span class="badge badge-danger">Inactivo</span>
-                                    {{/if}}</td>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    {{#if rutas.length}}
+                                        <ul class="list-unstyled mb-0">
+                                            {{#each rutas}}
+                                                <li class="mb-2">
+                                                    <strong>{{nombre}}</strong> (<em>{{ruta}}</em>) 
+                                                    <i class="{{icono}} icon-tooltip" title="{{icono}}"></i>
+                                                </li>
+                                            {{/each}}
+                                        </ul>
+                                    {{else}}
+                                        <span class="text-muted">Sin rutas</span>
+                                    {{/if}}
+                                </td>
                                 <td>
                                     <a href="/modulos/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>
@@ -51,7 +69,9 @@
     </div>
 </div>
 
+<!-- Incluye SweetAlert2 para las alertas -->
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+
 <script>
   function confirmDeleteModulo(event, id, nombreModulo) {
     event.preventDefault(); // Evitar el envío del formulario inmediatamente
@@ -72,3 +92,19 @@
     });
   }
 </script>
+
+<!-- Estilos para la visualización de íconos y tooltips -->
+<style>
+  .icon-tooltip {
+    font-size: 20px;
+    color: #333;
+    margin-left: 8px;
+    cursor: pointer;
+  }
+  .icon-tooltip:hover {
+    color: #007bff;
+  }
+  ul.list-unstyled li i.icon-tooltip {
+    transition: color 0.3s;
+  }
+</style>

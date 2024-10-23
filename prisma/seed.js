@@ -1,3 +1,4 @@
+// seed.js
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
@@ -85,7 +86,110 @@ async function main() {
       },
     });
 
-    // Crear los permisos incluyendo las rutas que mencionaste
+    // Crear las rutas para cada módulo con sus íconos
+    const rutasData = [
+      // Dashboard Rutas
+      {
+        nombre: 'Inicio',
+        ruta: '/',
+        icono: 'fas fa-chart-line',
+        moduloId: dashboardModulo.id,
+      },
+
+      // Facturación Rutas
+      {
+        nombre: 'Generar Facturas',
+        ruta: '/facturacion/generar',
+        icono: 'fas fa-file-invoice-dollar',
+        moduloId: facturacionModulo.id,
+      },
+      {
+        nombre: 'Movimientos',
+        ruta: '/movimientos',
+        icono: 'fas fa-hand-holding-usd',
+        moduloId: facturacionModulo.id,
+      },
+      {
+        nombre: 'Historial de Pagos',
+        ruta: '/facturacion/historial',
+        icono: 'far fa-clock',
+        moduloId: facturacionModulo.id,
+      },
+
+      // Contratos y Servicios Rutas
+      {
+        nombre: 'Servicios',
+        ruta: '/servicios',
+        icono: 'fas fa-box-open',
+        moduloId: contratosServiciosModulo.id,
+      },
+      {
+        nombre: 'Contratos de Clientes',
+        ruta: '/contratos',
+        icono: 'fas fa-hands-helping',
+        moduloId: contratosServiciosModulo.id,
+      },
+
+      // Gestión de Clientes Rutas
+      {
+        nombre: 'Clientes',
+        ruta: '/clientes',
+        icono: 'fas fa-users',
+        moduloId: clientesModulo.id,
+      },
+
+      // Gestión de CPEs Rutas
+      {
+        nombre: 'Equipos',
+        ruta: '/equipos',
+        icono: 'fas fa-satellite-dish',
+        moduloId: gestionCpesModulo.id,
+      },
+      {
+        nombre: 'Configuraciones',
+        ruta: '/configuraciones',
+        icono: 'fas fa-cog',
+        moduloId: gestionCpesModulo.id,
+      },
+
+      // Gestión de Usuarios Rutas
+      {
+        nombre: 'Usuarios',
+        ruta: '/usuarios',
+        icono: 'fas fa-user',
+        moduloId: gestionUsuariosModulo.id,
+      },
+      {
+        nombre: 'Roles',
+        ruta: '/roles',
+        icono: 'fas fa-user-tag',
+        moduloId: gestionUsuariosModulo.id,
+      },
+
+      // Gestión de Módulos Rutas
+      {
+        nombre: 'Módulos',
+        ruta: '/modulos',
+        icono: 'fas fa-th-large',
+        moduloId: gestionModulosModulo.id,
+      },
+    ];
+
+    // Crear las rutas
+    const createdRutas = [];
+    for (const ruta of rutasData) {
+      const createdRuta = await prisma.ruta.create({
+        data: {
+          nombre: ruta.nombre,
+          ruta: ruta.ruta,
+          icono: ruta.icono,
+          moduloId: ruta.moduloId,
+        },
+      });
+      createdRutas.push(createdRuta);
+    }
+
+    // Crear los permisos incluyendo las rutas CRUD existentes
     const permisosData = [
       // Permisos de clientes
       { ruta: '/clientes', metodo: 'GET', descripcion: 'Listar clientes', tipo: 'lectura', moduloId: clientesModulo.id },
@@ -158,6 +262,7 @@ async function main() {
       { ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura', moduloId: dashboardModulo.id },
     ];
 
+    // Crear los permisos (manteniendo la asignación actual de rutas)
     const createdPermisos = [];
     for (const permiso of permisosData) {
       const createdPermiso = await prisma.permiso.create({

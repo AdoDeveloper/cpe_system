@@ -1,110 +1,18 @@
+<!-- views/partials/menu.hbs -->
 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-  
-  <!-- Dashboard -->
-  {{#if modulos_active.dashboard}}
-  <li class="nav-header">DASHBOARD</li>
-  <li class="nav-item">
-    <a href="/" class="nav-link">
-      <i class="nav-icon fas fa-chart-line"></i>
-      <p>Inicio</p>
-    </a>
-  </li>
-  {{/if}}
 
-  <!-- Facturación -->
-  {{#if modulos_active.facturacion}}
-  <li class="nav-header">FACTURACIÓN</li>
-  <li class="nav-item">
-    <a href="/facturacion/generar" class="nav-link">
-      <i class="nav-icon fas fa-file-invoice-dollar"></i>
-      <p>Generar facturas</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/movimientos" class="nav-link">
-      <i class="nav-icon fas fa-hand-holding-usd"></i>
-      <p>Movimientos</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/facturacion/historial" class="nav-link">
-      <i class="nav-icon far fa-clock"></i>
-      <p>Historial de pagos</p>
-    </a>
-  </li>
-  {{/if}}
-
-  <!-- Contratos y Servicios -->
-  {{#if modulos_active.contratos_servicios}}
-  <li class="nav-header">CONTRATOS Y SERVICIOS</li>
-  <li class="nav-item">
-    <a href="/servicios" class="nav-link">
-      <i class="nav-icon fas fa-box-open"></i>
-      <p>Servicios</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/contratos" class="nav-link">
-      <i class="nav-icon fas fa-hands-helping"></i>
-      <p>Contratos de Clientes</p>
-    </a>
-  </li>
-  {{/if}}
-
-  <!-- Gestión de Clientes -->
-  {{#if modulos_active.clientes}}
-  <li class="nav-header">GESTIÓN DE CLIENTES</li>
-  <li class="nav-item">
-    <a href="/clientes" class="nav-link">
-      <i class="nav-icon fas fa-users"></i>
-      <p>Clientes</p>
-    </a>
-  </li>
-  {{/if}}
-
-  <!-- Gestión de CPEs -->
-  {{#if modulos_active.gestion_cpes}}
-  <li class="nav-header">GESTIÓN DE CPES</li>
-  <li class="nav-item">
-    <a href="/equipos" class="nav-link">
-      <i class="nav-icon fas fa-satellite-dish"></i>
-      <p>Equipos</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/configuraciones" class="nav-link">
-      <i class="nav-icon fas fa-cog"></i>
-      <p>Configuraciones</p>
-    </a>
-  </li>
-  {{/if}}
-
-  <!-- Gestión de Usuarios -->
-  {{#if modulos_active.gestion_usuarios}}
-  <li class="nav-header">GESTIÓN DE USUARIOS</li>
-  <li class="nav-item">
-    <a href="/usuarios" class="nav-link">
-      <i class="nav-icon fas fa-user"></i>
-      <p>Usuarios</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/roles" class="nav-link">
-      <i class="nav-icon fas fa-user-tag"></i>
-      <p>Roles</p>
-    </a>
-  </li>
-  {{/if}}
-
-  <!-- Gestión de Módulos -->
-  {{#if modulos_active.gestion_modulos}}
-  <li class="nav-header">GESTIÓN DE MÓDULOS</li>
-  <li class="nav-item">
-    <a href="/modulos" class="nav-link">
-      <i class="nav-icon fas fa-th-large"></i>
-      <p>Módulos</p>
-    </a>
-  </li>
-  {{/if}}
+  {{#each modulos}}
+    {{#if activo}}
+      <li class="nav-header">{{toUpperCase nombre}}</li>
+      {{#each rutas}}
+          <li class="nav-item">
+            <a href="{{ruta}}" class="nav-link">
+              <i class="nav-icon {{icono}}"></i>
+              <p>{{nombre}}</p>
+            </a>
+          </li>
+      {{/each}}
+    {{/if}}
+  {{/each}}
 
 </ul>

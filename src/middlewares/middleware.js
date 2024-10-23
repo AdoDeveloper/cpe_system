@@ -1,6 +1,7 @@
+// src/middleware/middleware.js
+
 const { PrismaClient } = require('@prisma/client');
 const { isMatch } = require('../lib/pathMatcher'); // Importa la función personalizada
-const { getModulosActivos } = require('../lib/modulosHelper');
 const prisma = new PrismaClient();
 
 module.exports = {
@@ -37,13 +38,10 @@ module.exports = {
             include: {
               permisos: {
                 include: {
-                  permiso: {
-                    include: {
-                      modulos: true, // Obtener los módulos relacionados con los permisos
-                    },
-                  },
+                  permiso: true,
                 },
               },
+              modulos: true, // Obtener los módulos asignados al rol
             },
           },
         },
@@ -55,24 +53,29 @@ module.exports = {
       }
 
       const rol = usuario.rol;
-      const permisos = rol.permisos || []; // Array de RolPermiso objects
+      const permisos = rol.permisos.map((p) => p.permiso); // Obtener los permisos
 
-      // Obtener los permisos activos, filtrando los módulos que están activos
-      const permisosActivos = permisos.filter(p => 
-        p.permiso.modulos.length === 0 || p.permiso.modulos.some(modulo => modulo.activo)
-      );
+      // Obtener los módulos activos asignados al rol
+      const modulosActivos = rol.modulos.filter((modulo) => modulo.activo);
 
-      // Obtener los módulos activos
-      const modulos = await getModulosActivos(permisos);
+      // Incluir las rutas de los módulos
+      for (const modulo of modulosActivos) {
+        const rutas = await prisma.ruta.findMany({
+          where: {
+            moduloId: modulo.id,
+          },
+        });
+        modulo.rutas = rutas;
+      }
 
-      // Guardar los módulos accesibles en la respuesta para mostrarlos en el menú
-      res.locals.modulos_active = modulos; // Objeto con módulos activos
+      // Guardar los módulos activos y sus rutas en res.locals
+      res.locals.modulos = modulosActivos;
 
       const method = req.method; // Obtener el método HTTP usado
 
       // Función para verificar si el rol tiene permisos para la ruta actual
-      const hasPermission = permisosActivos.some((rolPermiso) => {
-        const { ruta, metodo } = rolPermiso.permiso;
+      const hasPermission = permisos.some((permiso) => {
+        const { ruta, metodo } = permiso;
 
         // Verificar si la ruta solicitada coincide con el patrón del permiso
         const isRouteMatch = isMatch(ruta, path);
@@ -91,6 +94,8 @@ module.exports = {
     } catch (error) {
       console.error('Error en el middleware de autenticación:', error);
       return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
+    } finally {
+      await prisma.$disconnect();
     }
   },
 

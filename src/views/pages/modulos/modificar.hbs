@@ -1,11 +1,12 @@
+<!-- views/pages/modulos/modificar.hbs -->
 <div class="container p-4">
   <div class="row justify-content-center">
     <h1>Modificar Módulo</h1>
   </div>
-  
+
   <div class="row justify-content-center mt-4">
-    <div class="col-md-6">
-      
+    <div class="col-md-8">
+
       {{!-- Mostrar errores si existen --}}
       {{#if errors}}
         <div class="alert alert-danger">
@@ -19,12 +20,13 @@
 
       {{!-- Formulario para modificar módulo --}}
       <form method="POST" action="/modulos/edit/{{modulo.id}}?_method=PUT" id="alertFormEdit">
-        
+
+        <!-- Campos para nombre, descripción y estado -->
         <div class="form-group">
           <label for="nombre">Nombre del Módulo</label>
           <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Módulo" value="{{modulo.nombre}}" required autofocus>
         </div>
-        
+
         <div class="form-group">
           <label for="descripcion">Descripción del Módulo</label>
           <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Módulo" required>{{modulo.descripcion}}</textarea>
@@ -38,7 +40,50 @@
             <option value="false" {{#unless modulo.activo}}selected{{/unless}}>Inactivo</option>
           </select>
         </div>
-        
+
+        <!-- Sección para agregar y modificar rutas -->
+        <h3>Rutas del Módulo</h3>
+        <div id="rutas-container">
+          {{#each modulo.rutas}}
+            <div class="ruta-group mt-3" data-ruta-index="{{@index}}">
+              <div class="card">
+                <div class="card-body">
+                  {{!-- Campo oculto para el ID de la ruta si existe --}}
+                  {{#if this.id}}
+                    <input type="hidden" name="rutas[{{@index}}][id]" value="{{this.id}}">
+                  {{/if}}
+
+                  <div class="form-group">
+                    <label for="rutas[{{@index}}][nombre]">Nombre de la Ruta</label>
+                    <input type="text" class="form-control ruta-nombre" name="rutas[{{@index}}][nombre]" placeholder="Nombre de la Ruta" value="{{this.nombre}}" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="rutas[{{@index}}][ruta]">Ruta</label>
+                    <input type="text" class="form-control ruta-path" name="rutas[{{@index}}][ruta]" placeholder="/ruta-ejemplo" value="{{this.ruta}}" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="rutas[{{@index}}][icono]">Ícono</label>
+                    <input type="text" class="form-control icon-search" placeholder="Buscar ícono..." />
+                    <input type="text" class="form-control icono-nombre mt-2" placeholder="Nombre del ícono seleccionado" readonly value="{{this.icono}}" />
+                    <div class="icon-gallery mt-2">
+                      {{#each ../icons}}
+                        <label class="icon-option">
+                          <input type="radio" name="rutas[{{@../index}}][icono]" value="{{this}}" {{#ifCond this ../icono}}checked{{/ifCond}} required>
+                          <i class="{{this}}"></i>
+                        </label>
+                      {{/each}}
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-danger removeRutaBtn">Eliminar Ruta</button>
+                </div>
+              </div>
+              <hr>
+            </div>
+          {{/each}}
+        </div>
+        <button type="button" class="btn btn-secondary mb-3" id="addRutaBtn">Agregar Ruta</button>
+
+        <!-- Botones de envío y cancelación -->
         <div class="form-group row">
           <div class="col-6 pr-1">
             <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
@@ -47,9 +92,205 @@
             <a href="/modulos" class="btn btn-secondary btn-block">Cancelar</a>
           </div>
         </div>
-        
-      </form>
 
+      </form>
     </div>
   </div>
 </div>
+
+<!-- Script para manejar las rutas dinámicamente -->
+<script>
+  let rutaIndex = {{modulo.rutas.length}}; // Inicializar con el número de rutas existentes
+  const icons = {{{json icons}}}; // Pasar los íconos a JavaScript usando el helper 'json'
+
+  console.log("Icons en JS:", icons); // Debug: verificar que los íconos están en JS
+
+  document.getElementById('addRutaBtn').addEventListener('click', () => {
+    addRuta();
+  });
+
+  // Función para agregar una nueva ruta
+  function addRuta() {
+    const container = document.getElementById('rutas-container');
+    const rutaDiv = document.createElement('div');
+    rutaDiv.classList.add('ruta-group', 'mt-3');
+    rutaDiv.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][nombre]">Nombre de la Ruta</label>
+            <input type="text" class="form-control ruta-nombre" name="rutas[${rutaIndex}][nombre]" placeholder="Nombre de la Ruta" required>
+          </div>
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][ruta]">Ruta</label>
+            <input type="text" class="form-control ruta-path" name="rutas[${rutaIndex}][ruta]" placeholder="/ruta-ejemplo" required>
+          </div>
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][icono]">Ícono</label>
+            <input type="text" class="form-control icon-search" placeholder="Buscar ícono..." />
+            <input type="text" class="form-control icono-nombre mt-2" placeholder="Nombre del ícono seleccionado" readonly />
+            <div class="icon-gallery mt-2">
+              ${icons.map(icon => `
+                <label class="icon-option">
+                  <input type="radio" name="rutas[${rutaIndex}][icono]" value="${icon}" required>
+                  <i class="${icon}"></i>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger removeRutaBtn">Eliminar Ruta</button>
+        </div>
+      </div>
+      <hr>
+    `;
+    container.appendChild(rutaDiv);
+
+    // Obtener la última ruta añadida
+    const newGallery = rutaDiv.querySelector('.icon-gallery');
+    const iconSearchInput = rutaDiv.querySelector('.icon-search');
+    const iconoNombreInput = rutaDiv.querySelector('.icono-nombre');
+    const removeBtn = rutaDiv.querySelector('.removeRutaBtn');
+
+    // Adjuntar event listeners a la nueva ruta
+    attachGalleryListeners(newGallery, iconSearchInput, iconoNombreInput);
+
+    // Event listener para eliminar la ruta
+    removeBtn.addEventListener('click', () => {
+      rutaDiv.remove();
+    });
+
+    rutaIndex++;
+  }
+
+  // Función para adjuntar event listeners a una galería de íconos
+  function attachGalleryListeners(iconGallery, iconSearchInput, iconoNombreInput) {
+    // Evento para filtrar íconos al escribir en el campo de búsqueda
+    iconSearchInput.addEventListener('input', () => {
+      filterIcons(iconSearchInput.value, iconGallery);
+    });
+
+    // Evento para mostrar el nombre del ícono seleccionado y hacer scroll
+    iconGallery.addEventListener('change', (event) => {
+      if (event.target && event.target.matches('input[type="radio"]')) {
+        const selectedIcon = event.target.value;
+        iconoNombreInput.value = selectedIcon;
+        scrollToSelectedIcon(iconGallery, event.target);
+      }
+    });
+
+    // Scroll al ícono seleccionado si ya está marcado (en caso de cargar rutas con iconos preseleccionados)
+    const checkedInput = iconGallery.querySelector('input[type="radio"]:checked');
+    if (checkedInput) {
+      scrollToSelectedIcon(iconGallery, checkedInput);
+    }
+  }
+
+  // Función para filtrar íconos
+  function filterIcons(searchTerm, iconGallery) {
+    const normalizedSearchTerm = normalizeString(searchTerm);
+    const iconOptions = iconGallery.querySelectorAll('.icon-option');
+
+    let selectedIconVisible = false;
+
+    iconOptions.forEach(option => {
+      const iconClass = option.querySelector('i').className;
+      const normalizedIconClass = normalizeString(iconClass);
+
+      if (normalizedIconClass.includes(normalizedSearchTerm)) {
+        option.style.display = 'flex';
+        // Verificar si este ícono está seleccionado
+        const input = option.querySelector('input[type="radio"]');
+        if (input && input.checked) {
+          selectedIconVisible = true;
+        }
+      } else {
+        option.style.display = 'none';
+      }
+    });
+
+    const visibleIcons = iconGallery.querySelectorAll('.icon-option[style*="display: flex"]');
+    const existingNoResults = iconGallery.querySelector('.no-results');
+    if (visibleIcons.length === 0) {
+      if (!existingNoResults) {
+        const noResults = document.createElement('p');
+        noResults.classList.add('no-results', 'text-muted');
+        noResults.textContent = 'No se encontraron íconos.';
+        iconGallery.appendChild(noResults);
+      }
+    } else {
+      if (existingNoResults) {
+        existingNoResults.remove();
+      }
+      // Si el ícono seleccionado sigue siendo visible, desplázate a él
+      if (selectedIconVisible) {
+        const checkedInput = iconGallery.querySelector('input[type="radio"]:checked');
+        if (checkedInput) {
+          scrollToSelectedIcon(iconGallery, checkedInput);
+        }
+      }
+    }
+  }
+
+  // Función para normalizar cadenas (eliminar acentos y convertir a minúsculas)
+  function normalizeString(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  // Función para desplazar al ícono seleccionado
+  function scrollToSelectedIcon(iconGallery, selectedInput) {
+    const label = selectedInput.closest('label');
+    if (label) {
+      label.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // Evento que se ejecuta cuando el DOM está completamente cargado
+  document.addEventListener('DOMContentLoaded', () => {
+    // Para cada icon-gallery, encontrar el input seleccionado y desplazarse a él
+    const iconGalleries = document.querySelectorAll('.icon-gallery');
+    iconGalleries.forEach(gallery => {
+      const formGroup = gallery.closest('.form-group');
+      const iconSearchInput = formGroup.querySelector('.icon-search');
+      const iconoNombreInput = formGroup.querySelector('.icono-nombre');
+
+      attachGalleryListeners(gallery, iconSearchInput, iconoNombreInput);
+    });
+  });
+</script>
+
+<!-- Estilos para la galería de íconos -->
+<style>
+  .icon-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  .icon-option {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    cursor: pointer;
+  }
+  .icon-option input {
+    display: none;
+  }
+  .icon-option i {
+    font-size: 24px;
+    color: #333;
+  }
+  .icon-option input:checked + i {
+    color: #007bff;
+  }
+  .no-results {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>

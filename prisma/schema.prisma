@@ -74,12 +74,22 @@ model RolPermiso {
 }
 
 model Modulo {
-  id          Int        @id @default(autoincrement())
-  nombre      String     @unique
+  id          Int         @id @default(autoincrement())
+  nombre      String      @unique
   descripcion String
-  activo      Boolean    @default(true)
-  roles       Rol[]      @relation("RolModulo")
-  permisos    Permiso[]  @relation("ModuloPermiso")
+  activo      Boolean     @default(true)
+  rutas       Ruta[]      // Relación uno a muchos con Ruta
+  roles       Rol[]       @relation("RolModulo")
+  permisos    Permiso[]   @relation("ModuloPermiso")
+}
+
+model Ruta {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  ruta      String
+  icono     String
+  moduloId  Int
+  modulo    Modulo   @relation(fields: [moduloId], references: [id])
 }
 
 model Contrato {

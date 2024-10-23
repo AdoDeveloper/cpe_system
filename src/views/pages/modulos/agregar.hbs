@@ -1,11 +1,12 @@
+<!-- views/pages/modulos/agregar.hbs -->
 <div class="container p-4">
   <div class="row justify-content-center">
     <h1>Agregar Nuevo Módulo</h1>
   </div>
-  
+
   <div class="row justify-content-center mt-4">
-    <div class="col-md-6">
-      
+    <div class="col-md-8">
+
       {{!-- Mostrar errores si existen --}}
       {{#if errors}}
         <div class="alert alert-danger">
@@ -19,12 +20,13 @@
 
       {{!-- Formulario para agregar nuevo módulo --}}
       <form method="POST" action="/modulos/new" id="alertFormSave">
-        
+
+        <!-- Campos para nombre, descripción y estado -->
         <div class="form-group">
           <label for="nombre">Nombre del Módulo</label>
           <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Módulo" required autofocus>
         </div>
-        
+
         <div class="form-group">
           <label for="descripcion">Descripción del Módulo</label>
           <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Módulo" required></textarea>
@@ -39,12 +41,20 @@
           </select>
         </div>
 
+        <!-- Sección para agregar rutas -->
+        <h3>Rutas del Módulo</h3>
+        <div id="rutas-container">
+          <!-- Campos de ruta se agregarán aquí dinámicamente -->
+        </div>
+        <button type="button" class="btn btn-secondary mb-3" id="addRutaBtn">Agregar Ruta</button>
+
+        <!-- Botones de envío y cancelación -->
         <div class="form-group row">
           <div class="col-6 pr-1">
-           <button class="btn btn-success btn-block" type="submit">Agregar Módulo</button>
+            <button class="btn btn-success btn-block" type="submit">Agregar Módulo</button>
           </div>
           <div class="col-6 pl-1">
-            <a href="/modulos" class="btn btn-secondary btn-block">Cancelar</a> <!-- Botón para cancelar -->
+            <a href="/modulos" class="btn btn-secondary btn-block">Cancelar</a>
           </div>
         </div>
 
@@ -52,3 +62,150 @@
     </div>
   </div>
 </div>
+
+<!-- Script para manejar las rutas dinámicamente -->
+<script>
+  let rutaIndex = 0;
+  const icons = {{{icons}}}; // Pasar los íconos a JavaScript
+
+  document.getElementById('addRutaBtn').addEventListener('click', () => {
+    addRuta();
+  });
+
+  function addRuta() {
+    const container = document.getElementById('rutas-container');
+    const rutaDiv = document.createElement('div');
+    rutaDiv.classList.add('ruta-group', 'mt-3');
+    rutaDiv.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][nombre]">Nombre de la Ruta</label>
+            <input type="text" class="form-control ruta-nombre" name="rutas[${rutaIndex}][nombre]" placeholder="Nombre de la Ruta" required>
+          </div>
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][ruta]">Ruta</label>
+            <input type="text" class="form-control ruta-path" name="rutas[${rutaIndex}][ruta]" placeholder="/ruta-ejemplo" required>
+          </div>
+          <div class="form-group">
+            <label for="rutas[${rutaIndex}][icono]">Ícono</label>
+            <input type="text" class="form-control icon-search" placeholder="Buscar ícono..." />
+            <input type="text" class="form-control icono-nombre mt-2" placeholder="Nombre del ícono seleccionado" readonly />
+            <div class="icon-gallery mt-2">
+              ${icons.map(icon => `
+                <label class="icon-option">
+                  <input type="radio" name="rutas[${rutaIndex}][icono]" value="${icon}" required>
+                  <i class="${icon}"></i>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger removeRutaBtn">Eliminar Ruta</button>
+        </div>
+      </div>
+      <hr>
+    `;
+    container.appendChild(rutaDiv);
+
+    // Añadir eventos
+    const removeBtn = rutaDiv.querySelector('.removeRutaBtn');
+    removeBtn.addEventListener('click', () => {
+      rutaDiv.remove();
+    });
+
+    const iconSearchInput = rutaDiv.querySelector('.icon-search');
+    const iconGallery = rutaDiv.querySelector('.icon-gallery');
+    const iconoNombreInput = rutaDiv.querySelector('.icono-nombre');
+
+
+    // Evento para filtrar íconos al escribir en el campo de búsqueda
+    iconSearchInput.addEventListener('input', () => {
+      filterIcons(iconSearchInput.value, iconGallery);
+    });
+
+    // Evento para mostrar el nombre del ícono seleccionado
+    iconGallery.addEventListener('change', (event) => {
+      if (event.target && event.target.matches('input[type="radio"]')) {
+        const selectedIcon = event.target.value;
+        iconoNombreInput.value = selectedIcon;
+      }
+    });
+
+    rutaIndex++;
+  }
+
+  // Función para filtrar íconos
+  function filterIcons(searchTerm, iconGallery) {
+    const normalizedSearchTerm = normalizeString(searchTerm);
+    const iconOptions = iconGallery.querySelectorAll('.icon-option');
+
+    iconOptions.forEach(option => {
+      const iconClass = option.querySelector('i').className;
+      const normalizedIconClass = normalizeString(iconClass);
+
+      if (normalizedIconClass.includes(normalizedSearchTerm)) {
+        option.style.display = 'flex';
+      } else {
+        option.style.display = 'none';
+      }
+    });
+
+    // Opcional: Mostrar mensaje si no hay coincidencias
+    const visibleIcons = iconGallery.querySelectorAll('.icon-option[style*="display: flex"]');
+    const existingNoResults = iconGallery.querySelector('.no-results');
+    if (visibleIcons.length === 0) {
+      if (!existingNoResults) {
+        const noResults = document.createElement('p');
+        noResults.classList.add('no-results', 'text-muted');
+        noResults.textContent = 'No se encontraron íconos.';
+        iconGallery.appendChild(noResults);
+      }
+    } else {
+      if (existingNoResults) {
+        existingNoResults.remove();
+      }
+    }
+  }
+
+  // Función para normalizar cadenas (eliminar acentos y convertir a minúsculas)
+  function normalizeString(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+</script>
+
+<!-- Estilos para la galería de íconos -->
+<style>
+  .icon-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  .icon-option {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    cursor: pointer;
+  }
+  .icon-option input {
+    display: none;
+  }
+  .icon-option i {
+    font-size: 24px;
+    color: #333;
+  }
+  .icon-option input:checked + i {
+    color: #007bff;
+  }
+  .no-results {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>

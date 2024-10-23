@@ -8,6 +8,14 @@ Handlebars.registerHelper('eq', function (a, b) {
     return resultado;
 });
 
+// Helper para comparar dos valores dentro de bloques condicionales
+Handlebars.registerHelper('ifCond', function (v1, v2, options) {
+    if (v1 === v2) {
+      return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 // Helper para serializar objetos a JSON
 Handlebars.registerHelper('json', function (context) {
     return new Handlebars.SafeString(JSON.stringify(context));
@@ -58,10 +66,14 @@ Handlebars.registerHelper('containsServicios', function(servicios, idServicio) {
     return servicios.some(servicio => servicio.servicioId === idServicio);
 });
 
-
 // Definir helper 'and' para Handlebars
 Handlebars.registerHelper('and', function (a, b) {
     return a && b;
+});
+
+// Helper para convertir una cadena a mayúsculas
+Handlebars.registerHelper('toUpperCase', function(str) {
+    return str.toUpperCase();
 });
 
 module.exports = Handlebars;
