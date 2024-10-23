@@ -1,5 +1,3 @@
-// src/middleware/middleware.js
-
 const { PrismaClient } = require('@prisma/client');
 const { isMatch } = require('../lib/pathMatcher'); // Importa la función personalizada
 const prisma = new PrismaClient();
@@ -24,6 +22,9 @@ module.exports = {
       // Normalizar la ruta solicitada (eliminar barra final y convertir a minúsculas)
       let path = req.originalUrl.split('?')[0].toLowerCase();
       if (path === '') path = '/'; // Asegurarse de que la ruta '/' se mantiene
+
+      // Guardar la ruta actual en res.locals para usarla en las vistas
+      res.locals.currentRoute = path;
 
       // Si la ruta es solo para autenticación (como /logout), permitir el acceso sin verificar permisos
       if (authOnlyRoutes.includes(path)) {
@@ -55,6 +56,22 @@ module.exports = {
       const rol = usuario.rol;
       const permisos = rol.permisos.map((p) => p.permiso); // Obtener los permisos
 
+      // Obtener los módulos asignados al rol, incluyendo tanto activos como inactivos
+      const modulos = await prisma.modulo.findMany({
+        include: {
+          rutas: true,
+        },
+      });
+
+      // Verificar si la ruta pertenece a un módulo inactivo
+      const moduloInactivo = modulos.some(modulo => {
+        return modulo.activo === false && modulo.rutas.some(ruta => isMatch(ruta.ruta, path));
+      });
+
+      if (moduloInactivo) {
+        return res.status(403).render('errors/403', { layout: 'error', title: '403 - Módulo inactivo' });
+      }
+
       // Obtener los módulos activos asignados al rol
       const modulosActivos = rol.modulos.filter((modulo) => modulo.activo);
 
@@ -64,12 +81,12 @@ module.exports = {
           where: {
             moduloId: modulo.id,
           },
-          orderBy: { id: 'asc' },
+          orderBy: { id: 'asc' }, // Ordenar rutas ascendentemente
         });
         modulo.rutas = rutas;
       }
 
-      // Guardar los módulos activos y sus rutas en res.locals
+      // Guardar los módulos activos y sus rutas en res.locals para uso en las vistas
       res.locals.modulos = modulosActivos;
 
       const method = req.method; // Obtener el método HTTP usado

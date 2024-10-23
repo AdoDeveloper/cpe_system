@@ -76,4 +76,22 @@ Handlebars.registerHelper('toUpperCase', function(str) {
     return str.toUpperCase();
 });
 
+// Helper para formatear nombres de módulos
+Handlebars.registerHelper('formatModuleName', function(nombre) {
+    if (typeof nombre !== 'string') return '';
+    // Reemplazar guiones bajos por espacios y convertir a mayúsculas
+    return nombre.replace(/_/g, ' ').toUpperCase();
+    // Opcional: Si se prefiere capitalizar cada palabra, usa la siguiente línea en su lugar:
+    // return nombre.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+});
+
+// Helper para verificar si la ruta actual está dentro de las rutas del módulo
+Handlebars.registerHelper('ifActiveModule', function(rutas, currentRoute, options) {
+    const isActive = rutas.some(ruta => ruta.ruta === currentRoute);
+    if (isActive) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 module.exports = Handlebars;

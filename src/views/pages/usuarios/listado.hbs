@@ -1,17 +1,18 @@
-<div class="container-fluid p-4">
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <h3>Listado de Usuarios</h3>
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTADO DE USUARIOS</h3>
+                <a href="/usuarios/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Usuario
+                </a>
+            </div>
         </div>
-        <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/usuarios/new" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Agregar Usuario</a>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
+        <!-- /.card-header -->
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table id="usuarios" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -36,13 +37,14 @@
                                         <span class="badge badge-danger">Inactivo</span>
                                     {{/if}}
                                 </td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="/usuarios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form id="deleteForm-{{id}}" method="POST" action="/usuarios/delete/{{id}}" style="display:inline;">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar" onclick="confirmDeleteUsuario('{{id}}', '{{nombre}}')">
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/usuarios/delete/{{id}}_method=DELETE" style="display:inline;"
+                                        onsubmit="return confirmDeleteUsuario(event, '{{id}}', '{{nombre}}')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
@@ -56,23 +58,26 @@
     </div>
 </div>
 
+<!-- Incluye SweetAlert2 para las alertas -->
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+
 <script>
-  function confirmDeleteUsuario(id, nombreUsuario) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Estás a punto de eliminar al usuario: ${nombreUsuario}. Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Enviar el formulario si se confirma la eliminación
-        document.getElementById(`deleteForm-${id}`).submit();
-      }
-    });
-  }
+    function confirmDeleteUsuario(event, id, nombreUsuario) {
+        event.preventDefault(); // Evitar el envío del formulario inmediatamente
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar al usuario: ${nombreUsuario}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
 </script>

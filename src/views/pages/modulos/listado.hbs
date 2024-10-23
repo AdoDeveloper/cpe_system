@@ -1,25 +1,25 @@
-<!-- views/pages/modulos/listado.hbs -->
-<div class="container-fluid p-4">
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <h3>Listado de Módulos</h3>
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTA DE MÓDULOS</h3>
+                <a href="/modulos/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Módulo
+                </a>
+            </div>
         </div>
-        <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/modulos/new" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Agregar Módulo</a>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
+        <!-- /.card-header -->
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table id="modulos" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
                     <thead>
                         <tr>
                             <th>No. Módulo</th>
                             <th>NOMBRE</th>
                             <th>DESCRIPCIÓN</th>
                             <th>ESTADO</th>
-                            <th>RUTAS</th> <!-- Nueva columna para rutas -->
+                            <th>RUTAS</th>
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
@@ -41,7 +41,7 @@
                                         <ul class="list-unstyled mb-0">
                                             {{#each rutas}}
                                                 <li class="mb-2">
-                                                    <strong>{{nombre}}</strong> (<em>{{ruta}}</em>) 
+                                                    <strong>{{nombre}}</strong> (<em>{{ruta}}</em>)
                                                     <i class="{{icono}} icon-tooltip" title="{{icono}}"></i>
                                                 </li>
                                             {{/each}}
@@ -50,11 +50,13 @@
                                         <span class="text-muted">Sin rutas</span>
                                     {{/if}}
                                 </td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="/modulos/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form id="deleteForm-{{id}}" method="POST" action="/modulos/delete/{{id}}?_method=DELETE" style="display:inline;" onsubmit="return confirmDeleteModulo(event, '{{id}}', '{{nombre}}')">
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/modulos/delete/{{id}}?_method=DELETE" style="display:inline;"
+                                        onsubmit="return confirmDeleteModulo(event, '{{id}}', '{{nombre}}')">
                                         <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
@@ -73,38 +75,40 @@
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 
 <script>
-  function confirmDeleteModulo(event, id, nombreModulo) {
-    event.preventDefault(); // Evitar el envío del formulario inmediatamente
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Estás a punto de eliminar el módulo: ${nombreModulo}. Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Si el usuario confirma, enviar el formulario manualmente
-        document.getElementById(`deleteForm-${id}`).submit();
-      }
-    });
-  }
+    function confirmDeleteModulo(event, id, nombreModulo) {
+        event.preventDefault(); // Evitar el envío del formulario inmediatamente
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar el módulo: ${nombreModulo}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
 </script>
 
 <!-- Estilos para la visualización de íconos y tooltips -->
 <style>
-  .icon-tooltip {
-    font-size: 20px;
-    color: #333;
-    margin-left: 8px;
-    cursor: pointer;
-  }
-  .icon-tooltip:hover {
-    color: #007bff;
-  }
-  ul.list-unstyled li i.icon-tooltip {
-    transition: color 0.3s;
-  }
+    .icon-tooltip {
+        font-size: 20px;
+        color: #333;
+        margin-left: 8px;
+        cursor: pointer;
+    }
+
+    .icon-tooltip:hover {
+        color: #007bff;
+    }
+
+    ul.list-unstyled li i.icon-tooltip {
+        transition: color 0.3s;
+    }
 </style>

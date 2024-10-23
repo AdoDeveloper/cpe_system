@@ -1,52 +1,54 @@
-<div class="container-fluid p-4">
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <h3>Listado de Clientes</h3>
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTA DE CLIENTES</h3>
+                <a href="/clientes/new" class="btn btn-success"><i class="fas fa-plus"></i> Agregar Cliente</a>
+            </div>
         </div>
-        <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/clientes/new" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Agregar Cliente</a>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
+        <!-- /.card-header -->
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
+                <table id="clientes" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                </table>
+                <thead>
+                    <tr>
+                        <th>No. Cliente</th>
+                        <th>NOMBRES</th>
+                        <th>APELLIDOS</th>
+                        <th>ALIAS</th>
+                        <th>TELÉFONO</th>
+                        <th>CORREO</th>
+                        <th>DUI</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each clientes}}
                         <tr>
-                            <th>No. Cliente</th>
-                            <th>NOMBRES</th>
-                            <th>APELLIDOS</th>
-                            <th>ALIAS</th>
-                            <th>TELÉFONO</th>
-                            <th>CORREO</th>
-                            <th>DUI</th>
-                            <th>ACCIONES</th>
+                            <td>{{id}}</td>
+                            <td>{{nombres}}</td>
+                            <td>{{apellidos}}</td>
+                            <td>{{alias}}</td>
+                            <td>{{telefono}}</td>
+                            <td>{{correo}}</td>
+                            <td>{{dui}}</td>
+                            <td style="white-space: nowrap;">
+                                <a href="/clientes/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form id="deleteForm-{{id}}" method="POST"
+                                    action="/clientes/delete/{{id}}?_method=DELETE" style="display:inline;">
+                                    <button type="button" class="btn btn-danger btn-sm" title="Eliminar"
+                                        onclick="confirmDeleteCliente('{{id}}', '{{nombres}} {{apellidos}}')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {{#each clientes}}
-                            <tr>
-                                <td>{{id}}</td>
-                                <td>{{nombres}}</td>
-                                <td>{{apellidos}}</td>
-                                <td>{{alias}}</td>
-                                <td>{{telefono}}</td>
-                                <td>{{correo}}</td>
-                                <td>{{dui}}</td>
-                                <td>
-                                    <a href="/clientes/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form id="deleteForm-{{id}}" method="POST" action="/clientes/delete/{{id}}?_method=DELETE" style="display:inline;">
-                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar" onclick="confirmDeleteCliente('{{id}}', '{{nombres}} {{apellidos}}')">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {{/each}}
-                    </tbody>
+                    {{/each}}
+                </tbody>
                 </table>
             </div>
         </div>
@@ -55,21 +57,21 @@
 
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script>
-  function confirmDeleteCliente(id, nombreCompleto) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Estás a punto de eliminar al cliente: ${nombreCompleto}. Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Enviar el formulario de eliminación
-        document.getElementById(`deleteForm-${id}`).submit();
-      }
-    });
-  }
+    function confirmDeleteCliente(id, nombreCompleto) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar al cliente: ${nombreCompleto}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
 </script>

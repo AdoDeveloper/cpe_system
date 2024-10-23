@@ -54,3 +54,18 @@ input:checked + .slider:before {
   width: 100%;
   height: auto !important;
 }
+
+/* Cambiar el color del texto de la ruta activa */
+.nav-sidebar .nav-link.active-route p {
+  color: #2196F3 !important; /* Dorado, por ejemplo */
+}
+
+/* Opcional: Cambiar el color del icono de la ruta activa */
+.nav-sidebar .nav-link.active-route .nav-icon {
+  color: #2196F3 !important;
+}
+
+/* Opcional: Añadir una transición suave al color */
+.nav-sidebar .nav-link p {
+  transition: color 0.3s;
+}

@@ -1,14 +1,14 @@
-<!-- views/partials/menu.hbs -->
+<!-- views/partials/menu.hbs --> 
 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
   {{#each modulos}}
     {{#if activo}}
-      <li class="nav-header">{{toUpperCase nombre}}</li>
+      <li class="nav-header">{{formatModuleName nombre}}</li>
       {{#each rutas}}
           <li class="nav-item">
-            <a href="{{ruta}}" class="nav-link">
+            <a href="{{ruta}}" class="nav-link {{#if (eq ruta ../../currentRoute)}}active-route{{/if}}">
               <i class="nav-icon {{icono}}"></i>
-              <p>{{nombre}}</p>
+              <p class="{{#if (eq ruta ../../currentRoute)}}text-warning{{/if}}">{{nombre}}</p> <!-- Cambiar el color del texto -->
             </a>
           </li>
       {{/each}}

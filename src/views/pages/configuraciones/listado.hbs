@@ -1,19 +1,19 @@
-<div class="container-fluid p-4">
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <h3>Listado de Configuraciones CPE</h3>
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTA DE CONFIGURACIONES CPE</h3>
+                <a href="/configuraciones/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Configuración CPE
+                </a>
+            </div>
         </div>
-        <div class="col-12 col-md-6 text-md-right text-center">
-            <a href="/configuraciones/new" class="btn btn-success mb-2">
-                <i class="fas fa-plus"></i> Agregar Configuración CPE
-            </a>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
+        <!-- /.card-header -->
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table id="configuraciones" style="white-space: nowrap;"
+                    class="table table-bordered table-hover datatable">
                     <thead>
                         <tr>
                             <th>No. Configuración</th>
@@ -32,12 +32,15 @@
                                 <td>{{ip_antena}}</td>
                                 <td>{{cpe_antena.nombre_equipo}}</td>
                                 <td>{{cpe_router.nombre_equipo}}</td>
-                                <td>
-                                    <a href="/configuraciones/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                <td style="white-space: nowrap;">
+                                    <a href="/configuraciones/edit/{{id}}" class="btn btn-primary btn-sm"
+                                        title="Modificar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form id="deleteForm-{{id}}" method="POST" action="/configuraciones/delete/{{id}}?_method=DELETE" style="display:inline;">
-                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar" onclick="confirmDeleteConfiguracion('{{id}}', '{{cliente.alias}}')">
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/configuraciones/delete/{{id}}?_method=DELETE" style="display:inline;">
+                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar"
+                                            onclick="confirmDeleteConfiguracion('{{id}}', '{{cliente.alias}}')">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
@@ -53,21 +56,21 @@
 
 <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script>
-  function confirmDeleteConfiguracion(id, clienteAlias) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Estás a punto de eliminar la configuración CPE del cliente: ${clienteAlias}. Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Enviar el formulario de eliminación
-        document.getElementById(`deleteForm-${id}`).submit();
-      }
-    });
-  }
+    function confirmDeleteConfiguracion(id, clienteAlias) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar la configuración CPE del cliente: ${clienteAlias}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
 </script>
