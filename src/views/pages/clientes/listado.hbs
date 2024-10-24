@@ -11,46 +11,46 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table id="clientes" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
-                </table>
-                <thead>
-                    <tr>
-                        <th>No. Cliente</th>
-                        <th>NOMBRES</th>
-                        <th>APELLIDOS</th>
-                        <th>ALIAS</th>
-                        <th>TELÉFONO</th>
-                        <th>CORREO</th>
-                        <th>DUI</th>
-                        <th>ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each clientes}}
+                    <thead>
                         <tr>
-                            <td>{{id}}</td>
-                            <td>{{nombres}}</td>
-                            <td>{{apellidos}}</td>
-                            <td>{{alias}}</td>
-                            <td>{{telefono}}</td>
-                            <td>{{correo}}</td>
-                            <td>{{dui}}</td>
-                            <td style="white-space: nowrap;">
-                                <a href="/clientes/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form id="deleteForm-{{id}}" method="POST"
-                                    action="/clientes/delete/{{id}}?_method=DELETE" style="display:inline;">
-                                    <button type="button" class="btn btn-danger btn-sm" title="Eliminar"
-                                        onclick="confirmDeleteCliente('{{id}}', '{{nombres}} {{apellidos}}')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </td>
+                            <th>No. Cliente</th>
+                            <th>NOMBRES</th>
+                            <th>APELLIDOS</th>
+                            <th>ALIAS</th>
+                            <th>TELÉFONO</th>
+                            <th>CORREO</th>
+                            <th>DUI</th>
+                            <th>ACCIONES</th>
                         </tr>
-                    {{/each}}
-                </tbody>
+                    </thead>
+                    <tbody>
+                        {{#each clientes}}
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{nombres}}</td>
+                                <td>{{apellidos}}</td>
+                                <td>{{alias}}</td>
+                                <td>{{telefono}}</td>
+                                <td>{{correo}}</td>
+                                <td>{{dui}}</td>
+                                <td style="white-space: nowrap;">
+                                    <a href="/clientes/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/clientes/delete/{{id}}?_method=DELETE" style="display:inline;">
+                                        <button type="button" class="btn btn-danger btn-sm" title="Eliminar"
+                                            onclick="confirmDeleteCliente('{{id}}', '{{nombres}} {{apellidos}}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
                 </table>
             </div>
+
         </div>
     </div>
 </div>
