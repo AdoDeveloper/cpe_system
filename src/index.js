@@ -1,3 +1,4 @@
+// src/index.js
 require('dotenv').config(); // Cargar variables de entorno desde .env
 const express = require('express'); // Importar express para manejar el servidor
 const path = require('path'); // Para manejar rutas de archivos
