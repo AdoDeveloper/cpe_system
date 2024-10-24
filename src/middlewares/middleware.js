@@ -1,130 +1,141 @@
 const { PrismaClient } = require('@prisma/client');
-const { isMatch } = require('../lib/pathMatcher'); // Importa la función personalizada
+const { isMatch } = require('../lib/pathMatcher');
 const prisma = new PrismaClient();
 
 module.exports = {
-  // Middleware de autenticación
   authMiddleware: async (req, res, next) => {
     try {
-      // Definir las rutas que requieren solo estar autenticado, pero sin verificar permisos de rol
+      console.log('--- INICIO MIDDLEWARE ---');
+
       const authOnlyRoutes = ['/logout'];
 
-      // Ignorar las solicitudes de favicon
       if (req.originalUrl.includes('favicon.ico')) {
         return next();
       }
 
-      // Si el usuario no está autenticado, redirigir al login
       if (!req.session.user) {
+        console.log('Usuario no autenticado. Redirigiendo a login.');
         return res.redirect('/login');
       }
 
-      // Normalizar la ruta solicitada (eliminar barra final y convertir a minúsculas)
       let path = req.originalUrl.split('?')[0].toLowerCase();
-      if (path === '') path = '/'; // Asegurarse de que la ruta '/' se mantiene
+      if (path === '') path = '/';
+      console.log('Ruta solicitada:', path);
 
-      // Guardar la ruta actual en res.locals para usarla en las vistas
       res.locals.currentRoute = path;
 
-      // Si la ruta es solo para autenticación (como /logout), permitir el acceso sin verificar permisos
       if (authOnlyRoutes.includes(path)) {
         return next();
       }
 
-      // Buscar el usuario y su rol en la base de datos, incluyendo los permisos y módulos activos
+      // Buscar el usuario y su rol, incluyendo los módulos asignados a través de RolModulo
       const usuario = await prisma.usuario.findUnique({
         where: { email: req.session.user },
         include: {
           rol: {
             include: {
-              permisos: {
+              modulos: {
                 include: {
-                  permiso: true,
+                  modulo: true, // Obtenemos los detalles de los módulos
                 },
               },
-              modulos: true, // Obtener los módulos asignados al rol
+              permisos: {
+                include: {
+                  permiso: {
+                    include: {
+                      moduloPermisos: {
+                        include: { modulo: true },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      // Asegurarse de que el usuario tiene un rol y permisos
-      if (!usuario || !usuario.rol) {
+      if (!usuario) {
+        console.log('Usuario no encontrado en la base de datos.');
         return res.redirect('/login');
       }
 
       const rol = usuario.rol;
-      const permisos = rol.permisos.map((p) => p.permiso); // Obtener los permisos
-
-      // Obtener los módulos asignados al rol, incluyendo tanto activos como inactivos
-      const modulos = await prisma.modulo.findMany({
-        include: {
-          rutas: true,
-        },
-      });
-
-      // Verificar si la ruta pertenece a un módulo inactivo
-      const moduloInactivo = modulos.some(modulo => {
-        return modulo.activo === false && modulo.rutas.some(ruta => isMatch(ruta.ruta, path));
-      });
-
-      if (moduloInactivo) {
-        return res.status(403).render('errors/403', { layout: 'error', title: '403 - Módulo inactivo' });
+      if (!rol) {
+        console.log('Rol no asignado al usuario.');
+        return res.redirect('/login');
       }
 
-      // Obtener los módulos activos asignados al rol
-      const modulosActivos = rol.modulos.filter((modulo) => modulo.activo);
+      console.log('Usuario:', usuario.email, 'Rol:', rol.nombre);
+      const permisos = rol.permisos.map((p) => p.permiso);
 
-      // Incluir las rutas de los módulos
+      // Verificar módulos activos a través de RolModulo y ordenar por id ascendente
+      const modulosActivos = rol.modulos
+        .map((rolModulo) => rolModulo.modulo)
+        .filter((modulo) => modulo.activo)
+        .sort((a, b) => a.id - b.id); // Ordenar por ID de módulo ascendente
+
+      // Verificar las rutas y permisos para cada módulo
+      const modulosConPermisos = [];
       for (const modulo of modulosActivos) {
+        console.log('Verificando módulo:', modulo.nombre);
         const rutas = await prisma.ruta.findMany({
-          where: {
-            moduloId: modulo.id,
-          },
-          orderBy: { id: 'asc' }, // Ordenar rutas ascendentemente
+          where: { moduloId: modulo.id },
+          orderBy: { id: 'asc' }, // Ordenar las rutas por ID ascendente
         });
-        modulo.rutas = rutas;
+
+        // Filtrar las rutas a las que el usuario tiene acceso
+        const rutasConPermiso = rutas.filter((ruta) =>
+          permisos.some((permiso) =>
+            permiso.moduloPermisos.some(mp => mp.moduloId === modulo.id) &&
+            isMatch(permiso.ruta, ruta.ruta) &&
+            permiso.metodo === req.method
+          )
+        );
+
+        if (rutasConPermiso.length > 0) {
+          modulo.rutas = rutasConPermiso;
+          modulosConPermisos.push(modulo);
+        }
       }
 
-      // Guardar los módulos activos y sus rutas en res.locals para uso en las vistas
-      res.locals.modulos = modulosActivos;
+      console.log('Módulos con permisos permitidos:', modulosConPermisos.map(m => m.nombre));
 
-      const method = req.method; // Obtener el método HTTP usado
+      res.locals.modulos_menu = modulosConPermisos; // Enviar los módulos permitidos al menú
 
-      // Función para verificar si el rol tiene permisos para la ruta actual
-      const hasPermission = permisos.some((permiso) => {
-        const { ruta, metodo } = permiso;
+      const method = req.method;
+      console.log('Método HTTP usado:', method);
 
-        // Verificar si la ruta solicitada coincide con el patrón del permiso
-        const isRouteMatch = isMatch(ruta, path);
-
-        return isRouteMatch && metodo === method;
-      });
+      // Verificar si el usuario tiene permiso para la ruta solicitada
+      const hasPermission = permisos.some((permiso) =>
+        permiso.moduloPermisos.some(mp => modulosActivos.map(mod => mod.id).includes(mp.moduloId)) &&
+        isMatch(permiso.ruta, path) &&
+        permiso.metodo === method
+      );
 
       console.log('¿Tiene permiso?', hasPermission);
 
       if (!hasPermission) {
+        console.log('Acceso denegado a la ruta:', path);
         return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
       }
 
-      // Continuar con la ruta si el usuario está autenticado y tiene permisos
       next();
     } catch (error) {
       console.error('Error en el middleware de autenticación:', error);
       return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     } finally {
       await prisma.$disconnect();
+      console.log('--- FIN MIDDLEWARE ---');
     }
   },
 
-  // Middleware para redirigir al dashboard si el usuario está autenticado
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
-      // Verificar si el rol del usuario tiene la propiedad `esAdmin`
       if (req.session.role?.esAdmin) {
         return res.redirect('/servicios');
       }
-      return res.redirect('/'); // Redirigir a la página de usuario normal
+      return res.redirect('/');
     }
     next();
   },

@@ -4,7 +4,7 @@ const Handlebars = require('handlebars');
 // Helper para comparar dos valores
 Handlebars.registerHelper('eq', function (a, b) {
     const resultado = a === b;
-    console.log(`Comparando: ${a} === ${b} -> ${resultado}`);
+    //console.log(`Comparando: ${a} === ${b} -> ${resultado}`);
     return resultado;
 });
 

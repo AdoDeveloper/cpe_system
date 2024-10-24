@@ -1,101 +1,121 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // Controlador para listar roles
 exports.listRoles = async (req, res) => {
+  console.log("--- INICIO listRoles ---"); // Inicio del controlador
   try {
-    // Obtener roles con permisos y módulos
+    console.log("Obteniendo roles desde la base de datos...");
     const roles = await prisma.rol.findMany({
       include: {
         permisos: {
           include: {
             permiso: {
               include: {
-                modulos: true, // Incluir la información de los módulos
+                moduloPermisos: { 
+                  include: { modulo: true }, // Incluir la información de los módulos
+                },
               },
             },
           },
         },
       },
-      orderBy: { id: 'asc' },
+      orderBy: { id: "asc" },
     });
 
-    // Contar cuántos roles tienen esAdmin = true
-    const totalAdmins = roles.filter(rol => rol.esAdmin).length;
-    const soloUnAdmin = totalAdmins === 1;
+    console.log("Roles obtenidos:", roles.length);
 
-    // Debug: Imprimir en consola la cantidad de administradores y si solo queda uno
-    console.log('Total administradores:', totalAdmins);
-    console.log('¿Solo un administrador?:', soloUnAdmin);
+    const rolesFormateados = roles.map((rol) => {
+      const formateado = {
+        id: rol.id,
+        nombre: rol.nombre,
+        esAdmin: rol.esAdmin,
+        permisos: rol.permisos.map((rolPermiso) => ({
+          ruta: rolPermiso.permiso.ruta,
+          metodo: rolPermiso.permiso.metodo,
+          descripcion: rolPermiso.permiso.descripcion,
+          tipo: rolPermiso.permiso.tipo,
+          modulo: rolPermiso.permiso.moduloPermisos.length > 0
+            ? rolPermiso.permiso.moduloPermisos.map((m) => m.modulo.nombre).join(", ")
+            : "Sin módulo",
+        })),
+        modulos: [...new Set(rol.permisos.flatMap((rolPermiso) =>
+          rolPermiso.permiso.moduloPermisos.map((m) => m.modulo.nombre)
+        ))],
+      };
+      console.log(`Rol formateado: ${formateado.nombre}`, formateado);
+      return formateado;
+    });
 
-    // Transformar los datos para que sean más fáciles de manejar en la plantilla
-    const rolesFormateados = roles.map((rol) => ({
-      id: rol.id,
-      nombre: rol.nombre,
-      esAdmin: rol.esAdmin, // Añadir el valor de esAdmin
-      permisos: rol.permisos.map((rolPermiso) => ({
-        ruta: rolPermiso.permiso.ruta,
-        metodo: rolPermiso.permiso.metodo,
-        descripcion: rolPermiso.permiso.descripcion,
-        tipo: rolPermiso.permiso.tipo, // Agregar el tipo
-        modulo: rolPermiso.permiso.modulos.length > 0 ? rolPermiso.permiso.modulos.map((m) => m.nombre).join(', ') : 'Sin módulo',
-      })),
-      modulos: [...new Set(rol.permisos.flatMap((rolPermiso) => rolPermiso.permiso.modulos.map((m) => m.nombre)))],
-    }));
-
-    // Debug: Imprimir en consola los roles formateados
-    console.log('Roles formateados:', rolesFormateados);
-
-    // Renderizar la vista con los roles y el indicador de si queda solo un administrador
-    res.render('pages/roles/listado', { roles: rolesFormateados, soloUnAdmin });
+    console.log("Roles formateados:", rolesFormateados.length);
+    res.render("pages/roles/listado", { roles: rolesFormateados });
   } catch (error) {
-    console.error('Error al listar los roles:', error);
-    req.flash('error_msg', 'Error al listar los roles.');
-    res.status(500).redirect('/roles');
+    console.error("Error al listar los roles:", error);
+    req.flash("error_msg", "Error al listar los roles.");
+    res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
+    console.log("--- FIN listRoles ---");
   }
 };
+
 
 // Renderiza el formulario para crear un nuevo rol
 exports.renderCreateForm = async (req, res) => {
+  console.log("--- INICIO renderCreateForm ---");
   try {
-    const modulosDisponibles = await prisma.modulo.findMany(); // Obtener todos los módulos
-    res.render('pages/roles/agregar', { action: 'new', rol: {}, permisos: [], modulosDisponibles, errors: [] });
+    console.log("Obteniendo módulos disponibles...");
+    const modulosDisponibles = await prisma.modulo.findMany();
+    console.log("Módulos disponibles:", modulosDisponibles.length);
+
+    res.render("pages/roles/agregar", {
+      action: "new",
+      rol: {},
+      permisos: [],
+      modulosDisponibles,
+      errors: [],
+    });
   } catch (error) {
-    console.error('Error al cargar el formulario de creación:', error);
-    req.flash('error_msg', 'Error al cargar el formulario.');
-    res.status(500).redirect('/roles');
+    console.error("Error al cargar el formulario de creación:", error);
+    req.flash("error_msg", "Error al cargar el formulario.");
+    res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
+    console.log("--- FIN renderCreateForm ---");
   }
 };
 
-// Controlador para agregar un rol con permisos opcionales y módulos opcionales
+// Controlador para agregar un rol con permisos y módulos
+// Controlador para agregar un rol con permisos y módulos
 exports.createRol = async (req, res) => {
-  const { nombre, esAdmin } = req.body; // Obtener el campo esAdmin del formulario
+  const { nombre, esAdmin } = req.body;
 
-  // Validar que se haya proporcionado un nombre
   if (!nombre) {
-    req.flash('error_msg', 'Debe proporcionar un nombre para el rol.');
-    return res.redirect('/roles/new');
+    req.flash("error_msg", "Debe proporcionar un nombre para el rol.");
+    return res.redirect("/roles/new");
   }
 
   const permisos = [];
+  const modulosAsignados = new Set(); // Utilizamos un Set para evitar duplicados de módulos
   let i = 0;
 
-  // Recorrer los permisos enviados en el formulario
   while (req.body[`permisos[${i}][ruta]`]) {
     const ruta = req.body[`permisos[${i}][ruta]`];
-    const metodo = req.body[`permisos[${i}][metodo]`]; // Asegurarse de obtener correctamente el método HTTP
-    const descripcion = req.body[`permisos[${i}][descripcion]`] || '';
-    const tipo = req.body[`permisos[${i}][tipo]`] || 'lectura'; // Tipo por defecto a 'lectura'
-    const moduloId = req.body[`permisos[${i}][moduloId]`] ? parseInt(req.body[`permisos[${i}][moduloId]`]) : null; // Módulo opcional
+    const metodo = req.body[`permisos[${i}][metodo]`];
+    const descripcion = req.body[`permisos[${i}][descripcion]`] || "";
+    const tipo = req.body[`permisos[${i}][tipo]`] || "lectura";
+    const moduloId = req.body[`permisos[${i}][moduloId]`]
+      ? parseInt(req.body[`permisos[${i}][moduloId]`])
+      : null;
 
-    // Verificar que el método esté presente
     if (!metodo) {
-      req.flash('error_msg', `Debe seleccionar un método HTTP para el permiso ${ruta}.`);
-      return res.redirect('/roles/new');
+      req.flash("error_msg", `Debe seleccionar un método HTTP para el permiso ${ruta}.`);
+      return res.redirect("/roles/new");
+    }
+
+    // Agregar el módulo al Set de módulos asignados
+    if (moduloId) {
+      modulosAsignados.add(moduloId);
     }
 
     permisos.push({ ruta, metodo, descripcion, tipo, moduloId });
@@ -103,49 +123,68 @@ exports.createRol = async (req, res) => {
   }
 
   try {
-    // Crear el rol con el campo `esAdmin`
-    const createdRol = await prisma.rol.create({ data: { nombre, esAdmin: esAdmin === 'on' } });
+    const createdRol = await prisma.rol.create({
+      data: { nombre, esAdmin: esAdmin === "on" },
+    });
 
-    // Si hay permisos, crear la relación con permisos
+    // Crear permisos y relacionarlos con el rol
     for (const permiso of permisos) {
       const createdPermiso = await prisma.permiso.create({
         data: {
           ruta: permiso.ruta,
-          metodo: permiso.metodo, // Método HTTP
+          metodo: permiso.metodo,
           descripcion: permiso.descripcion,
-          tipo: permiso.tipo, // Tipo de permiso (lectura, escritura, eliminación)
-          modulos: permiso.moduloId ? { connect: { id: permiso.moduloId } } : undefined, // Asignar el módulo solo si existe
+          tipo: permiso.tipo,
+          moduloPermisos: permiso.moduloId
+            ? { create: { moduloId: permiso.moduloId } }
+            : undefined, // Conectar al módulo si está presente
         },
       });
 
-      // Crear la relación entre el rol y el permiso
-      await prisma.rolPermiso.create({ data: { rolId: createdRol.id, permisoId: createdPermiso.id } });
+      await prisma.rolPermiso.create({
+        data: { rolId: createdRol.id, permisoId: createdPermiso.id },
+      });
     }
 
-    req.flash('success_msg', 'Rol creado correctamente.');
-    res.redirect('/roles');
+    // Crear las relaciones en RolModulo
+    for (const moduloId of modulosAsignados) {
+      console.log(`Asignando módulo ${moduloId} al rol ${createdRol.id}`);
+      await prisma.rolModulo.create({
+        data: { rolId: createdRol.id, moduloId },
+      });
+    }
+
+    req.flash("success_msg", "Rol creado correctamente.");
+    res.redirect("/roles");
   } catch (error) {
-    console.error('Error al crear el rol:', error);
-    req.flash('error_msg', 'Error al crear el rol.');
-    res.status(500).redirect('/roles');
+    console.error("Error al crear el rol:", error);
+    req.flash("error_msg", "Error al crear el rol.");
+    res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
   }
 };
 
+
+
 // Renderiza el formulario para editar un rol existente
 exports.renderEditForm = async (req, res) => {
+  console.log("--- INICIO renderEditForm ---");
   try {
     const { id } = req.params;
+    console.log("Buscando rol con id:", id);
 
-    // Obtener el rol con sus permisos y módulos asociados
     const rol = await prisma.rol.findUnique({
       where: { id: parseInt(id) },
       include: {
         permisos: {
           include: {
             permiso: {
-              include: { modulos: true },
+              include: {
+                moduloPermisos: { 
+                  include: { modulo: true },
+                },
+              },
             },
           },
         },
@@ -153,76 +192,97 @@ exports.renderEditForm = async (req, res) => {
     });
 
     if (!rol) {
-      req.flash('error_msg', 'El rol no existe.');
-      return res.redirect('/roles');
+      console.log("Rol no encontrado.");
+      req.flash("error_msg", "El rol no existe.");
+      return res.redirect("/roles");
     }
 
-    // Obtener todos los módulos disponibles
+    console.log("Rol encontrado:", rol.nombre);
     const modulosDisponibles = await prisma.modulo.findMany();
+    console.log("Módulos disponibles:", modulosDisponibles.length);
 
-    // Formatear permisos para que sean más fáciles de usar en la vista
     const permisosFormateados = rol.permisos.map((rolPermiso) => ({
       ruta: rolPermiso.permiso.ruta,
       metodo: rolPermiso.permiso.metodo,
       descripcion: rolPermiso.permiso.descripcion,
       tipo: rolPermiso.permiso.tipo,
-      moduloId: rolPermiso.permiso.modulos.length > 0 ? rolPermiso.permiso.modulos[0].id : null,
+      moduloId: rolPermiso.permiso.moduloPermisos.length > 0
+        ? rolPermiso.permiso.moduloPermisos[0].modulo.id
+        : null,
     }));
 
-    res.render('pages/roles/modificar', {
-      action: 'edit',
-      rol: { id: rol.id, nombre: rol.nombre, esAdmin: rol.esAdmin }, // Incluir esAdmin
+    res.render("pages/roles/modificar", {
+      action: "edit",
+      rol: { id: rol.id, nombre: rol.nombre, esAdmin: rol.esAdmin },
       permisos: permisosFormateados,
       modulosDisponibles,
       errors: [],
     });
   } catch (error) {
-    console.error('Error al cargar el formulario de edición:', error);
-    req.flash('error_msg', 'Error al cargar el formulario de edición.');
-    return res.status(500).redirect('/roles');
+    console.error("Error al cargar el formulario de edición:", error);
+    req.flash("error_msg", "Error al cargar el formulario de edición.");
+    return res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
+    console.log("--- FIN renderEditForm ---");
   }
 };
 
+
 // Controlador para actualizar un rol existente
 exports.updateRol = async (req, res) => {
+  console.log("--- INICIO updateRol ---");
   const { id } = req.params;
-  const { nombre, esAdmin } = req.body; // Obtener el campo esAdmin del formulario
+  const { nombre, esAdmin } = req.body;
 
   if (!nombre) {
-    req.flash('error_msg', 'Debe proporcionar un nombre para el rol.');
+    console.log("Nombre del rol no proporcionado.");
+    req.flash("error_msg", "Debe proporcionar un nombre para el rol.");
     return res.redirect(`/roles/edit/${id}`);
   }
 
   const permisos = [];
+  const modulosAsignados = new Set(); // Almacena los módulos asignados
   let i = 0;
 
   while (req.body[`permisos[${i}][ruta]`]) {
-    const ruta = req.body[`permisos[${i}][ruta]`];
-    const metodo = req.body[`permisos[${i}][metodo]`];
-    const descripcion = req.body[`permisos[${i}][descripcion]`] || '';
-    const tipo = req.body[`permisos[${i}][tipo]`] || 'lectura';
-    const moduloId = req.body[`permisos[${i}][moduloId]`] ? parseInt(req.body[`permisos[${i}][moduloId]`]) : null;
+    const permiso = {
+      ruta: req.body[`permisos[${i}][ruta]`],
+      metodo: req.body[`permisos[${i}][metodo]`],
+      descripcion: req.body[`permisos[${i}][descripcion]`] || "",
+      tipo: req.body[`permisos[${i}][tipo]`] || "lectura",
+      moduloId: req.body[`permisos[${i}][moduloId]`]
+        ? parseInt(req.body[`permisos[${i}][moduloId]`])
+        : null,
+    };
+    console.log(`Permiso ${i}:`, permiso);
 
-    if (!metodo) {
-      req.flash('error_msg', `Debe seleccionar un método HTTP para el permiso ${ruta}.`);
+    if (!permiso.metodo) {
+      console.log(`Error: No se seleccionó método HTTP para el permiso ${permiso.ruta}.`);
+      req.flash("error_msg", `Debe seleccionar un método HTTP para el permiso ${permiso.ruta}.`);
       return res.redirect(`/roles/edit/${id}`);
     }
 
-    permisos.push({ ruta, metodo, descripcion, tipo, moduloId });
+    // Almacenar los módulos asignados para crear la relación en RolModulo
+    if (permiso.moduloId) {
+      modulosAsignados.add(permiso.moduloId);
+    }
+
+    permisos.push(permiso);
     i++;
   }
 
   try {
+    console.log("Actualizando rol...");
     await prisma.rol.update({
       where: { id: parseInt(id) },
-      data: { nombre, esAdmin: esAdmin === 'on' } // Actualizar el campo esAdmin
+      data: { nombre, esAdmin: esAdmin === "on" },
     });
 
+    console.log("Buscando permisos actuales del rol...");
     const permisosActuales = await prisma.rolPermiso.findMany({
       where: { rolId: parseInt(id) },
-      include: { permiso: true }
+      include: { permiso: true },
     });
 
     const permisosActualesMap = permisosActuales.reduce((map, rolPermiso) => {
@@ -232,82 +292,111 @@ exports.updateRol = async (req, res) => {
     }, {});
 
     const permisosAEliminar = Object.keys(permisosActualesMap);
+    console.log("Permisos actuales mapeados:", permisosActualesMap);
 
     for (const permiso of permisos) {
       const key = `${permiso.ruta}-${permiso.metodo}`;
 
       if (permisosActualesMap[key]) {
-        // Actualizar permisos existentes
+        console.log(`Actualizando permiso existente para ${permiso.ruta} con método ${permiso.metodo}`);
         await prisma.permiso.update({
           where: { id: permisosActualesMap[key].permisoId },
           data: {
             descripcion: permiso.descripcion,
             tipo: permiso.tipo,
-            modulos: permiso.moduloId ? { connect: { id: permiso.moduloId } } : { disconnect: [] }  // Desconecta todos los módulos si no hay módulo seleccionado
-          }
+            moduloPermisos: {
+              deleteMany: {}, // Eliminar relaciones previas con módulos
+              create: permiso.moduloId ? { moduloId: permiso.moduloId } : [], // Asignar nuevos módulos
+            },
+          },
         });
-
         permisosAEliminar.splice(permisosAEliminar.indexOf(key), 1);
       } else {
-        // Crear nuevo permiso
+        console.log(`Creando nuevo permiso para ${permiso.ruta} con método ${permiso.metodo}`);
         const nuevoPermiso = await prisma.permiso.create({
           data: {
             ruta: permiso.ruta,
             metodo: permiso.metodo,
             descripcion: permiso.descripcion,
             tipo: permiso.tipo,
-            modulos: permiso.moduloId ? { connect: { id: permiso.moduloId } } : undefined
-          }
+            moduloPermisos: permiso.moduloId
+              ? { create: { moduloId: permiso.moduloId } }
+              : undefined,
+          },
         });
 
         await prisma.rolPermiso.create({
-          data: { rolId: parseInt(id), permisoId: nuevoPermiso.id }
+          data: { rolId: parseInt(id), permisoId: nuevoPermiso.id },
         });
       }
     }
 
+    console.log("Permisos por eliminar:", permisosAEliminar);
     for (const key of permisosAEliminar) {
       const rolPermiso = permisosActualesMap[key];
+      console.log(`Eliminando permiso con id ${rolPermiso.permisoId}`);
 
-      // Eliminar permisos y relaciones con el rol
       await prisma.rolPermiso.delete({
-        where: { rolId_permisoId: { rolId: parseInt(id), permisoId: rolPermiso.permisoId } }
+        where: {
+          rolId_permisoId: {
+            rolId: parseInt(id),
+            permisoId: rolPermiso.permisoId,
+          },
+        },
       });
 
       await prisma.permiso.delete({
-        where: { id: rolPermiso.permisoId }
+        where: { id: rolPermiso.permisoId },
       });
     }
 
-    req.flash('success_msg', 'Rol actualizado exitosamente.');
-    res.redirect('/roles');
+    // Eliminar todas las relaciones anteriores de RolModulo
+    await prisma.rolModulo.deleteMany({
+      where: { rolId: parseInt(id) },
+    });
+
+    // Crear las relaciones actualizadas en RolModulo
+    for (const moduloId of modulosAsignados) {
+      console.log(`Asignando módulo ${moduloId} al rol ${id}`);
+      await prisma.rolModulo.create({
+        data: { rolId: parseInt(id), moduloId },
+      });
+    }
+
+    req.flash("success_msg", "Rol actualizado exitosamente.");
+    res.redirect("/roles");
   } catch (error) {
-    console.error('Error al actualizar el rol:', error);
-    req.flash('error_msg', 'Error al actualizar el rol.');
+    console.error("Error al actualizar el rol:", error);
+    req.flash("error_msg", "Error al actualizar el rol.");
     res.status(500).redirect(`/roles/edit/${id}`);
   } finally {
     await prisma.$disconnect();
+    console.log("--- FIN updateRol ---");
   }
 };
 
 // Controlador para eliminar un rol
 exports.deleteRol = async (req, res) => {
+  console.log("--- INICIO deleteRol ---");
   try {
     const { id } = req.params;
+    console.log(`Eliminando rol con id: ${id}`);
 
-    // Eliminar todas las relaciones de permisos con el rol
+    console.log("Eliminando permisos asociados al rol...");
     await prisma.rolPermiso.deleteMany({ where: { rolId: parseInt(id) } });
 
-    // Eliminar el rol
+    console.log("Eliminando rol...");
     await prisma.rol.delete({ where: { id: parseInt(id) } });
 
-    req.flash('success_msg', 'Rol eliminado exitosamente.');
-    res.redirect('/roles');
+    req.flash("success_msg", "Rol eliminado exitosamente.");
+    res.redirect("/roles");
   } catch (error) {
-    console.error('Error al eliminar el rol:', error);
-    req.flash('error_msg', 'Error al eliminar el rol.');
-    res.status(500).redirect('/roles');
+    console.error("Error al eliminar el rol:", error);
+    req.flash("error_msg", "Error al eliminar el rol.");
+    res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
+    console.log("--- FIN deleteRol ---");
   }
 };
+

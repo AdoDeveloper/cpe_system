@@ -48,20 +48,52 @@ model Usuario {
 model Rol {
   id          Int          @id @default(autoincrement())
   nombre      String       @unique
-  esAdmin     Boolean      @default(false) // Nuevo campo para rol administrador
+  esAdmin     Boolean      @default(false) // Campo para rol administrador
   usuarios    Usuario[]    // Relación uno a muchos con Usuario
   permisos    RolPermiso[] // Relación muchos a muchos con Permiso
-  modulos     Modulo[]     @relation("RolModulo")
+  modulos     RolModulo[]  // Relación con la tabla intermedia RolModulo
 }
+
+model Modulo {
+  id          Int          @id @default(autoincrement())
+  nombre      String       @unique
+  descripcion String
+  activo      Boolean      @default(true)
+  rutas       Ruta[]       // Relación uno a muchos con Ruta
+  roles       RolModulo[]  // Relación con la tabla intermedia RolModulo
+  moduloPermisos ModuloPermiso[] // Relación muchos a muchos con Permiso a través de una tabla intermedia
+}
+
+model RolModulo {
+  id       Int     @id @default(autoincrement())  // Clave primaria
+  rolId    Int?    // ID del rol (opcional)
+  moduloId Int?    // ID del módulo (opcional)
+
+  rol      Rol?    @relation(fields: [rolId], references: [id], onDelete: SetNull)    // Relación opcional hacia el modelo Rol
+  modulo   Modulo? @relation(fields: [moduloId], references: [id], onDelete: SetNull) // Relación opcional hacia el modelo Modulo
+
+  @@unique([rolId, moduloId])  // Llave única compuesta para evitar duplicados
+}
+
 
 model Permiso {
   id          Int          @id @default(autoincrement())
   ruta        String
   metodo      String
   descripcion String
-  tipo        String       // Ejemplo: "lectura", "escritura", etc.
-  modulos     Modulo[]     @relation("ModuloPermiso")
+  tipo        String
   roles       RolPermiso[] // Relación muchos a muchos con Rol
+  moduloPermisos ModuloPermiso[] // Relación muchos a muchos con Modulo a través de una tabla intermedia
+}
+
+model ModuloPermiso {
+  id        Int      @id @default(autoincrement())  // Clave primaria autoincremental
+  permisoId Int?     // Hacer opcional
+  moduloId  Int?     // Hacer opcional
+  permiso   Permiso? @relation(fields: [permisoId], references: [id], onDelete: SetNull)
+  modulo    Modulo?  @relation(fields: [moduloId], references: [id], onDelete: SetNull)
+
+  @@unique([permisoId, moduloId]) 
 }
 
 model RolPermiso {
@@ -73,23 +105,13 @@ model RolPermiso {
   @@id([rolId, permisoId]) // Llave compuesta
 }
 
-model Modulo {
-  id          Int         @id @default(autoincrement())
-  nombre      String      @unique
-  descripcion String
-  activo      Boolean     @default(true)
-  rutas       Ruta[]      // Relación uno a muchos con Ruta
-  roles       Rol[]       @relation("RolModulo")
-  permisos    Permiso[]   @relation("ModuloPermiso")
-}
-
 model Ruta {
   id        Int      @id @default(autoincrement())
   nombre    String
   ruta      String
   icono     String
-  moduloId  Int
-  modulo    Modulo   @relation(fields: [moduloId], references: [id])
+  moduloId  Int?
+  modulo    Modulo?  @relation(fields: [moduloId], references: [id])
 }
 
 model Contrato {

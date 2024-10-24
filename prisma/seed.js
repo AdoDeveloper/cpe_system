@@ -72,19 +72,28 @@ async function main() {
       data: {
         nombre: 'Administrador',
         esAdmin: true,
-        modulos: {
-          connect: [
-            { id: dashboardModulo.id },
-            { id: facturacionModulo.id },
-            { id: contratosServiciosModulo.id },
-            { id: clientesModulo.id },
-            { id: gestionCpesModulo.id },
-            { id: gestionUsuariosModulo.id },
-            { id: gestionModulosModulo.id }
-          ],
-        },
       },
     });
+
+    // Asignar módulos al rol a través de RolModulo
+    const modulosAsignados = [
+      dashboardModulo.id,
+      facturacionModulo.id,
+      contratosServiciosModulo.id,
+      clientesModulo.id,
+      gestionCpesModulo.id,
+      gestionUsuariosModulo.id,
+      gestionModulosModulo.id,
+    ];
+
+    for (const moduloId of modulosAsignados) {
+      await prisma.rolModulo.create({
+        data: {
+          rolId: adminRole.id,
+          moduloId,
+        },
+      });
+    }
 
     // Crear las rutas para cada módulo con sus íconos
     const rutasData = [
@@ -239,7 +248,7 @@ async function main() {
       { ruta: '/servicios/edit/:id', metodo: 'PUT', descripcion: 'Actualizar servicio', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
       { ruta: '/servicios/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar servicio', tipo: 'eliminación', moduloId: contratosServiciosModulo.id },
 
-      // Permisos para la gestión de contratos
+      // Permisos de contratos
       { ruta: '/contratos', metodo: 'GET', descripcion: 'Listar contratos', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/new', metodo: 'GET', descripcion: 'Formulario agregar contrato', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/new', metodo: 'POST', descripcion: 'Crear contrato', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
@@ -270,10 +279,18 @@ async function main() {
           ruta: permiso.ruta,
           metodo: permiso.metodo,
           descripcion: permiso.descripcion,
-          tipo: permiso.tipo,  // Incluyendo el tipo de permiso
-          modulos: { connect: { id: permiso.moduloId } },
+          tipo: permiso.tipo,
         },
       });
+
+      // Relacionar los permisos con los módulos en la tabla intermedia
+      await prisma.moduloPermiso.create({
+        data: {
+          permisoId: createdPermiso.id,
+          moduloId: permiso.moduloId,
+        },
+      });
+
       createdPermisos.push(createdPermiso);
     }
 

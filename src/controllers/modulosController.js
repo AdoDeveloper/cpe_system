@@ -11,9 +11,8 @@ try {
   const iconsFilePath = path.join(__dirname, '../data/icons.json');
   const iconsData = fs.readFileSync(iconsFilePath, 'utf8');
   allowedIcons = JSON.parse(iconsData);
-  //console.log("Íconos cargados:", allowedIcons); // Debug para verificar íconos cargados
 } catch (error) {
-  //console.error('Error al cargar icons.json:', error);
+  console.error('Error al cargar icons.json:', error);
   allowedIcons = [];
 }
 
@@ -22,10 +21,14 @@ exports.listModulos = async (req, res) => {
   try {
     const modulos = await prisma.modulo.findMany({
       include: {
-        permisos: true, // Incluir permisos relacionados si es necesario
-        rutas: true,    // Incluir las rutas asociadas
+        rutas: true, // Incluir las rutas asociadas
+        moduloPermisos: {
+          include: {
+            permiso: true, // Incluir los permisos relacionados si es necesario
+          },
+        },
       },
-      orderBy: { id: 'asc' },
+    orderBy: { id: "asc" },
     });
     res.render('pages/modulos/listado', { modulos });
   } catch (error) {
@@ -121,17 +124,7 @@ exports.renderEditForm = async (req, res) => {
       req.flash('error_msg', 'Módulo no encontrado.');
       return res.redirect('/modulos');
     }
-    
-    // Debug para verificar el módulo cargado y los íconos antes de renderizar
-    //console.log("Módulo cargado:", modulo);
-    //console.log("Íconos pasados a la vista:", allowedIcons);
-    
-    res.render('pages/modulos/modificar', { 
-      action: 'edit', 
-      modulo, 
-      errors: [], 
-      icons: allowedIcons // Pasar los íconos como array
-    });
+    res.render('pages/modulos/modificar', { action: 'edit', modulo, errors: [], icons: allowedIcons });
   } catch (error) {
     console.error('Error al obtener el módulo para editar:', error);
     req.flash('error_msg', 'Error al obtener el módulo.');
