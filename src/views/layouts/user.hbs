@@ -7,11 +7,23 @@
   <link rel="stylesheet" href="/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
-  {{> messages}}
+<body class="hold-transition layout-top-nav"> <!-- Cambiar a layout-top-nav para usuarios sin sidebar -->
+
+  {{> messages}} <!-- Partial de mensajes para alertas/notificaciones -->
+
   <div class="wrapper">
-    {{{body}}}
+    <!-- Navbar del cliente (usuario normal) -->
+    {{> navbar-user}} <!-- Partial para el navbar del cliente -->
+
+    <!-- Contenido principal -->
+    <div class="content-wrapper">
+      {{{body}}} <!-- Aquí se renderiza el contenido dinámico de la página -->
+    </div>
+
+    {{> footer}} <!-- Partial de Footer -->
   </div>
+
+  <!-- Scripts -->
   <script src="/plugins/jquery/jquery.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/dist/js/adminlte.min.js"></script>

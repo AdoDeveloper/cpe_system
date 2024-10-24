@@ -7,7 +7,7 @@ module.exports = {
     try {
       console.log('--- INICIO MIDDLEWARE ---');
 
-      const authOnlyRoutes = ['/logout'];
+      const authOnlyRoutes = ['/logout', '/perfil', '/'];
 
       if (req.originalUrl.includes('favicon.ico')) {
         return next();
@@ -23,10 +23,6 @@ module.exports = {
       console.log('Ruta solicitada:', path);
 
       res.locals.currentRoute = path;
-
-      if (authOnlyRoutes.includes(path)) {
-        return next();
-      }
 
       // Buscar el usuario y su rol, incluyendo los módulos asignados a través de RolModulo
       const usuario = await prisma.usuario.findUnique({
@@ -75,7 +71,7 @@ module.exports = {
         .filter((modulo) => modulo.activo)
         .sort((a, b) => a.id - b.id); // Ordenar por ID de módulo ascendente
 
-      // Verificar las rutas y permisos para cada módulo
+      // Filtrar los módulos con permisos
       const modulosConPermisos = [];
       for (const modulo of modulosActivos) {
         console.log('Verificando módulo:', modulo.nombre);
@@ -93,6 +89,7 @@ module.exports = {
           )
         );
 
+        // Solo agregar el módulo si tiene rutas permitidas
         if (rutasConPermiso.length > 0) {
           modulo.rutas = rutasConPermiso;
           modulosConPermisos.push(modulo);
@@ -102,6 +99,11 @@ module.exports = {
       console.log('Módulos con permisos permitidos:', modulosConPermisos.map(m => m.nombre));
 
       res.locals.modulos_menu = modulosConPermisos; // Enviar los módulos permitidos al menú
+
+      // Si la ruta está en authOnlyRoutes, saltar la verificación de permisos
+      if (authOnlyRoutes.includes(path)) {
+        return next();
+      }
 
       const method = req.method;
       console.log('Método HTTP usado:', method);

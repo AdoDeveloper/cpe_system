@@ -43,6 +43,7 @@ loginController.processLogin = async (req, res) => {
     // Guardar el usuario en la sesión
     req.session.user = usuario.email;
     req.session.isAdmin = usuario.rol.esAdmin;
+    req.session.userName = usuario.nombre;
 
     // Si el checkbox "Recuérdame" está marcado, establecer una cookie persistente
     if (remember) {

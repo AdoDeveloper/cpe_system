@@ -79,6 +79,14 @@ app.use((req, res, next) => {
   next(); // Continuar con la siguiente middleware
 });
 
+// Middleware global para hacer que `userName` esté disponible en las vistas
+app.use((req, res, next) => {
+  if (req.session.userName) {
+    res.locals.userName = req.session.userName;  // Hacer que userName esté disponible en las vistas
+  }
+  next();
+});
+
 // Rutas
 const loginRoutes = require('./routes/loginRoutes');
 const logoutRoute = require('./routes/logoutRoute');
@@ -91,6 +99,7 @@ const equiposRoutes = require('./routes/equiposRoutes');
 const modulosRoutes = require('./routes/modulosRoutes');
 const contratosRoutes = require('./routes/contratosRoutes');
 const configuracionesRoutes = require('./routes/configuracionesRoutes');
+const perfilRoute = require('./routes/perfilRoute');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -110,6 +119,7 @@ app.use('/configuraciones',authMiddleware, configuracionesRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 
+app.use('/perfil', authMiddleware, perfilRoute);
 
 // Archivos públicos (aquí se coloca todo el código al que el navegador puede acceder)
 app.use(express.static(path.join(__dirname, "public"))); // Archivos estáticos

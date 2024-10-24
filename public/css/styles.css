@@ -69,3 +69,27 @@ input:checked + .slider:before {
 .nav-sidebar .nav-link p {
   transition: color 0.3s;
 }
+
+.navbar-nav {
+  display: flex;
+  align-items: center; /* Alinear los elementos del navbar en el centro vertical */
+}
+
+.breadcrumb-item {
+  color: #6c757d;
+}
+
+.breadcrumb-item.text-primary {
+  color: #007bff;
+}
+
+.breadcrumb-separator {
+  margin: 0 5px;
+  color: #6c757d;
+}
+
+.breadcrumb-item.active {
+  pointer-events: none;
+  font-weight: bold;
+}
+

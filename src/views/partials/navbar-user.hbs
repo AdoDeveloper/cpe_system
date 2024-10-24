@@ -1,17 +1,12 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light">
+<nav class="main-header navbar navbar-expand navbar-white navbar-light w-100">
   <!-- Left navbar links -->
-  <ul class="navbar-nav align-items-center"> <!-- Usamos align-items-center para alinear verticalmente -->
+  <ul class="navbar-nav">
+    <!-- Enlace de Inicio con ícono de casita -->
     <li class="nav-item">
-      <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-        <i class="fas fa-bars"></i>
+      <a href="/" class="nav-link">
+        <i class="fas fa-home"></i> <!-- Ícono de la casita -->
+        <span>Inicio</span> <!-- Texto "Inicio" -->
       </a>
-    </li>
-
-    <!-- Breadcrumb dinámico junto a Inicio -->
-    <li class="nav-item d-none d-sm-inline-block">
-      <nav aria-label="breadcrumb" class="breadcrumb-nav">
-        <span>{{createBreadcrumb currentRoute}}</span> <!-- Usar el helper de breadcrumb aquí -->
-      </nav>
     </li>
   </ul>
 
@@ -25,14 +20,14 @@
       </a>
       <div class="dropdown-menu dropdown-menu-right">
         <!-- Enlace al perfil de usuario -->
-        <a href="/perfil" class="dropdown-item"> <!-- Enlace al perfil del usuario -->
+        <a href="/perfil" class="dropdown-item">
           <i class="fas fa-user-cog"></i> Perfil
         </a>
         <div class="dropdown-divider"></div>
 
         <!-- Formulario para el cierre de sesión -->
         <form id="logout-form" action="/logout" method="GET" style="display: none;"></form>
-        
+
         <a href="#" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">
           <i class="fas fa-sign-out-alt"></i> Cerrar sesión
         </a>

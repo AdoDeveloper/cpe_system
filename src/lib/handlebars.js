@@ -94,4 +94,26 @@ Handlebars.registerHelper('ifActiveModule', function(rutas, currentRoute, option
     return options.inverse(this);
 });
 
+Handlebars.registerHelper('createBreadcrumb', function(route) {
+    const segments = route.split('/').filter(Boolean); // Divide la ruta y elimina los valores vacíos
+
+    let breadcrumbHtml = '<a href="/" class="breadcrumb-item">Inicio</a>'; // El primer elemento es "Inicio"
+    let accumulatedPath = '';
+
+    segments.forEach((segment, index) => {
+        accumulatedPath += `/${segment}`;
+        const formattedSegment = segment.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); // Capitaliza cada palabra y reemplaza guiones
+
+        if (index === segments.length - 1) {
+            // Último segmento (ruta actual)
+            breadcrumbHtml += ` <span class="breadcrumb-separator">></span> <span class="breadcrumb-item active text-primary">${formattedSegment}</span>`;
+        } else {
+            // Segmentos intermedios con enlace
+            breadcrumbHtml += ` <span class="breadcrumb-separator">></span> <a href="${accumulatedPath}" class="breadcrumb-item">${formattedSegment}</a>`;
+        }
+    });
+
+    return new Handlebars.SafeString(breadcrumbHtml); // Devuelve HTML seguro para Handlebars
+});
+
 module.exports = Handlebars;

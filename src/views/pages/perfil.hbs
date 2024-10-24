@@ -1,0 +1,59 @@
+<div class="container pt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <!-- Card del perfil de usuario -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Perfil de Usuario</h3>
+        </div>
+        <div class="card-body">
+          <!-- Mostrar datos si es Administrador -->
+          {{#if isAdmin}}
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input type="text" class="form-control" id="nombre" value="{{user.nombre}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="email">Correo de Usuario</label>
+              <input type="email" class="form-control" id="email" value="{{user.email}}" readonly>
+            </div>
+            
+            <!-- Enlace para cambiar la contraseña con un icono de redireccionamiento -->
+            <div class="form-group">
+              <a href="/usuarios/edit/{{user.id}}" class="btn btn-outline-primary">
+                <i class="fas fa-external-link-alt"></i> Cambiar Contraseña
+              </a>
+            </div>
+            
+          {{else}}
+            <!-- Mostrar datos si es Cliente -->
+            <div class="form-group">
+              <label for="nombres">Nombres</label>
+              <input type="text" class="form-control" id="nombres" value="{{user.cliente.nombres}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="apellidos">Apellidos</label>
+              <input type="text" class="form-control" id="apellidos" value="{{user.cliente.apellidos}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="telefono">Teléfono</label>
+              <input type="text" class="form-control" id="telefono" value="{{user.cliente.telefono}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="correo">Correo Electrónico</label>
+              <input type="email" class="form-control" id="correo" value="{{user.cliente.correo}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="correo">Correo de Usuario</label>
+              <input type="email" class="form-control" id="correo" value="{{user.email}}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="dui">DUI</label>
+              <input type="text" class="form-control" id="dui" value="{{user.cliente.dui}}" readonly>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
