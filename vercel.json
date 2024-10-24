@@ -6,11 +6,13 @@
         "use": "@vercel/node"
       }
     ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "src/index.js"
+    "build": {
+      "env": {
+        "DATABASE_URL": "postgresql://root:SwjCYkjTaXUqK4a56ACbnvtVI1IVgahC@dpg-cs8nphtds78s738in920-a.virginia-postgres.render.com/airlink_db"
+      },
+      "commands": {
+        "build": "npm install && prisma generate && npm run build"
       }
-    ]
+    }
   }
   
