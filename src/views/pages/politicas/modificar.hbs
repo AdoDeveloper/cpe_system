@@ -1,0 +1,80 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Política</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+      
+      {{!-- Mostrar errores si existen --}} 
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this.msg}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para modificar política --}} 
+      <form method="POST" action="/politicas/edit/{{politica.id}}?_method=PUT" id="alertFormEdit">
+        
+        <div class="form-group">
+          <label for="titulo">Título de la Política</label>
+          <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Título de la Política" value="{{politica.titulo}}" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="contenido">Contenido de la Política</label>
+          <!-- Contenedor de Quill para la edición del contenido -->
+          <div id="editor-container" style="height: 300px;">{{{politica.contenido}}}</div>
+          <input type="hidden" name="contenido" id="contenido">
+        </div>
+
+        <div class="form-group row">
+          <div class="col-6 pl-1">
+            <a href="/politicas" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script para inicializar Quill Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+  var quill = new Quill('#editor-container', {
+    theme: 'snow',
+    placeholder: 'Edita el contenido de la política...',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'font': [] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],  // Tamaños de fuente
+        ['bold', 'italic', 'underline', 'strike'],         // Formato de texto
+        [{ 'color': [] }, { 'background': [] }],           // Colores de texto y fondo
+        [{ 'script': 'sub' }, { 'script': 'super' }],      // Subíndice/superíndice
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],     // Listas ordenadas y con viñetas
+        [{ 'indent': '-1' }, { 'indent': '+1' }],          // Sangría
+        [{ 'direction': 'rtl' }],                          // Dirección de texto
+        [{ 'align': [] }],                                 // Alineación de texto
+        ['link', 'image', 'video'],                        // Enlace, imagen y video
+        ['blockquote', 'code-block'],                      // Bloque de cita y código
+        [{ 'background': [] }, { 'color': [] }],           // Color de fondo y de texto
+        ['clean']                                          // Botón para limpiar el formato
+      ]
+    }
+  });
+
+  // Al enviar el formulario, guarda el contenido del editor en el input oculto
+  document.getElementById('alertFormEdit').onsubmit = function() {
+    document.getElementById('contenido').value = quill.root.innerHTML;
+  };
+</script>

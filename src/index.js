@@ -98,6 +98,7 @@ const rolesRoutes = require('./routes/rolesRoutes');
 const equiposRoutes = require('./routes/equiposRoutes');
 const modulosRoutes = require('./routes/modulosRoutes');
 const contratosRoutes = require('./routes/contratosRoutes');
+const politicasRoutes = require('./routes/politicasRoutes');
 const configuracionesRoutes = require('./routes/configuracionesRoutes');
 const perfilRoute = require('./routes/perfilRoute');
 
@@ -115,6 +116,7 @@ app.use('/roles', authMiddleware, rolesRoutes);
 app.use('/equipos', authMiddleware, equiposRoutes);
 app.use('/modulos', authMiddleware, modulosRoutes);
 app.use('/contratos', authMiddleware, contratosRoutes);
+app.use('/politicas', authMiddleware, politicasRoutes);
 app.use('/configuraciones',authMiddleware, configuracionesRoutes);
 
 // Rutas protegidas para usuarios no admin

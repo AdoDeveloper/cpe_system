@@ -1,0 +1,73 @@
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTADO DE POLÍTICAS</h3>
+                <a href="/politicas/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Política
+                </a>
+            </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="politicas" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>No. Política</th>
+                            <th>TÍTULO DE POLÍTICA</th>
+                            <th>CONTENIDO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each politicas}}
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{titulo}}</td>
+                                <td>{{{contenido}}}</td> <!-- Muestra el contenido como HTML si tiene formato -->
+                                <td style="white-space: nowrap;">
+                                    <a href="/politicas/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/politicas/delete/{{id}}?_method=DELETE" style="display:inline;"
+                                        onsubmit="return confirmDeletePolitica(event, '{{id}}', '{{titulo}}')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye SweetAlert2 para las alertas -->
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+
+<script>
+    function confirmDeletePolitica(event, id, tituloPolitica) {
+        event.preventDefault(); // Evitar el envío del formulario inmediatamente
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar la política: ${tituloPolitica}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
+</script>

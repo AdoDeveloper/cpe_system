@@ -146,6 +146,12 @@ model ContratoServicio {
   @@id([contratoId, servicioId])
 }
 
+model Politica {
+  id        Int     @id @default(autoincrement())
+  titulo    String  // Título o nombre de la política
+  contenido String  // Contenido de la política en formato HTML o texto enriquecido
+}
+
 model EquipoCPE {
   id            Int                @id @default(autoincrement())
   img_equipo    String

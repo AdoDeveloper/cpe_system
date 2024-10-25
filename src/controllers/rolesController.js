@@ -12,7 +12,7 @@ exports.listRoles = async (req, res) => {
           include: {
             permiso: {
               include: {
-                moduloPermisos: { 
+                moduloPermisos: {
                   include: { modulo: true }, // Incluir la información de los módulos
                 },
               },
@@ -25,27 +25,50 @@ exports.listRoles = async (req, res) => {
 
     console.log("Roles obtenidos:", roles.length);
 
-    const rolesFormateados = roles.map((rol) => {
-      const formateado = {
-        id: rol.id,
-        nombre: rol.nombre,
-        esAdmin: rol.esAdmin,
-        permisos: rol.permisos.map((rolPermiso) => ({
-          ruta: rolPermiso.permiso.ruta,
-          metodo: rolPermiso.permiso.metodo,
-          descripcion: rolPermiso.permiso.descripcion,
-          tipo: rolPermiso.permiso.tipo,
-          modulo: rolPermiso.permiso.moduloPermisos.length > 0
-            ? rolPermiso.permiso.moduloPermisos.map((m) => m.modulo.nombre).join(", ")
-            : "Sin módulo",
-        })),
-        modulos: [...new Set(rol.permisos.flatMap((rolPermiso) =>
-          rolPermiso.permiso.moduloPermisos.map((m) => m.modulo.nombre)
-        ))],
-      };
-      console.log(`Rol formateado: ${formateado.nombre}`, formateado);
-      return formateado;
-    });
+    const rolesFormateados = roles
+      .filter((rol) => rol && rol.nombre) // Filtra los roles que no tienen nombre para evitar errores
+      .map((rol) => {
+        const formateado = {
+          id: rol.id,
+          nombre: rol.nombre || "Nombre no disponible", // Asegúrate de que haya un valor predeterminado si el nombre es null
+          esAdmin: rol.esAdmin,
+          permisos: (rol.permisos || []).map((rolPermiso) => {
+            const permiso = rolPermiso.permiso;
+            if (!permiso) {
+              console.warn(`Permiso no definido para el rol con id: ${rol.id}`);
+              return {
+                ruta: "Ruta no disponible",
+                metodo: "Método no disponible",
+                descripcion: "Descripción no disponible",
+                tipo: "Tipo no disponible",
+                modulo: "Sin módulo",
+              };
+            }
+
+            return {
+              ruta: permiso.ruta || "Ruta no disponible",
+              metodo: permiso.metodo || "Método no disponible",
+              descripcion: permiso.descripcion || "Descripción no disponible",
+              tipo: permiso.tipo || "Tipo no disponible",
+              modulo:
+                permiso.moduloPermisos && permiso.moduloPermisos.length > 0
+                  ? permiso.moduloPermisos
+                      .map((m) => (m.modulo ? m.modulo.nombre : "Módulo desconocido"))
+                      .join(", ")
+                  : "Sin módulo",
+            };
+          }),
+          modulos: [
+            ...new Set(
+              (rol.permisos || []).flatMap((rolPermiso) =>
+                rolPermiso.permiso?.moduloPermisos?.map((m) => m.modulo?.nombre || "Módulo desconocido") || []
+              )
+            ),
+          ],
+        };
+        console.log(`Rol formateado: ${formateado.nombre}`, formateado);
+        return formateado;
+      });
 
     console.log("Roles formateados:", rolesFormateados.length);
     res.render("pages/roles/listado", { roles: rolesFormateados });
@@ -58,7 +81,6 @@ exports.listRoles = async (req, res) => {
     console.log("--- FIN listRoles ---");
   }
 };
-
 
 // Renderiza el formulario para crear un nuevo rol
 exports.renderCreateForm = async (req, res) => {
@@ -85,7 +107,6 @@ exports.renderCreateForm = async (req, res) => {
   }
 };
 
-// Controlador para agregar un rol con permisos y módulos
 // Controlador para agregar un rol con permisos y módulos
 exports.createRol = async (req, res) => {
   const { nombre, esAdmin } = req.body;

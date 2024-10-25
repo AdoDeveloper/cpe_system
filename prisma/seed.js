@@ -135,10 +135,15 @@ async function main() {
       {
         nombre: 'Contratos de Clientes',
         ruta: '/contratos',
+        icono: 'fas fa-handshake',
+        moduloId: contratosServiciosModulo.id,
+      },
+      {
+        nombre: 'Politicas de Contratos',
+        ruta: '/politicas',
         icono: 'fas fa-hands-helping',
         moduloId: contratosServiciosModulo.id,
       },
-
       // Gestión de Clientes Rutas
       {
         nombre: 'Clientes',
@@ -255,6 +260,15 @@ async function main() {
       { ruta: '/contratos/edit/:id', metodo: 'GET', descripcion: 'Formulario editar contrato', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar contrato', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar contrato', tipo: 'eliminación', moduloId: contratosServiciosModulo.id },
+      { ruta: '/contratos/pdf/:id', metodo: 'GET', descripcion: 'Generar contrato', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
+      
+      // Permisos de politicas
+      { ruta: '/politicas', metodo: 'GET', descripcion: 'Listar politicas', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
+      { ruta: '/politicas/new', metodo: 'GET', descripcion: 'Formulario agregar politica', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
+      { ruta: '/politicas/new', metodo: 'POST', descripcion: 'Crear politica', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
+      { ruta: '/politicas/edit/:id', metodo: 'GET', descripcion: 'Formulario editar politica', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
+      { ruta: '/politicas/edit/:id', metodo: 'PUT', descripcion: 'Actualizar politica', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
+      { ruta: '/politicas/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar politica', tipo: 'eliminación', moduloId: contratosServiciosModulo.id },
 
       // Permisos de módulos
       { ruta: '/modulos', metodo: 'GET', descripcion: 'Listar módulos', tipo: 'lectura', moduloId: gestionModulosModulo.id },
@@ -265,10 +279,10 @@ async function main() {
       { ruta: '/modulos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar módulo', tipo: 'eliminación', moduloId: gestionModulosModulo.id },
 
       // Permisos de home y login
-      { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id },
-      { ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura', moduloId: dashboardModulo.id },
-      { ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura', moduloId: dashboardModulo.id },
-      { ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura', moduloId: dashboardModulo.id },
+      { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id},
+      { ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
+      { ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura'},
+      { ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura'},
     ];
 
     // Crear los permisos (manteniendo la asignación actual de rutas)
@@ -316,7 +330,113 @@ async function main() {
       },
     });
 
-    console.log('Administrador creado con éxito y relacionado con todos los módulos y permisos.');
+     // Insertar un cliente
+     await prisma.cliente.create({
+      data: {
+        nombres: 'Adolfo Ernesto',
+        apellidos: 'Cortez Barrera',
+        alias: 'FAMILIA CORTEZ',
+        telefono: '76606320',
+        correo: 'adolfo@gmail.com',
+        dui: '1234567-8',
+      },
+    });
+
+    // Insertar servicios
+    const serviciosData = [
+      {
+        servicio: 'Servicio de Internet 8mps',
+        precio: 25.0,
+        descripcion:
+          'Velocidad de 8 Megas para que puedas conectar tu SmartTV, ver Netflix, ver televisión (IPTV), escuchar música y más.',
+        tipo_pago: 'Recurrente',
+      },
+      {
+        servicio: 'Servicio de Internet 3mps',
+        precio: 15.0,
+        descripcion:
+          'Velocidad de 3 Megas para que puedas navegar por internet, estudiar, ver videos y escuchar música.',
+        tipo_pago: 'Recurrente',
+      },
+      {
+        servicio: 'Instalacion de equipo CPE',
+        precio: 25.0,
+        descripcion: 'Instalación de equipo para el contrato del servico.',
+        tipo_pago: 'Unico',
+      },
+      {
+        servicio: 'Servicio de canales IPTV',
+        precio: 5.5,
+        descripcion:
+          'Ahora puedes ver televisión por internet desde tu Smart TV con la nueva tecnología IPTV donde podrás disfrutar tus canales nacionales e internacionales.',
+        tipo_pago: 'Recurrente',
+      },
+    ];
+
+    for (const servicio of serviciosData) {
+      await prisma.servicio.create({
+        data: servicio,
+      });
+    }
+
+    // Insertar políticas en la tabla Politica
+    const politicasData = [
+      {
+        titulo: 'POLITICA PERIODO DE CONTRATACION Y RENOVACION',
+        contenido: `
+          <p class="ql-indent-1 ql-align-justify"><strong>I.</strong> La duración del contrato tiene una vigencia de 12 meses a partir desde el momento que los dos representantes realicen la firma de éste.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>II.</strong> El contrato se renueva automáticamente a menos que EL CLIENTE notifique su deseo de cancelación con al menos 30 días de anticipación.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>III.</strong> El servicio se suspenderá automáticamente luego de 3 días de la fecha de pago y este no ha sido cancelado.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>IV.</strong> EL CLIENTE puede cancelar el servicio cuando desee, sin embargo, tiene la obligación a cumplir la POLITICA DE USO DE EQUIPO CPE.</p>
+        `,
+      },
+      {
+        titulo: 'POLITICA DE USO DE EQUIPO CPE',
+        contenido: `
+          <p class="ql-indent-1 ql-align-justify"><strong>I.</strong> El equipo que te brindamos para que te conectes a Internet es prestado y será retirado cuando EL CLIENTE ya no requiera del servicio.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>II.</strong> Cualquier daño irreversible realizado al equipo será agregado su valor a la factura del representante EL CLIENTE.</p>
+        `,
+      },
+      {
+        titulo: 'OBLIGACIONES DEL PROVEEDOR',
+        contenido: `
+          <p class="ql-indent-1 ql-align-justify"><strong>I.</strong> Proveer una conexión a Internet estable y confiable, dentro de los parámetros de velocidad y calidad especificados en el contrato.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>II.</strong> Ofrecer asistencia técnica a EL CLIENTE en caso de problemas con la conexión.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>III.</strong> Notificar a EL CLIENTE cualquier interrupción del servicio con la mayor anticipación posible.</p>
+          <p class="ql-indent-1 ql-align-justify"><strong>IV.</strong> Respetar la privacidad de EL CLIENTE y no divulgar información personal a terceros sin su consentimiento.</p>
+        `,
+      },
+      {
+        titulo: 'OBLIGACIONES DEL CLIENTE',
+        contenido: `
+          <p class="ql-indent-1"><strong>I.</strong> Pagar el precio del servicio de forma puntual, según las condiciones establecidas en el contrato.</p>
+          <p class="ql-indent-1"><strong>II.</strong> Utilizar el servicio de forma responsable, evitando actividades que puedan afectar la calidad de la conexión para otros usuarios.</p>
+          <p class="ql-indent-1"><strong>III.</strong> No compartir la contraseña de acceso con terceros.</p>
+          <p class="ql-indent-1"><strong>IV.</strong> Informar a EL PROVEEDOR de cualquier cambio en sus datos de contacto.</p>
+        `,
+      },
+      {
+        titulo: 'CLAUSULAS DE INCUMPLIMIENTO',
+        contenido: `
+          <p class="ql-align-justify ql-indent-1"><strong>I.</strong> En caso de incumplimiento por parte de EL CLIENTE, EL PROVEEDOR se reserva el derecho de suspender el servicio temporal o definitivamente.</p>
+          <p class="ql-align-justify ql-indent-1"><strong>II.</strong> Si EL PROVEEDOR incumple con sus obligaciones, EL CLIENTE tiene derecho a rescindir el contrato sin penalización alguna.</p>
+        `,
+      },
+      {
+        titulo: 'RESOLUCION DE CONTROVERSIAS',
+        contenido: `
+          <p class="ql-align-justify">Ambas partes acuerdan que cualquier disputa o reclamación derivada de este contrato será resuelta de conformidad con las leyes vigentes y ante los tribunales competentes de la ciudad de ____________________.</p>
+        `,
+      },
+    ];
+
+    for (const politica of politicasData) {
+      await prisma.politica.create({
+        data: politica,
+      });
+    }
+
+    console.log('Semilla completada con exito.');
   } else {
     console.log('El rol Administrador ya existe.');
   }

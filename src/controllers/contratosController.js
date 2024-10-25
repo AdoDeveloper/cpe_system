@@ -2,6 +2,7 @@ const PDFDocument = require('pdfkit');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const axios = require('axios'); // Para descargar la imagen del logo
+const { htmlToText } = require('html-to-text');// Importar striptags para limpiar etiquetas HTML
 
 // Controlador para listar los contratos
 exports.listContratos = async (req, res) => {
@@ -190,7 +191,6 @@ exports.deleteContrato = async (req, res) => {
     }
 };
 
-// Controlador para generar el contrato en PDF y enviarlo para descarga
 exports.generateContratoPDF = async (req, res) => {
     try {
         const { id } = req.params;
@@ -209,11 +209,21 @@ exports.generateContratoPDF = async (req, res) => {
             return res.redirect('/contratos');
         }
 
-        // Calcular el total
-        const total = contrato.servicios.reduce((acc, serv) => acc + serv.servicio.precio, 0);
+        // Filtrar los servicios de tipo "Recurrente"
+        const serviciosRecurrentes = contrato.servicios.filter(serv => serv.servicio.tipo_pago === 'Recurrente');
+
+        // Obtener las políticas desde la tabla "Politica"
+        const politicas = await prisma.politica.findMany({
+            orderBy: {
+                id: "asc"
+            },
+        });
+
+        // Calcular el total para servicios recurrentes
+        const total = serviciosRecurrentes.reduce((acc, serv) => acc + serv.servicio.precio, 0);
 
         // Crear el documento PDF en memoria con márgenes personalizados
-        const doc = new PDFDocument({ margin: 50 }); // Aumentar margen superior
+        const doc = new PDFDocument({ margin: 50 });
 
         // Configurar el tipo de contenido y las cabeceras para forzar la descarga
         res.setHeader('Content-Type', 'application/pdf');
@@ -224,138 +234,63 @@ exports.generateContratoPDF = async (req, res) => {
 
         // **Descargar la imagen del encabezado**
         const logoUrl = 'https://res.cloudinary.com/dldgicsdi/image/upload/v1729533127/img/image_contrato.png';
-
-        // Descargar la imagen usando axios
         const response = await axios.get(logoUrl, { responseType: 'arraybuffer' });
         const logoImage = response.data;
-
-        // Obtener el ancho de la página para centrar la imagen
         const pageWidth = doc.page.width;
-        const imageWidth = 300; // Ajustar el ancho de la imagen
-        const imageHeight = 150; // Ajustar el alto de la imagen
-        const xPosition = (pageWidth - imageWidth) / 2; // Calcular la posición para centrar
-
-        // Agregar la imagen al PDF centrada
-        doc.image(logoImage, xPosition, 40, { width: imageWidth, height: imageHeight });
+        const imageWidth = 300;
+        const xPosition = (pageWidth - imageWidth) / 2;
+        doc.image(logoImage, xPosition, 40, { width: imageWidth, height: 150 });
 
         // Mover el cursor debajo de la imagen
-        doc.moveDown(9); // Aumentar el espacio debajo de la imagen para que el título no se sobreponga
+        doc.moveDown(9);
 
         // Título del contrato
-        doc.fontSize(18)
-            .text('CONTRATO DE SERVICIO DE INTERNET', { align: 'center', underline: true })
-            .moveDown(1); // Ajustar margen entre título y contenido
+        doc.fontSize(18).text('CONTRATO DE SERVICIO DE INTERNET', { align: 'center', underline: true }).moveDown(1);
 
         // Fecha del contrato
         const fechaContrato = contrato.fecha_contrato.toLocaleDateString('es-ES');
-        doc.fontSize(12)
-            .text(`Fecha del contrato: ${fechaContrato}`, { align: 'right' })
-            .moveDown(1);
+        doc.fontSize(12).text(`Fecha del contrato: ${fechaContrato}`, { align: 'right' }).moveDown(1);
 
-        // Información de las partes
-        doc.fontSize(12)
-            .text('Entre:', { bold: true })
-            .moveDown(0.5)
-            .text('Airlink, proveedor de servicios de internet inalámbrico, que en lo sucesivo se denominará "EL PROVEEDOR", y', { align: 'justify' })
-            .moveDown(0.5)
-            .text(`${contrato.cliente.nombres} ${contrato.cliente.apellidos}, con DUI número ${contrato.cliente.dui}, quien en lo sucesivo se denominará "EL CLIENTE".`, { align: 'justify' })
-            .moveDown(1);
+        // **Información de las partes**
+        doc.fontSize(12).text(
+            `Entre: Airlink, proveedor de servicios de internet inalámbrico, que en lo sucesivo se denominará "EL PROVEEDOR", y ${contrato.cliente.nombres} ${contrato.cliente.apellidos}, con DUI número ${contrato.cliente.dui}, quien en lo sucesivo se denominará "EL CLIENTE".`,
+            { align: 'justify' }
+        ).moveDown(1);
 
         // Línea separadora
-        doc.moveTo(doc.page.margins.left, doc.y)
-            .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-            .stroke();
+        doc.moveTo(doc.page.margins.left, doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
 
         // Descripción del Servicio
-        doc.moveDown(1)
-            .fontSize(14)
-            .text('Descripción del Servicio', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12);
-
-        // Detalles de los servicios contratados
+        doc.moveDown(1).fontSize(14).text('DESCRIPCIÓN DEL SERVICIO', { underline: true }).moveDown(0.5).fontSize(12);
         contrato.servicios.forEach(serv => {
-            doc.text(`- ${serv.servicio.servicio}: $${serv.servicio.precio.toFixed(2)}`);
+            doc.text(`- ${serv.servicio.servicio.toUpperCase()}: $${serv.servicio.precio.toFixed(2)}`);
         });
-
         doc.moveDown(1);
 
-        // Precio y Forma de Pago
-        doc.fontSize(14)
-            .text('Precio y Forma de Pago', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .list([
-                `Precio mensual del servicio: $${total.toFixed(2)}, incluyendo impuestos aplicables.`,
-                'Fecha de vencimiento del pago: 10 de cada mes.',
-                'Métodos de pago aceptados: Tarjeta de crédito, débito, transferencia bancaria.',
-                'Política de facturación: Se emite factura electrónica.',
-                'Posibles cargos adicionales: Instalación, mantenimiento.'
-            ], { bulletIndent: 20 })
-            .moveDown(1);
+        // Información de Pagos (solo para servicios de tipo "Recurrente")
+        doc.fontSize(14).text('PAGOS MENSUALES', { underline: true }).moveDown(0.5).fontSize(12);
+        serviciosRecurrentes.forEach(serv => {
+            doc.text(`- ${serv.servicio.servicio.toUpperCase()}: $${serv.servicio.precio.toFixed(2)}`);
+        });
+        doc.text(`  TOTAL MENSUAL: $${total.toFixed(2)}`).moveDown(1);
 
-        // Periodo de Contratación y Renovación
-        doc.fontSize(14)
-            .text('Periodo de Contratación y Renovación', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .text('Duración del contrato: 12 meses.')
-            .text('Condiciones de renovación: El contrato se renueva automáticamente a menos que el cliente notifique su deseo de cancelación con al menos 30 días de anticipación.')
-            .moveDown(1);
+        // Agregar el contenido de las políticas desde la base de datos
+        politicas.forEach(politica => {
+            doc.fontSize(14).text(politica.titulo.toUpperCase(), { underline: true }).moveDown(0.5).fontSize(12);
+            
+        // Convertir contenido HTML a texto sin etiquetas y sin wordwrap
+        const textoPolitica = htmlToText(politica.contenido, {
+            wordwrap: false,  // Desactiva el ajuste de línea
+            preserveNewlines: true,  // Mantiene los saltos de línea originales
+        });
 
-        // Obligaciones del Proveedor
-        doc.fontSize(14)
-            .text('Obligaciones del Proveedor', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .list([
-                'Proveer una conexión a Internet estable y confiable, dentro de los parámetros de velocidad y calidad especificados en el contrato.',
-                'Ofrecer asistencia técnica a los usuarios en caso de problemas con la conexión.',
-                'Notificar al usuario cualquier interrupción del servicio con la mayor anticipación posible.',
-                'Respetar la privacidad del usuario y no divulgar información personal a terceros sin su consentimiento.'
-            ], { bulletIndent: 20 })
-            .moveDown(1);
+            doc.text(textoPolitica).moveDown(1);
+        });
 
-        // Obligaciones del Usuario
-        doc.fontSize(14)
-            .text('Obligaciones del Usuario', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .list([
-                'Pagar el precio del servicio de forma puntual, según las condiciones establecidas en el contrato.',
-                'Utilizar el servicio de forma responsable, evitando actividades que puedan afectar la calidad de la conexión para otros usuarios.',
-                'No compartir la contraseña de acceso con terceros.',
-                'Informar al proveedor de cualquier cambio en sus datos de contacto.'
-            ], { bulletIndent: 20 })
-            .moveDown(1);
-
-        // Cláusulas de Incumplimiento
-        doc.fontSize(14)
-            .text('Cláusulas de Incumplimiento', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .text('En caso de incumplimiento por parte del usuario, el proveedor se reserva el derecho de suspender el servicio temporal o definitivamente.')
-            .text('Si el proveedor incumple con sus obligaciones, el usuario tiene derecho a rescindir el contrato sin penalización alguna.')
-            .moveDown(1);
-
-        // Resolución de Controversias
-        doc.fontSize(14)
-            .text('Resolución de Controversias', { underline: true })
-            .moveDown(0.5)
-            .fontSize(12)
-            .text('Ambas partes acuerdan que cualquier disputa o reclamación derivada de este contrato será resuelta de conformidad con las leyes vigentes y ante los tribunales competentes de la ciudad de ___________.')
-            .moveDown(1);
-
-        // Firma y Fecha (con alineación horizontal)
-        doc.moveDown(2)
-            .fontSize(12)
-            .text('Firma y Fecha', { underline: true })
-            .moveDown(2)
-            .text('_________________________', { align: 'left', continued: true })
-            .text('_________________________', { align: 'right' })
-            .moveDown(0.5)
-            .text('Firma de EL CLIENTE', { align: 'left', continued: true })
-            .text('Firma de EL PROVEEDOR', { align: 'right' });
+        // Firmas
+        doc.moveDown(2).fontSize(12).text('Firma y Fecha', { underline: true }).moveDown(2);
+        doc.text('_________________________', { align: 'left', continued: true }).text('_________________________', { align: 'right' });
+        doc.text('Firma de EL CLIENTE', { align: 'left', continued: true }).text('Firma de EL PROVEEDOR', { align: 'right' });
 
         // Finalizar el documento y enviar la respuesta
         doc.end();
