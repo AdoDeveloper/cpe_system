@@ -279,10 +279,10 @@ async function main() {
       { ruta: '/modulos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar módulo', tipo: 'eliminación', moduloId: gestionModulosModulo.id },
 
       // Permisos de home y login
-      { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id},
-      { ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
-      { ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura'},
-      { ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura'},
+      //{ ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id},
+      //{ ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
+      //{ ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura'},
+      //{ ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura'},
     ];
 
     // Crear los permisos (manteniendo la asignación actual de rutas)
@@ -333,12 +333,12 @@ async function main() {
      // Insertar un cliente
      await prisma.cliente.create({
       data: {
-        nombres: 'Adolfo Ernesto',
+        nombres: 'Juan Carlos',
         apellidos: 'Cortez Barrera',
         alias: 'FAMILIA CORTEZ',
-        telefono: '76606320',
-        correo: 'adolfo@gmail.com',
-        dui: '1234567-8',
+        telefono: '76542388',
+        correo: 'juan@gmail.com',
+        dui: '9834567-5',
       },
     });
 
