@@ -24,15 +24,8 @@
         <table id="tickets" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
           <thead>
             <tr>
-              <th>No</th>
               <th>NUMERO DE TICKET</th>
-              {{#if (not (eq user.rol "Cliente"))}}
-                <th>CLIENTE</th>
-              {{/if}}
               <th>TITULO</th>
-              <th>DESCRIPCION</th>
-              <th>ESTADO</th>
-              <th>FECHA DE ACTUALIZACIÓN</th>
               <th>
                 {{#if (eq user.rol "Cliente")}}
                   GESTIONADO POR
@@ -40,30 +33,25 @@
                   ASIGNADO A
                 {{/if}}
               </th>
+              <th>ESTADO</th>
               <th>ACCIONES</th>
             </tr>
           </thead>
           <tbody>
             {{#each tickets}}
               <tr>
-                <td>{{inc @index}}</td>
                 <td>
                   <span class="badge badge-{{getBadgeClass this.tipoTicket.nombre}}">{{this.numeroTicket}}</span>
                 </td>
-                {{#if (not (eq ../user.rol "Cliente"))}}
-                  <td>{{this.cliente.nombres}} {{this.cliente.apellidos}}</td>
-                {{/if}}
                 <td>{{this.titulo}}</td>
-                <td>{{this.descripcion}}</td>
-                <td>{{getStatusBadgeClass this.estado}}</td>
-                <td>{{formatDate this.updatedAt}}</td>
                 <td>
                   {{#if this.resolver}}
                     {{this.resolver.nombre}}
                   {{else}}
                     No asignado
                   {{/if}}
-                </td>
+                </td> 
+                <td>{{getStatusBadgeClass this.estado}}</td>
                 <td style="white-space: nowrap;">
                   <a href="/tickets/timeline/{{this.id}}" class="btn btn-info btn-sm" title="Ver Timeline">
                     <i class="fas fa-eye"></i>
