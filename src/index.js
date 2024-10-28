@@ -1,4 +1,5 @@
 // src/index.js
+
 require('dotenv').config(); // Cargar variables de entorno desde .env
 const express = require('express'); // Importar express para manejar el servidor
 const path = require('path'); // Para manejar rutas de archivos
@@ -7,10 +8,17 @@ const flash = require('connect-flash'); // Para manejar mensajes flash en la ses
 const morgan = require('morgan'); // Middleware para ver las solicitudes en la consola
 const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
 const methodOverride = require('method-override'); // Importar method-override
+const http = require('http'); // Importar el módulo http para crear el servidor
 
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 
 const app = express(); // Inicializar la aplicación express
+
+// Crear el servidor HTTP usando la aplicación Express
+const server = http.createServer(app);
+
+// Inicializar Socket.IO con el servidor HTTP
+const io = require('socket.io')(server);
 
 // Configurar method-override
 app.use(methodOverride('_method')); // Usa el query parameter
@@ -101,6 +109,7 @@ const contratosRoutes = require('./routes/contratosRoutes');
 const politicasRoutes = require('./routes/politicasRoutes');
 const configuracionesRoutes = require('./routes/configuracionesRoutes');
 const perfilRoute = require('./routes/perfilRoute');
+const ticketsRoutes = require('./routes/ticketsRoutes');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -117,7 +126,8 @@ app.use('/equipos', authMiddleware, equiposRoutes);
 app.use('/modulos', authMiddleware, modulosRoutes);
 app.use('/contratos', authMiddleware, contratosRoutes);
 app.use('/politicas', authMiddleware, politicasRoutes);
-app.use('/configuraciones',authMiddleware, configuracionesRoutes);
+app.use('/configuraciones', authMiddleware, configuracionesRoutes);
+app.use('/tickets', authMiddleware, ticketsRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 
@@ -131,9 +141,14 @@ app.use((req, res, next) => {
   res.status(404).render('errors/404', { layout: 'error', title: '404 - Página no encontrada' });
 });
 
-// Iniciar el servidor
-app.listen(app.get("port"), () => {
+// Importar y ejecutar la función para inicializar Socket.IO
+const { initializeSocket } = require('./controllers/ticketsController');
+initializeSocket(io);
+
+// Iniciar el servidor usando `server.listen` en lugar de `app.listen`
+server.listen(app.get("port"), () => {
   console.log(`Servidor iniciado en el puerto: http://localhost:${app.get("port")}`);
 });
 
-module.exports = app; // Exportar la aplicación express para usar en otros módulos
+// Exportar la aplicación express y Socket.IO para usar en otros módulos
+module.exports = { app };

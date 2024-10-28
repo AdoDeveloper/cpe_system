@@ -45,15 +45,24 @@
           <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción" rows="3" required>{{equipo.descripcion}}</textarea>
         </div>
 
-        {{!-- Mostrar la imagen actual del equipo --}}
-        <div class="form-group">
-          <label>Imagen Actual</label>
-          <div>
-            {{#if equipo.img_equipo}}
-              <img src="{{equipo.img_equipo}}" alt="Imagen del equipo" class="img-fluid img-thumbnail" style="max-width: 300px;">
-            {{else}}
-              <p>No hay imagen disponible para este equipo.</p>
-            {{/if}}
+        {{!-- Mostrar la imagen actual y la nueva imagen seleccionada una al lado de la otra --}}
+        <div class="form-group row">
+          <div class="col-6">
+            <label>Imagen Actual:</label>
+            <div>
+              {{#if equipo.img_equipo}}
+                <img src="{{equipo.img_equipo}}" alt="Imagen del equipo" class="img-fluid img-thumbnail" style="max-width: 100%; height: auto;">
+              {{else}}
+                <p>No hay imagen disponible para este equipo.</p>
+              {{/if}}
+            </div>
+          </div>
+
+          <div class="col-6" id="newImagePreview" style="display: none;">
+            <label>Imagen a Reemplazar:</label>
+            <div>
+              <img id="previewImage" src="#" alt="Nueva Imagen" class="img-fluid img-thumbnail" style="max-width: 100%; height: auto;">
+            </div>
           </div>
         </div>
 
@@ -77,3 +86,19 @@
     </div>
   </div>
 </div>
+
+<!-- Agregar el script para manejar la vista previa de la imagen seleccionada -->
+<script>
+  document.getElementById('img_equipo').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const previewContainer = document.getElementById('newImagePreview');
+      const previewImage = document.getElementById('previewImage');
+      previewImage.src = URL.createObjectURL(file);
+      previewContainer.style.display = 'block';
+    } else {
+      // Ocultar el contenedor si no hay archivo seleccionado
+      document.getElementById('newImagePreview').style.display = 'none';
+    }
+  });
+</script>
