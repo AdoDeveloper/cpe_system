@@ -37,7 +37,7 @@
         {{#if (or (eq user.rol "Administrador") (eq user.rol "Soporte Tecnico"))}}
           <div class="form-group">
             <label for="tipoTicketId">Tipo de Ticket</label>
-            <select class="form-control" name="tipoTicketId" id="tipoTicketId" required>
+            <select class="form-control" name="tipoTicketId" id="tipoTicketId">
               <option value="">Selecciona un tipo de ticket</option>
               {{#each tipos}}
                 <option value="{{this.id}}" data-nombre="{{this.nombre}}">{{this.nombre}}</option>
@@ -47,7 +47,7 @@
 
           <div class="form-group">
             <label for="clienteId">Cliente a Asignar</label>
-            <select class="form-control" name="clienteId" id="clienteId" required>
+            <select class="form-control" name="clienteId" id="clienteId">
               <option value="">Selecciona un cliente</option>
               {{#each clientes}}
                 <option value="{{this.cliente.id}}">{{this.cliente.nombres}} {{this.cliente.apellidos}}</option>
@@ -57,7 +57,7 @@
 
           <div class="form-group" id="resolverGroup" style="display: none;">
             <label for="resolverId">Usuario a Asignar Resolución</label>
-            <select class="form-control" name="resolverId" id="resolverId" required>
+            <select class="form-control" name="resolverId" id="resolverId">
               <option value="">Selecciona un resolutor</option>
               <!-- Opciones se llenarán dinámicamente con JavaScript -->
             </select>
@@ -68,12 +68,12 @@
         <div id="locationFields" style="display: none;">
           <div class="form-group">
             <label for="direccion">Dirección</label>
-            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Dirección" required>
+            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Dirección">
           </div>
 
           <div class="form-group">
             <label for="coordenadas">Coordenadas</label>
-            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud" readonly required>
+            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud" readonly>
           </div>
 
           <div class="form-group">
@@ -83,19 +83,25 @@
         </div>
 
         <div class="form-group">
-          <label for="img_problema">Subir Imagen del Problema (opcional)</label>
-          <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/png, image/jpeg, image/webp">
+          {{#if (eq user.rol "Cliente")}}
+            <label for="img_problema">Subir Imagen del Problema (opcional)</label>
+            <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*">
+          {{else}}
+            <label for="img_problema">Subir Imagen o PDF del Problema</label>
+            <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*,application/pdf">
+          {{/if}}
         </div>
 
-        <!-- Contenedor para la vista previa de la imagen seleccionada -->
-        <div class="form-group" id="imagePreview" style="display: none;">
-          <label>Vista Previa de la Imagen:</label><br>
-          <img id="previewImage" src="#" alt="Vista Previa" style="max-width: 100%; height: auto;">
+        <!-- Contenedor para la vista previa del archivo seleccionado -->
+        <div class="form-group" id="filePreview" style="display: none;">
+          <label>Vista Previa del Archivo:</label><br>
+          <img id="previewImage" src="#" alt="Vista Previa de Imagen" style="max-width: 100%; height: auto; display: none;">
+          <p id="previewText" style="display: none;">Archivo PDF cargado: <span id="pdfName"></span></p>
         </div>
 
         <div class="form-group row">
           <div class="col-6 pl-1">
-            <a href="/tickets" class="btn btn-secondary btn-block">Cancelar</a> <!-- Botón para cancelar -->
+            <a href="/tickets" class="btn btn-secondary btn-block">Cancelar</a>
           </div>
           <div class="col-6 pr-1">
             <button class="btn btn-success btn-block" type="submit">Enviar Ticket</button>
@@ -117,13 +123,13 @@
     const resolverGroup = document.getElementById('resolverGroup');
     const resolverSelect = document.getElementById('resolverId');
     const locationFields = document.getElementById('locationFields');
+    const imgProblemaInput = document.getElementById('img_problema');
     const direccionInput = document.getElementById('direccion');
     const coordenadasInput = document.getElementById('coordenadas');
     let mapInitialized = false;
     let marker;
     let direccionModified = false;
 
-    // Datos de resolutores y tipos pasados desde el servidor
     const resolutores = {{{json resolutores}}};
     const tipos = {{{json tipos}}};
 
@@ -132,18 +138,18 @@
       const selectedTipoOption = this.options[this.selectedIndex];
       const tipoNombre = selectedTipoOption.getAttribute('data-nombre').toLowerCase();
       
-      // Mostrar u ocultar los campos de ubicación
       if (tipoNombre === 'mantenimiento' || tipoNombre === 'instalacion') {
         locationFields.style.display = 'block';
+        imgProblemaInput.setAttribute('accept', 'image/*,application/pdf'); // Permitir PDF e imágenes
         if (!mapInitialized) {
           initializeMap();
           mapInitialized = true;
         }
       } else {
         locationFields.style.display = 'none';
+        imgProblemaInput.setAttribute('accept', 'image/*'); // Solo permitir imágenes
       }
 
-      // Actualizar resolutores según el tipo de ticket
       const options = resolutores[tipoNombre] || [];
       resolverSelect.innerHTML = '<option value="">Selecciona un resolutor</option>';
       options.forEach(resolver => {
@@ -153,89 +159,70 @@
         resolverSelect.appendChild(option);
       });
 
-      // Mostrar u ocultar el grupo de resolutor
-      if (options.length > 0) {
-        resolverGroup.style.display = 'block';
-      } else {
-        resolverGroup.style.display = 'none';
-      }
+      resolverGroup.style.display = options.length > 0 ? 'block' : 'none';
     });
 
     function initializeMap() {
-      mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w'; // Reemplaza con tu token
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
       const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-89.70401928084173, 13.770057886610703], // Coordenadas iniciales
+        center: [-89.70401928084173, 13.770057886610703],
         zoom: 13
       });
 
-      // Crear el marcador y añadirlo al mapa
-      marker = new mapboxgl.Marker({
-        draggable: true
-      })
-      .setLngLat([-89.70401928084173, 13.770057886610703])
-      .addTo(map);
+      marker = new mapboxgl.Marker({ draggable: true })
+        .setLngLat([-89.70401928084173, 13.770057886610703])
+        .addTo(map);
 
-      // Actualizar campos cuando se mueve el marcador
       marker.on('dragend', onDragEnd);
-
-      // Actualizar campos inicialmente
       onDragEnd();
     }
 
     function onDragEnd() {
       const lngLat = marker.getLngLat();
       coordenadasInput.value = `${lngLat.lat}, ${lngLat.lng}`;
-
-      // Solo actualizar la dirección si el usuario no la ha modificado manualmente
       if (!direccionModified) {
-        // Obtener la dirección a partir de las coordenadas usando Mapbox Geocoding API
         fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w`)
           .then(response => response.json())
           .then(data => {
-            if (data.features && data.features.length > 0) {
-              direccionInput.value = data.features[0].place_name;
-            } else {
-              direccionInput.value = 'Dirección no encontrada';
-            }
+            direccionInput.value = data.features?.[0]?.place_name || 'Dirección no encontrada';
           })
-          .catch(error => {
-            console.error('Error al obtener la dirección:', error);
-            direccionInput.value = 'Error al obtener la dirección';
-          });
+          .catch(() => direccionInput.value = 'Error al obtener la dirección');
       }
     }
 
-    // Detectar cambios manuales en el campo de dirección
-    direccionInput.addEventListener('input', function() {
-      direccionModified = true;
-    });
-
-    // Restablecer el flag si el usuario borra todo el contenido
-    direccionInput.addEventListener('change', function() {
+    direccionInput.addEventListener('input', () => direccionModified = true);
+    direccionInput.addEventListener('change', () => {
       if (direccionInput.value.trim() === '') {
         direccionModified = false;
-        onDragEnd(); // Volver a obtener la dirección automáticamente
+        onDragEnd();
       }
     });
-
   </script>
 {{/if}}
 
-<!-- JavaScript para la vista previa de la imagen seleccionada -->
 <script>
-  // JavaScript para mostrar la vista previa de la imagen seleccionada
   document.getElementById('img_problema').addEventListener('change', function(event) {
-    const [file] = event.target.files;
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    const previewText = document.getElementById('previewText');
+    const pdfName = document.getElementById('pdfName');
+
     if (file) {
-      const previewContainer = document.getElementById('imagePreview');
-      const previewImage = document.getElementById('previewImage');
-      previewImage.src = URL.createObjectURL(file);
+      if (file.type.startsWith('image/')) {
+        previewImage.src = URL.createObjectURL(file);
+        previewImage.style.display = 'block';
+        previewText.style.display = 'none';
+      } else if (file.type === 'application/pdf') {
+        previewImage.style.display = 'none';
+        pdfName.textContent = file.name;
+        previewText.style.display = 'block';
+      }
       previewContainer.style.display = 'block';
     } else {
-      // Ocultar el contenedor si no hay archivo seleccionado
-      document.getElementById('imagePreview').style.display = 'none';
+      previewContainer.style.display = 'none';
     }
   });
 </script>

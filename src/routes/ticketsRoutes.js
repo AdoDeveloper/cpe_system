@@ -1,4 +1,3 @@
-// routes/ticketsRoutes.js
 const express = require('express');
 const router = express.Router();
 const ticketsController = require('../controllers/ticketsController');
@@ -14,18 +13,18 @@ router.get('/new', checkRole(['Administrador', 'Soporte Tecnico', 'Cliente']), t
 const multer = require('multer');
 const path = require('path');
 
-// Configuración de Multer para subir imágenes en memoria (para creación y edición de tickets)
+// Configuración de Multer para subir imágenes y archivos PDF en memoria
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const filetypes = /png|jpg|jpeg|webp/;
+    const filetypes = /png|jpg|jpeg|webp|pdf/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes de tipo png, jpg, jpeg, webp.'));
+      cb(new Error('Solo se permiten archivos de tipo png, jpg, jpeg, webp y pdf.'));
     }
   }
 });
@@ -47,9 +46,6 @@ router.get('/timeline/:id', ticketsController.showTimeline);
 
 // Actualizar estado del ticket
 router.put('/:id/updatestatus', ticketsController.updateTicketStatus);
-
-// **Eliminamos la ruta para enviar mensajes, ya que se maneja con Socket.IO**
-// router.post('/:id/messages', upload.single('media'), ticketsController.sendMessage);
 
 // Exportar el router
 module.exports = router;

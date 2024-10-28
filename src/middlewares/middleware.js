@@ -137,7 +137,7 @@ module.exports = {
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
       if (req.session.role?.esAdmin) {
-        return res.redirect('/servicios');
+        return res.redirect('/');
       }
       return res.redirect('/');
     }

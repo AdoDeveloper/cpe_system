@@ -12,19 +12,25 @@ cloudinary.config({
 });
 
 // Función para subir archivos a Cloudinary
-const uploadFileToCloudinary = async (fileBuffer, folder, public_id) => {
+const uploadFileToCloudinary = async (fileBuffer, folder, public_id, isPDF) => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream({
+    const options = {
       folder: folder,
-      format: 'webp', // Formato estandarizado
-      public_id: public_id, // Usar un identificador único
-    }, (error, result) => {
+      public_id: public_id,
+    };
+    
+    // Si es PDF, no cambiar el formato
+    if (!isPDF) {
+      options.format = 'webp';
+    }
+
+    cloudinary.uploader.upload_stream(options, (error, result) => {
       if (error) {
         reject(error);
       } else {
         resolve(result);
       }
-    }).end(fileBuffer); // Usar el buffer del archivo cargado
+    }).end(fileBuffer);
   });
 };
 
@@ -217,35 +223,47 @@ exports.createTicket = async (req, res) => {
   try {
     const { titulo, descripcion, direccion, coordenadas } = req.body;
     const numeroTicket = generateTicketNumber();
+    const userId = req.session.userId;
     let tipoTicketId = parseInt(req.body.tipoTicketId);
     let clienteId = parseInt(req.body.clienteId);
     let resolverId = parseInt(req.body.resolverId);
-    const userId = req.session.userId;
 
-    // Obtener el nombre del tipo de ticket seleccionado
-    let tipoTicket = await prisma.tipoTicket.findUnique({
-      where: { id: tipoTicketId },
-    });
-
-    // Si el usuario es Cliente, obtener su clienteId y asignar el tipo de ticket de "resolución"
+    // Si el usuario es Cliente, asignar el tipo de ticket de "resolución"
     if (req.session.userRole === 'Cliente') {
       const cliente = await prisma.cliente.findFirst({
         where: {
           usuario: {
-            id: userId, // Buscar el cliente relacionado al usuario en sesión
+            id: userId,
           },
         },
       });
+
       if (!cliente) {
         throw new Error("No se encontró el cliente asociado a este usuario.");
       }
-      clienteId = cliente.id; // Asignar el clienteId del cliente encontrado
-      tipoTicketId = 1; // ID del tipo de ticket "resolución" (ajusta esto según tus datos)
-      tipoTicket = await prisma.tipoTicket.findUnique({ where: { id: tipoTicketId } });
-      resolverId = null; // No hay resolutor asignado para tickets creados por clientes
+
+      clienteId = cliente.id;
+      tipoTicketId = 1; // ID del tipo de ticket "resolución" (ajusta este valor según tu base de datos)
+      resolverId = null;
     }
 
-    // Validar que dirección y coordenadas se proporcionen si el tipo de ticket es mantenimiento o instalación
+    // Validar que tipoTicketId esté definido antes de usarlo en la consulta
+    if (!tipoTicketId || isNaN(tipoTicketId)) {
+      req.flash('error_msg', 'El tipo de ticket no es válido.');
+      return res.redirect('/tickets/new');
+    }
+
+    // Obtener el nombre del tipo de ticket seleccionado
+    const tipoTicket = await prisma.tipoTicket.findUnique({
+      where: { id: tipoTicketId },
+    });
+
+    if (!tipoTicket) {
+      req.flash('error_msg', 'Tipo de ticket no encontrado.');
+      return res.redirect('/tickets/new');
+    }
+
+    // Validar campos de dirección y coordenadas para mantenimiento o instalación
     const tipoNombre = tipoTicket.nombre.toLowerCase();
     let latitud = null;
     let longitud = null;
@@ -256,12 +274,12 @@ exports.createTicket = async (req, res) => {
         return res.redirect('/tickets/new');
       }
 
-      // Separar latitud y longitud de la cadena de coordenadas
       const coords = coordenadas.split(',');
       if (coords.length !== 2) {
         req.flash('error_msg', 'Coordenadas inválidas.');
         return res.redirect('/tickets/new');
       }
+
       latitud = parseFloat(coords[0].trim());
       longitud = parseFloat(coords[1].trim());
 
@@ -291,8 +309,8 @@ exports.createTicket = async (req, res) => {
         img_problema: imgProblemaUrl,
         estado: "enviado",
         direccion: direccion || null,
-        latitud: latitud,
-        longitud: longitud,
+        latitud,
+        longitud,
       },
     });
 
@@ -415,16 +433,19 @@ exports.updateTicket = async (req, res) => {
       }
     }
 
-    // Subir nueva imagen a Cloudinary si se ha proporcionado una imagen
-    let imgProblemaUrl = ticket.img_problema; // Mantener la imagen actual por defecto
+    // Subir nuevo archivo (imagen o PDF) a Cloudinary si se ha proporcionado uno
+    let imgProblemaUrl = ticket.img_problema; // Mantener el archivo actual por defecto
     if (req.file) {
-      // Eliminar la imagen anterior si existe
+      // Determinar si el archivo es PDF
+      const isPDF = req.file.mimetype === 'application/pdf';
+
+      // Eliminar el archivo anterior si existe
       if (ticket.img_problema) {
         await deleteFileFromCloudinary(ticket.numeroTicket);
       }
 
-      // Subir la nueva imagen
-      const result = await uploadFileToCloudinary(req.file.buffer, "tickets", ticket.numeroTicket);
+      // Subir el nuevo archivo con formato apropiado
+      const result = await uploadFileToCloudinary(req.file.buffer, "tickets", ticket.numeroTicket, isPDF);
       imgProblemaUrl = result.secure_url;
     }
 
@@ -632,5 +653,3 @@ exports.updateTicketStatus = async (req, res) => {
     res.redirect(`/tickets/timeline/${ticketId}`);
   }
 };
-
-

@@ -93,23 +93,35 @@
         </div>
 
         <div class="form-group">
-          <label for="img_problema">Subir Imagen del Problema (opcional)</label>
-          <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/png, image/jpeg, image/webp">
+          <label for="img_problema">Subir Imagen o PDF del Problema (opcional)</label>
+          <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*,application/pdf">
         </div>
 
-        <!-- Mostrar la imagen actual y la nueva imagen seleccionada una al lado de la otra -->
+        <!-- Contenedor para la vista previa del archivo seleccionado -->
+        <div class="form-group" id="filePreview" style="display: none;">
+          <label>Vista Previa del Archivo:</label><br>
+          <img id="previewImage" src="#" alt="Vista Previa de Imagen" style="max-width: 100%; height: auto; display: none;">
+          <p id="previewText" style="display: none;">Archivo PDF cargado: <span id="pdfName"></span></p>
+        </div>
+
+        <!-- Mostrar el archivo actual según su tipo -->
         <div class="form-group row">
           {{#if ticket.img_problema}}
             <div class="col-6">
-              <label>Imagen Actual:</label><br>
-              <img src="{{ticket.img_problema}}" alt="Imagen Actual" style="max-width: 100%; height: auto;">
+              <label>Archivo Actual:</label><br>
+              {{#if (includes ticket.img_problema ".pdf")}}
+                <p><a href="{{ticket.img_problema}}" target="_blank" class="btn btn-warning">Ver PDF actual</a></p>
+              {{else}}
+                <img src="{{ticket.img_problema}}" alt="Imagen Actual" style="max-width: 100%; height: auto;">
+              {{/if}}
             </div>
           {{/if}}
 
-          <!-- Contenedor para la nueva imagen a reemplazar -->
-          <div class="col-6" id="newImagePreview" style="display: none;">
-            <label>Imagen a Reemplazar:</label><br>
-            <img id="previewImage" src="#" alt="Nueva Imagen" style="max-width: 100%; height: auto;">
+          <!-- Contenedor para vista previa de archivo nuevo -->
+          <div class="col-6" id="newFilePreview" style="display: none;">
+            <label>Vista Previa del Archivo Nuevo:</label><br>
+            <img id="newPreviewImage" src="#" alt="Nueva Imagen" style="max-width: 100%; height: auto; display: none;">
+            <p id="newPreviewText" style="display: none;">Nuevo PDF: <span id="newPdfName"></span></p>
           </div>
         </div>
 
@@ -279,17 +291,37 @@
     }
   });
 
-  // JavaScript para mostrar la vista previa de la nueva imagen
+  // JavaScript para mostrar la vista previa de la nueva imagen o PDF
   document.getElementById('img_problema').addEventListener('change', function(event) {
-    const [file] = event.target.files;
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('newFilePreview');
+    const previewImage = document.getElementById('newPreviewImage');
+    const previewText = document.getElementById('newPreviewText');
+    const pdfName = document.getElementById('newPdfName');
+
+    console.log("Archivo seleccionado:", file);
+
     if (file) {
-      const previewContainer = document.getElementById('newImagePreview');
-      const previewImage = document.getElementById('previewImage');
-      previewImage.src = URL.createObjectURL(file);
+      // Asegura que el contenedor esté visible
       previewContainer.style.display = 'block';
+
+      if (file.type.startsWith('image/')) {
+        previewImage.src = URL.createObjectURL(file);
+        previewImage.style.display = 'block';
+        previewText.style.display = 'none';
+        console.log("Mostrando vista previa de imagen.");
+      } else if (file.type === 'application/pdf') {
+        previewImage.style.display = 'none';
+        pdfName.textContent = file.name;
+        previewText.style.display = 'block';
+        console.log("Mostrando nombre de PDF.");
+      }
     } else {
-      // Ocultar el contenedor si no hay archivo seleccionado
-      document.getElementById('newImagePreview').style.display = 'none';
+      // Oculta la vista previa si no hay archivo seleccionado
+      previewContainer.style.display = 'none';
+      previewImage.style.display = 'none';
+      previewText.style.display = 'none';
+      console.log("No hay archivo seleccionado. Ocultando vista previa.");
     }
   });
 </script>

@@ -1,126 +1,223 @@
+<!-- views/pages/tickets/timeline.hbs -->
 <div class="container p-4">
   <h1 class="text-center">Detalles del Ticket - {{ticket.numeroTicket}}</h1>
 
-  <!-- Información del ticket -->
-  <div class="card mt-4">
-    <div class="card-body">
-      <h4>{{ticket.titulo}}</h4>
-      <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
-      <p><strong>Estado:</strong>
-        <span id="estadoBadge" class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
-          {{ticket.estado}}
-        </span>
-      </p>
-      <p><strong>Cliente:</strong> {{ticket.cliente.nombres}} {{ticket.cliente.apellidos}}</p>
-      {{#if ticket.img_problema}}
-        <p><strong>Imagen del Problema:</strong></p>
-        <img src="{{ticket.img_problema}}" alt="Imagen de problema" class="img-thumbnail" width="200">
-      {{/if}}
-    </div>
-  </div>
-
   <!-- Condicional para tipo de ticket -->
   {{#if (eq ticket.tipoTicket.nombre 'resolucion')}}
-    <!-- Timeline de mensajes -->
-    <div class="timeline mt-4" id="mensajesContainer">
-      {{#each mensajes}}
-        <div class="time-label">
-          <span class="bg-info">{{formatDate this.createdAt}}</span>
-        </div>
-        <div>
-          <i class="fas fa-comments bg-blue"></i>
-          <div class="timeline-item">
-            <span class="time"><i class="fas fa-clock"></i> {{formatDate this.createdAt}}</span>
-            <h3 class="timeline-header"><strong>{{this.usuario.nombre}}:</strong></h3>
-            <div class="timeline-body">
-              <p>{{this.mensaje}}</p>
-              {{#if this.mediaUrl}}
-                <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail" width="200">
-              {{/if}}
-            </div>
+    <!-- Diseño de dos columnas para resolución -->
+    <div class="row mt-4">
+      <!-- Columna de información del ticket -->
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h4>{{ticket.titulo}}</h4>
+            <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
+            <p><strong>Estado:</strong>
+              <span id="estadoBadge" class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
+                {{ticket.estado}}
+              </span>
+            </p>
+            <p><strong>Cliente:</strong> {{ticket.cliente.nombres}} {{ticket.cliente.apellidos}}</p>
+            {{#if ticket.img_problema}}
+              <p><strong>Imagen del Problema:</strong></p>
+              <img src="{{ticket.img_problema}}" alt="Imagen de problema" class="img-thumbnail w-100">
+            {{/if}}
           </div>
         </div>
-      {{/each}}
-    </div>
 
-    <!-- Contenedor para el formulario y mensajes de estado -->
-    <div id="messageArea">
-      {{!-- Se renderiza inicialmente el formulario o mensaje según el estado --}}
-      {{#if (eq ticket.estado 'en_revision')}}
-        <div class="mt-4" id="messageFormContainer">
-          <h4>Enviar Mensaje</h4>
-          <form id="messageForm">
-            <div class="form-group">
-              <label for="mensaje">Mensaje</label>
-              <textarea id="mensaje" name="mensaje" class="form-control" rows="3" required></textarea>
+        <!-- Permitir a técnicos e instaladores actualizar el estado del ticket -->
+        {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador') ))}}
+          <div class="card">
+            <div class="card-body">
+              <h4>Actualizar Estado del Ticket</h4>
+              <form action="/tickets/{{ticket.id}}/updatestatus?_method=PUT" method="POST" id="alertFormEdit">
+                <div class="form-group">
+                  <label for="estado">Estado</label>
+                  <select id="estado" name="estado" class="form-control" required>
+                    <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
+                    <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
+                    <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
+                    <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
+              </form>
             </div>
-            <div class="form-group">
-              <label for="media">Adjuntar Imagen (opcional)</label>
-              <input type="file" class="form-control-file" name="media" id="media" accept="image/*">
-              <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none;" width="200">
-            </div>
-            <button type="submit" class="btn btn-primary">Enviar</button>
-          </form>
-        </div>
-      {{else}}
-        {{#if (eq ticket.estado 'completado')}}
-          <div class="alert alert-success mt-4" id="completedMessage">
-            <strong>Ticket Completado:</strong> No es posible enviar más mensajes en este ticket.
-          </div>
-        {{else if (eq ticket.estado 'detenido')}}
-          <div class="alert alert-warning mt-4" id="pausedMessage">
-            <strong>Ticket Detenido:</strong> Mensajería deshabilitada temporalmente.
-          </div>
-        {{else if (eq ticket.estado 'enviado')}}
-          <div class="alert alert-info mt-4" id="sentMessage">
-            <strong>Ticket Enviado:</strong> Esperando revisión. La mensajería no está disponible.
           </div>
         {{/if}}
-      {{/if}}
+      </div>
+
+      <!-- Columna de chat -->
+      <div class="col-md-8">
+        <!-- Contenedor del chat -->
+        <div class="card">
+          <div class="card-header">
+            <h4>Chat de Soporte</h4>
+          </div>
+          <div class="card-body" id="chatContainer" style="height: 500px; overflow-y: auto;">
+            {{#each mensajes}}
+              {{!-- Determinar si el mensaje es enviado o recibido --}}
+              {{#if (eq this.usuario.id ../user.id)}}
+                <!-- Mensaje enviado -->
+                <div class="d-flex justify-content-end mb-2">
+                  <div class="p-2 rounded chat-bubble sent">
+                    {{#if this.mediaUrl}}
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
+                    {{/if}}
+                    <p class="mb-1">{{this.mensaje}}</p>
+                    <small class="d-block text-right">{{formatDate this.createdAt}}</small>
+                  </div>
+                </div>
+              {{else}}
+                <!-- Mensaje recibido -->
+                <div class="d-flex justify-content-start mb-2">
+                  <div class="p-2 rounded chat-bubble received">
+                    {{#if this.mediaUrl}}
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
+                    {{/if}}
+                    <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
+                    <small class="d-block text-left">{{formatDate this.createdAt}}</small>
+                  </div>
+                </div>
+              {{/if}}
+            {{/each}}
+          </div>
+          <!-- Formulario para enviar mensaje -->
+          {{#if (eq ticket.estado 'en_revision')}}
+            <div class="card-footer">
+              <form id="messageForm">
+                <div class="input-group">
+                  <textarea id="mensaje" name="mensaje" class="form-control" rows="1" placeholder="Escribe un mensaje..." required></textarea>
+                  <div class="input-group-append">
+                    <label class="btn btn-secondary mb-0">
+                      <i class="fas fa-paperclip"></i>
+                      <input type="file" name="media" id="media" accept="image/*" style="display: none;">
+                    </label>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                  </div>
+                </div>
+                <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none; max-width: 200px;">
+              </form>
+            </div>
+          {{else}}
+            <!-- Mostrar mensaje según el estado del ticket -->
+            <div class="card-footer">
+              {{#if (eq ticket.estado 'completado')}}
+                <div class="alert alert-success mb-0">
+                  <strong>Ticket Completado:</strong> No es posible enviar más mensajes en este ticket.
+                </div>
+              {{else if (eq ticket.estado 'detenido')}}
+                <div class="alert alert-warning mb-0">
+                  <strong>Ticket Detenido:</strong> Mensajería deshabilitada temporalmente.
+                </div>
+              {{else if (eq ticket.estado 'enviado')}}
+                <div class="alert alert-info mb-0">
+                  <strong>Ticket Enviado:</strong> Esperando revisión. La mensajería no está disponible.
+                </div>
+              {{/if}}
+            </div>
+          {{/if}}
+        </div>
+      </div>
     </div>
   {{else}}
-    <!-- Mostrar información para mantenimiento o instalación -->
+    <!-- Vista para instalación o mantenimiento -->
+    <div class="card mt-4">
+      <div class="card-body">
+        <h4>{{ticket.titulo}}</h4>
+        <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
+        <p><strong>Estado:</strong>
+          <span id="estadoBadge" class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
+            {{ticket.estado}}
+          </span>
+        </p>
+        <p><strong>Cliente:</strong> {{ticket.cliente.nombres}} {{ticket.cliente.apellidos}}</p>
+        {{#if ticket.img_problema}}
+          <p><strong>Archivo adjunto:</strong></p>
+          {{#if (includes ticket.img_problema ".pdf")}}
+              <a href="{{ticket.img_problema}}" class="btn btn-info" target="_blank">Ver o Descargar PDF</a>
+          {{else}}
+              <img src="{{ticket.img_problema}}" alt="Imagen de problema" class="img-thumbnail w-100">
+          {{/if}}
+        {{/if}}
+      </div>
+    </div>
+
+    <!-- Información adicional para mantenimiento o instalación -->
     <div class="mt-4">
       <h4>Información del Cliente</h4>
       <p><strong>Dirección:</strong> {{ticket.direccion}}</p>
       <!-- Mapa de ubicación -->
       <div id="map" style="height: 400px;"></div>
-      <!-- Botón para iniciar ruta en Google Maps -->
       <a href="https://www.google.com/maps/dir/?api=1&destination={{ticket.latitud}},{{ticket.longitud}}" target="_blank" class="btn btn-success mt-3">
         Iniciar Ruta en Google Maps
       </a>
     </div>
-  {{/if}}
 
-  <!-- Permitir a técnicos e instaladores actualizar el estado del ticket -->
-  {{#if (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador') )}}
-    <div class="mt-4">
-      <h4>Actualizar Estado del Ticket</h4>
-      <form action="/tickets/{{ticket.id}}/updatestatus?_method=PUT" method="POST" id="alertFormEdit">
-        <div class="form-group">
-          <label for="estado">Estado</label>
-          <select id="estado" name="estado" class="form-control" required>
-            <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
-            <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
-            <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
-            <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Actualizar Estado</button>
-      </form>
-    </div>
+    <!-- Permitir actualización del estado para técnicos e instaladores -->
+    {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador') ))}}
+      <div class="mt-4">
+        <h4>Actualizar Estado del Ticket</h4>
+        <form action="/tickets/{{ticket.id}}/updatestatus?_method=PUT" method="POST" id="alertFormEdit">
+          <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado" class="form-control" required>
+              <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
+              <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
+              <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
+              <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
+        </form>
+      </div>
+    {{/if}}
   {{/if}}
 </div>
 
 <!-- Incluir scripts necesarios -->
-<script src="/socket.io/socket.io.js"></script> <!-- Script de Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+<!-- Estilos adicionales -->
+<style>
+  .chat-bubble {
+    position: relative;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+
+  .chat-bubble.sent {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .chat-bubble.received {
+    background-color: #f1f0f0;
+    color: #000;
+  }
+
+  .chat-bubble img {
+    border-radius: 10px;
+    margin-top: 5px;
+    max-width: 100%;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 767.98px) {
+    .chat-bubble {
+      max-width: 100%;
+    }
+  }
+</style>
 
 <script>
   // Mostrar el mapa si es mantenimiento o instalación
   {{#unless (eq ticket.tipoTicket.nombre 'resolucion')}}
-    mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
     const lat = parseFloat('{{ticket.latitud}}');
     const lng = parseFloat('{{ticket.longitud}}');
 
@@ -144,7 +241,6 @@
 
   // Función para actualizar la interfaz de acuerdo al estado
   function updateMessageFormAndStatus(newState) {
-    const messageArea = document.getElementById('messageArea');
     const estadoBadge = document.getElementById('estadoBadge');
 
     // Actualizar el estado visualmente
@@ -153,53 +249,54 @@
       estadoBadge.className = `badge badge-${newState === 'completado' ? 'success' : newState === 'detenido' ? 'danger' : 'info'}`;
     }
 
-    // Limpiar el área de mensajes
-    messageArea.innerHTML = '';
+    const chatFooter = document.querySelector('.col-md-8 .card .card-footer');
+    if (chatFooter) chatFooter.remove();
+
+    const chatCard = document.querySelector('.col-md-8 .card');
 
     if (newState === 'en_revision') {
       // Crear el formulario nuevamente
-      const formContainer = document.createElement('div');
-      formContainer.classList.add('mt-4');
-      formContainer.id = 'messageFormContainer';
-      formContainer.innerHTML = `
-        <h4>Enviar Mensaje</h4>
+      const footer = document.createElement('div');
+      footer.classList.add('card-footer');
+      footer.innerHTML = `
         <form id="messageForm">
-          <div class="form-group">
-            <label for="mensaje">Mensaje</label>
-            <textarea id="mensaje" name="mensaje" class="form-control" rows="3" required></textarea>
+          <div class="input-group">
+            <textarea id="mensaje" name="mensaje" class="form-control" rows="1" placeholder="Escribe un mensaje..." required></textarea>
+            <div class="input-group-append">
+              <label class="btn btn-secondary mb-0">
+                <i class="fas fa-paperclip"></i>
+                <input type="file" name="media" id="media" accept="image/*" style="display: none;">
+              </label>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="media">Adjuntar Imagen (opcional)</label>
-            <input type="file" class="form-control-file" name="media" id="media" accept="image/*">
-            <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none;" width="200">
-          </div>
-          <button type="submit" class="btn btn-primary">Enviar</button>
+          <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none; max-width: 200px;">
         </form>
       `;
-      messageArea.appendChild(formContainer);
+      chatCard.appendChild(footer);
 
       // Asociar eventos al nuevo formulario
       setupMessageForm();
     } else {
       // Mostrar el mensaje correspondiente
-      const alertDiv = document.createElement('div');
-      alertDiv.classList.add('alert', 'mt-4');
+      const footer = document.createElement('div');
+      footer.classList.add('card-footer');
+      let alertClass = '';
+      let alertMessage = '';
 
       if (newState === 'completado') {
-        alertDiv.classList.add('alert-success');
-        alertDiv.id = 'completedMessage';
-        alertDiv.innerHTML = '<strong>Ticket Completado:</strong> No es posible enviar más mensajes en este ticket.';
+        alertClass = 'alert-success';
+        alertMessage = '<strong>Ticket Completado:</strong> No es posible enviar más mensajes en este ticket.';
       } else if (newState === 'detenido') {
-        alertDiv.classList.add('alert-warning');
-        alertDiv.id = 'pausedMessage';
-        alertDiv.innerHTML = '<strong>Ticket Detenido:</strong> Mensajería deshabilitada temporalmente.';
+        alertClass = 'alert-warning';
+        alertMessage = '<strong>Ticket Detenido:</strong> Mensajería deshabilitada temporalmente.';
       } else if (newState === 'enviado') {
-        alertDiv.classList.add('alert-info');
-        alertDiv.id = 'sentMessage';
-        alertDiv.innerHTML = '<strong>Ticket Enviado:</strong> Esperando revisión. La mensajería no está disponible.';
+        alertClass = 'alert-info';
+        alertMessage = '<strong>Ticket Enviado:</strong> Esperando revisión. La mensajería no está disponible.';
       }
 
-      messageArea.appendChild(alertDiv);
+      footer.innerHTML = `<div class="alert ${alertClass} mb-0">${alertMessage}</div>`;
+      chatCard.appendChild(footer);
     }
   }
 
@@ -266,53 +363,36 @@
 
   // Escuchar nuevos mensajes
   socket.on('newMessage', function(data) {
-    // Actualizar la vista con el nuevo mensaje
-    const mensajesContainer = document.getElementById('mensajesContainer');
+    const mensajesContainer = document.getElementById('chatContainer');
     const mensaje = data.mensaje;
 
     // Crear elementos del mensaje
-    const timeLabel = document.createElement('div');
-    timeLabel.classList.add('time-label');
-    const timeSpan = document.createElement('span');
-    timeSpan.classList.add('bg-info');
-    timeSpan.innerText = new Date(mensaje.createdAt).toLocaleString();
-    timeLabel.appendChild(timeSpan);
-
     const messageDiv = document.createElement('div');
-    const icon = document.createElement('i');
-    icon.classList.add('fas', 'fa-comments', 'bg-blue');
-    const timelineItem = document.createElement('div');
-    timelineItem.classList.add('timeline-item');
 
-    const time = document.createElement('span');
-    time.classList.add('time');
-    time.innerHTML = `<i class="fas fa-clock"></i> ${new Date(mensaje.createdAt).toLocaleString()}`;
-    const header = document.createElement('h3');
-    header.classList.add('timeline-header');
-    header.innerHTML = `<strong>${mensaje.usuario.nombre}:</strong>`;
-    const body = document.createElement('div');
-    body.classList.add('timeline-body');
-    body.innerHTML = `<p>${mensaje.mensaje}</p>`;
-
-    // Añadir media si existe
-    if (mensaje.mediaUrl) {
-      const img = document.createElement('img');
-      img.src = mensaje.mediaUrl;
-      img.alt = 'Imagen adjunta';
-      img.classList.add('img-thumbnail');
-      img.width = 200;
-      body.appendChild(img);
+    // Determinar si el mensaje es enviado o recibido
+    if (mensaje.usuario.id === {{user.id}}) {
+      // Mensaje enviado
+      messageDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
+      messageDiv.innerHTML = `
+        <div class="p-2 rounded chat-bubble sent">
+          ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
+          <p class="mb-1">${mensaje.mensaje}</p>
+          <small class="d-block text-right">${new Date(mensaje.createdAt).toLocaleString()}</small>
+        </div>
+      `;
+    } else {
+      // Mensaje recibido
+      messageDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+      messageDiv.innerHTML = `
+        <div class="p-2 rounded chat-bubble received">
+          ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
+          <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
+          <small class="d-block text-left">${new Date(mensaje.createdAt).toLocaleString()}</small>
+        </div>
+      `;
     }
 
-    timelineItem.appendChild(time);
-    timelineItem.appendChild(header);
-    timelineItem.appendChild(body);
-
-    messageDiv.appendChild(icon);
-    messageDiv.appendChild(timelineItem);
-
-    // Añadir los elementos al contenedor de mensajes
-    mensajesContainer.appendChild(timeLabel);
+    // Añadir el mensaje al contenedor
     mensajesContainer.appendChild(messageDiv);
 
     // Hacer scroll hacia el último mensaje
@@ -323,4 +403,12 @@
   socket.on('errorMessage', function(message) {
     alert(message);
   });
+
+  // Al cargar la página, hacer scroll al último mensaje
+  window.onload = function() {
+    const mensajesContainer = document.getElementById('chatContainer');
+    if (mensajesContainer) {
+      mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
+    }
+  };
 </script>

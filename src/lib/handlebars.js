@@ -197,15 +197,11 @@ Handlebars.registerHelper('isImage', function(url, options) {
     } else {
       return options.inverse(this);
     }
-  });
-  
-// Verificar si es video
-Handlebars.registerHelper('isVideo', function(url, options) {
-    if (/\.(mp4|mov|avi|webm)$/i.test(url)) {
-      return options.fn(this);
-    } else {
-      return options.inverse(this);
-    }
+});
+
+// Helper para verificar si una cadena contiene una subcadena específica
+Handlebars.registerHelper('includes', function (str, substring) {
+    return str && str.includes(substring);
 });
 
 module.exports = Handlebars;
