@@ -487,7 +487,12 @@ exports.deleteTicket = async (req, res) => {
 
     // Verificar que el ticket existe antes de eliminar
     const ticket = await prisma.ticket.findUnique({
-      where: { id: ticketId }
+      where: { id: ticketId },
+    });
+
+    // Eliminar mensajes asociados al ticket antes de eliminar el ticket
+    await prisma.ticketMessage.deleteMany({
+      where: { ticketId: ticketId },
     });
 
     // Eliminar imagen de Cloudinary si existe
@@ -497,7 +502,7 @@ exports.deleteTicket = async (req, res) => {
 
     // Eliminar el ticket
     await prisma.ticket.delete({
-      where: { id: ticketId }
+      where: { id: ticketId },
     });
 
     req.flash('success_msg', 'Ticket eliminado correctamente.');
