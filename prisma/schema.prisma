@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -15,224 +12,380 @@ generator client {
 }
 
 model Cliente {
-  id            Int               @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   nombres       String
   apellidos     String
   alias         String
   telefono      String
   correo        String
   dui           String
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt      @map("updated_at")
 
   contratos     Contrato[]
   configs       ConfigCPE[]
   pagos         PagoCliente[]
   facturas      Factura[]
-  movimientos   Movimiento[]       // Relación con Movimiento
+  movimientos   Movimiento[]
+  tickets       Ticket[]
+  usuario       Usuario?   @relation("ClienteUsuario")
 
-  usuario       Usuario?          @relation("ClienteUsuario")
+  @@map("clientes")
 }
 
 model Usuario {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
   password     String
   nombre       String
-  activo       Boolean  @default(false)
-  rolId        Int
-  clienteId    Int?     @unique // Relación uno a uno con Cliente
+  activo       Boolean   @default(false)
+  rolId        Int       @map("rol_id")
+  clienteId    Int?      @unique @map("cliente_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt      @map("updated_at")
 
-  cliente      Cliente? @relation("ClienteUsuario", fields: [clienteId], references: [id])
-  rol          Rol      @relation(fields: [rolId], references: [id])
+  cliente      Cliente?  @relation("ClienteUsuario", fields: [clienteId], references: [id])
+  rol          Rol       @relation(fields: [rolId], references: [id])
+
+  tickets      Ticket[]  // Tickets creados por el usuario
+  resoluciones Ticket[]  @relation("TicketResolver") // Tickets asignados como resolutor
+  mensajes       TicketMessage[]
+
+  @@map("usuarios")
 }
 
 model Rol {
-  id          Int          @id @default(autoincrement())
-  nombre      String       @unique
-  esAdmin     Boolean      @default(false) // Campo para rol administrador
-  usuarios    Usuario[]    // Relación uno a muchos con Usuario
-  permisos    RolPermiso[] // Relación muchos a muchos con Permiso
-  modulos     RolModulo[]  // Relación con la tabla intermedia RolModulo
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique
+  esAdmin   Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt      @map("updated_at")
+
+  usuarios  Usuario[]
+  permisos  RolPermiso[]
+  modulos   RolModulo[]
+
+  @@map("roles")
 }
 
 model Modulo {
-  id          Int          @id @default(autoincrement())
-  nombre      String       @unique
-  descripcion String
-  activo      Boolean      @default(true)
-  rutas       Ruta[]       // Relación uno a muchos con Ruta
-  roles       RolModulo[]  // Relación con la tabla intermedia RolModulo
-  moduloPermisos ModuloPermiso[] // Relación muchos a muchos con Permiso a través de una tabla intermedia
+  id            Int            @id @default(autoincrement())
+  nombre        String         @unique
+  descripcion   String
+  activo        Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt      @map("updated_at")
+
+  rutas         Ruta[]
+  roles         RolModulo[]
+  moduloPermisos ModuloPermiso[]
+
+  @@map("modulos")
 }
 
 model RolModulo {
-  id       Int     @id @default(autoincrement())  // Clave primaria
-  rolId    Int?    // ID del rol (opcional)
-  moduloId Int?    // ID del módulo (opcional)
+  id         Int      @id @default(autoincrement())
+  rolId      Int?     @map("rol_id")
+  moduloId   Int?     @map("modulo_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt      @map("updated_at")
 
-  rol      Rol?    @relation(fields: [rolId], references: [id], onDelete: SetNull)    // Relación opcional hacia el modelo Rol
-  modulo   Modulo? @relation(fields: [moduloId], references: [id], onDelete: SetNull) // Relación opcional hacia el modelo Modulo
+  rol        Rol?     @relation(fields: [rolId], references: [id], onDelete: SetNull)
+  modulo     Modulo?  @relation(fields: [moduloId], references: [id], onDelete: SetNull)
 
-  @@unique([rolId, moduloId])  // Llave única compuesta para evitar duplicados
+  @@unique([rolId, moduloId])
+
+  @@map("roles_modulos")
 }
 
-
 model Permiso {
-  id          Int          @id @default(autoincrement())
-  ruta        String
-  metodo      String
-  descripcion String
-  tipo        String
-  roles       RolPermiso[] // Relación muchos a muchos con Rol
-  moduloPermisos ModuloPermiso[] // Relación muchos a muchos con Modulo a través de una tabla intermedia
+  id             Int       @id @default(autoincrement())
+  ruta           String
+  metodo         String
+  descripcion    String
+  tipo           String
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt      @map("updated_at")
+
+  roles          RolPermiso[]
+  moduloPermisos ModuloPermiso[]
+
+  @@map("permisos")
 }
 
 model ModuloPermiso {
-  id        Int      @id @default(autoincrement())  // Clave primaria autoincremental
-  permisoId Int?     // Hacer opcional
-  moduloId  Int?     // Hacer opcional
-  permiso   Permiso? @relation(fields: [permisoId], references: [id], onDelete: SetNull)
-  modulo    Modulo?  @relation(fields: [moduloId], references: [id], onDelete: SetNull)
+  id          Int       @id @default(autoincrement())
+  permisoId   Int?      @map("permiso_id")
+  moduloId    Int?      @map("modulo_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt      @map("updated_at")
 
-  @@unique([permisoId, moduloId]) 
+  permiso     Permiso?  @relation(fields: [permisoId], references: [id], onDelete: SetNull)
+  modulo      Modulo?   @relation(fields: [moduloId], references: [id], onDelete: SetNull)
+
+  @@unique([permisoId, moduloId])
+
+  @@map("modulos_permisos")
 }
 
 model RolPermiso {
-  rolId       Int
-  permisoId   Int
-  rol         Rol          @relation(fields: [rolId], references: [id])
-  permiso     Permiso      @relation(fields: [permisoId], references: [id])
+  rolId      Int      @map("rol_id")
+  permisoId  Int      @map("permiso_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt      @map("updated_at")
 
-  @@id([rolId, permisoId]) // Llave compuesta
+  rol        Rol      @relation(fields: [rolId], references: [id])
+  permiso    Permiso  @relation(fields: [permisoId], references: [id])
+
+  @@id([rolId, permisoId])
+
+  @@map("roles_permisos")
 }
 
 model Ruta {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  ruta      String
-  icono     String
-  moduloId  Int?
-  modulo    Modulo?  @relation(fields: [moduloId], references: [id])
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  ruta       String
+  icono      String
+  moduloId   Int?     @map("modulo_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt      @map("updated_at")
+
+  modulo     Modulo?  @relation(fields: [moduloId], references: [id])
+
+  @@map("rutas")
 }
 
 model Contrato {
-  id             Int                @id @default(autoincrement())
+  id             Int            @id @default(autoincrement())
   anexo          String
   fecha_contrato DateTime
-  activo         Boolean            @default(true)
+  activo         Boolean        @default(true)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt      @map("updated_at")
 
-  clienteId      Int
-  cliente        Cliente            @relation(fields: [clienteId], references: [id])
+  clienteId      Int            @map("cliente_id")
+  cliente        Cliente        @relation(fields: [clienteId], references: [id])
 
   servicios      ContratoServicio[]
+
+  @@map("contratos")
 }
 
 model Servicio {
-  id          Int                  @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   servicio    String
   precio      Float
   descripcion String
   tipo_pago   String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt      @map("updated_at")
 
   contratos   ContratoServicio[]
+
+  @@map("servicios")
 }
 
 model ContratoServicio {
-  contratoId  Int
-  servicioId  Int
+  contratoId  Int      @map("contrato_id")
+  servicioId  Int      @map("servicio_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
 
-  contrato    Contrato             @relation(fields: [contratoId], references: [id])
-  servicio    Servicio             @relation(fields: [servicioId], references: [id])
+  contrato    Contrato @relation(fields: [contratoId], references: [id])
+  servicio    Servicio @relation(fields: [servicioId], references: [id])
 
   @@id([contratoId, servicioId])
+
+  @@map("contratos_servicios")
 }
 
 model Politica {
-  id        Int     @id @default(autoincrement())
-  titulo    String  // Título o nombre de la política
-  contenido String  // Contenido de la política en formato HTML o texto enriquecido
+  id        Int       @id @default(autoincrement())
+  titulo    String
+  contenido String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt      @map("updated_at")
+
+  @@map("politicas")
 }
 
 model EquipoCPE {
-  id            Int                @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   img_equipo    String
   nombre_equipo String
   marca         String
   tipo          String
   descripcion   String
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt      @map("updated_at")
 
-  configsAntena ConfigCPE[]        @relation("antena")
-  configsRouter ConfigCPE[]        @relation("router")
+  configsAntena ConfigCPE[]  @relation("antena")
+  configsRouter ConfigCPE[]  @relation("router")
+
+  @@map("equipos_cpe")
 }
 
 model ConfigCPE {
-  id               Int              @id @default(autoincrement())
-  user_antena      String
-  pass_antena      String
-  ip_antena        String
-  user_router      String
+  id                Int       @id @default(autoincrement())
+  user_antena       String
+  pass_antena       String
+  ip_antena         String
+  user_router       String
   pass_admin_router String
-  ssid             String
-  pass_pin_router  String
-  pass_wifi_router String
-  lat              String
-  clong            String
+  ssid              String
+  pass_pin_router   String
+  pass_wifi_router  String
+  lat               String
+  clong             String
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt      @map("updated_at")
 
-  clienteId        Int
-  cliente          Cliente           @relation(fields: [clienteId], references: [id])
+  clienteId         Int       @map("cliente_id")
+  cliente           Cliente   @relation(fields: [clienteId], references: [id])
 
-  cpe_antenaId     Int
-  cpe_antena       EquipoCPE         @relation("antena", fields: [cpe_antenaId], references: [id])
+  cpe_antenaId      Int       @map("cpe_antena_id")
+  cpe_antena        EquipoCPE @relation("antena", fields: [cpe_antenaId], references: [id])
 
-  cpe_routerId     Int
-  cpe_router       EquipoCPE         @relation("router", fields: [cpe_routerId], references: [id])
+  cpe_routerId      Int       @map("cpe_router_id")
+  cpe_router        EquipoCPE @relation("router", fields: [cpe_routerId], references: [id])
+
+  @@map("configuraciones_cpe")
 }
 
 model Movimiento {
-  id         Int          @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   tipocc     String
   anio       Int
   mes        Int
   monto      Float
   concepto   String
-  fecha      DateTime     @default(now())
-  
-  clienteId  Int          // Relación directa con Cliente
-  cliente    Cliente      @relation(fields: [clienteId], references: [id]) // Relación inversa hacia Cliente
-  
-  facturaId  Int
-  factura    Factura      @relation(fields: [facturaId], references: [id])
+  fecha      DateTime  @default(now())
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt      @map("updated_at")
+
+  clienteId  Int       @map("cliente_id")
+  cliente    Cliente   @relation(fields: [clienteId], references: [id])
+
+  facturaId  Int       @unique @map("factura_id")
+  factura    Factura   @relation(fields: [facturaId], references: [id])
+
+  @@map("movimientos")
 }
 
 model Factura {
-  id            Int             @id @default(autoincrement())
-  fecha         DateTime        @default(now())
-  cancelada     Boolean         @default(false)
-  id_cliente    Int
-  cliente       Cliente         @relation(fields: [id_cliente], references: [id])
-  detalles      DetalleFactura[]
-  pagos         PagoCliente[]
-  movimiento    Movimiento[]
+  id           Int       @id @default(autoincrement())
+  fecha        DateTime  @default(now())
+  cancelada    Boolean   @default(false)
+  clienteId    Int       @map("cliente_id")
+  cliente      Cliente   @relation(fields: [clienteId], references: [id])
+  total        Float
+  observacion  String
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt      @map("updated_at")
+
+  detalles     DetalleFactura[]
+  pagos        PagoCliente[]
+  movimiento   Movimiento[]
+
+  @@map("facturas")
 }
 
 model DetalleFactura {
-  id            Int             @id @default(autoincrement())
-  id_factura    Int
-  factura       Factura          @relation(fields: [id_factura], references: [id])
-  concepto      String
-  subtotal      Float
+  id          Int       @id @default(autoincrement())
+  id_factura  Int       @map("id_factura")
+  factura     Factura   @relation(fields: [id_factura], references: [id])
+  cantidad    Int
+  concepto    String
+  subtotal    Float
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt      @map("updated_at")
+
+  @@map("detalles_facturas")
 }
 
 model PagoCliente {
-  id            Int             @id @default(autoincrement())
-  id_factura    Int
-  factura       Factura          @relation(fields: [id_factura], references: [id])
-  anexo         String
-  fecha_pago    DateTime
-  id_cliente    Int
-  cliente       Cliente          @relation(fields: [id_cliente], references: [id])
-  alias         String
+  id              Int       @id @default(autoincrement())
+  id_factura      Int       @map("id_factura")
+  factura         Factura   @relation(fields: [id_factura], references: [id])
+  anexo           String
+  fecha_pago      DateTime
+  id_cliente      Int       @map("id_cliente")
+  cliente         Cliente   @relation(fields: [id_cliente], references: [id])
+  alias           String
   nombre_completo String
-  contacto      String
-  total         Float
-  concepto      String
+  contacto        String
+  total           Float
+  concepto        String
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt      @map("updated_at")
+
+  @@map("pagos_clientes")
+}
+
+model CuentaContable {
+  id            Int       @id @default(autoincrement())
+  tipocc        String
+  nombre_cuenta String
+  descripcion   String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt      @map("updated_at")
+
+  @@map("cuentas_contables")
+}
+
+model TipoTicket {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @unique
+  descripcion String?
+  tickets     Ticket[]
+
+  @@map("tipos_tickets")
+}
+
+model Ticket {
+  id             Int         @id @default(autoincrement())
+  numeroTicket   String      @unique
+  titulo         String
+  descripcion    String
+  estado         String      @default("enviado")
+  img_problema   String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt      @map("updated_at")
+  
+  direccion      String?     // Campo para almacenar la dirección en texto
+  latitud        Float?      // Campo para almacenar la latitud de la ubicación
+  longitud       Float?      // Campo para almacenar la longitud de la ubicación
+
+  tipoTicketId   Int?        @map("tipo_ticket_id") // Permitir que sea null
+  tipoTicket     TipoTicket? @relation(fields: [tipoTicketId], references: [id])
+
+  usuarioId      Int         @map("usuario_id")
+  usuario        Usuario     @relation(fields: [usuarioId], references: [id])
+
+  clienteId      Int?        @map("cliente_id") // Permitir que sea null
+  cliente        Cliente?    @relation(fields: [clienteId], references: [id])
+
+  resolverId     Int?        @map("resolver_id") // Resolver opcional
+  resolver       Usuario?    @relation("TicketResolver", fields: [resolverId], references: [id])
+
+  mensajes       TicketMessage[]
+
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id         Int      @id @default(autoincrement())
+  mensaje    String
+  mediaUrl   String?  // URL del archivo subido a Cloudinary
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt      @map("updated_at")
+
+  ticketId   Int      @map("ticket_id")
+  ticket     Ticket   @relation(fields: [ticketId], references: [id])
+
+  usuarioId  Int      @map("usuario_id")
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@map("tickets_mensajes")
 }

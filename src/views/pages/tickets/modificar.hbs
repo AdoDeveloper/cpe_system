@@ -1,0 +1,295 @@
+<!-- Incluir Mapbox CSS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Ticket de Soporte</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+      <!-- Mostrar errores si existen -->
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      <!-- Formulario para modificar el ticket -->
+      <form method="POST" action="/tickets/edit/{{ticket.id}}?_method=PUT" enctype="multipart/form-data" id="alertFormEdit">
+
+        <div class="form-group">
+          <label for="titulo">Título del Ticket</label>
+          <input type="text" class="form-control" name="titulo" id="titulo" value="{{ticket.titulo}}" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción del Problema</label>
+          <textarea class="form-control" name="descripcion" id="descripcion" rows="3" required>{{ticket.descripcion}}</textarea>
+        </div>
+
+        <!-- Campos adicionales para Administrador y Soporte Técnico -->
+        {{#if (or (eq user.rol "Administrador") (eq user.rol "Soporte Tecnico"))}}
+          <div class="form-group">
+            <label for="tipoTicketId">Tipo de Ticket</label>
+            <select class="form-control" name="tipoTicketId" id="tipoTicketId" required>
+              <option value="">Selecciona un tipo de ticket</option>
+              {{#each tipos}}
+                <option value="{{this.id}}" data-nombre="{{this.nombre}}" {{#ifCond this.id ../ticket.tipoTicket.id}}selected{{/ifCond}}>{{this.nombre}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clienteId">Cliente a Asignar</label>
+            <select class="form-control" name="clienteId" id="clienteId" required>
+              <option value="">Selecciona un cliente</option>
+              {{#each clientes}}
+                <option value="{{this.cliente.id}}" {{#ifCond this.cliente.id ../ticket.cliente.id}}selected{{/ifCond}}>{{this.cliente.nombres}} {{this.cliente.apellidos}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div class="form-group" id="resolverGroup" style="display: block;">
+            <label for="resolverId">Usuario a Asignar Resolución</label>
+            <select class="form-control" name="resolverId" id="resolverId">
+              <option value="">No asignado</option>
+              <!-- Opciones se llenarán dinámicamente con JavaScript -->
+            </select>
+          </div>
+        {{/if}}
+
+        <!-- Campos de dirección y coordenadas (mostrados solo para mantenimiento o instalación) -->
+        <div id="locationFields" style="display: none;">
+          <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Dirección" value="{{ticket.direccion}}">
+          </div>
+
+          <div class="form-group">
+            <label for="coordenadas">Coordenadas</label>
+            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud" readonly value="{{ticket.latitud}}, {{ticket.longitud}}">
+          </div>
+
+          <div class="form-group">
+            <label>Mueve el marcador para seleccionar la ubicación:</label>
+            <div id="map" style="height: 400px;"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado del Ticket</label>
+          <select class="form-control" name="estado" id="estado" required>
+            <option value="enviado" {{#ifCond ticket.estado "enviado"}}selected{{/ifCond}}>Enviado</option>
+            <option value="en_revision" {{#ifCond ticket.estado "en_revision"}}selected{{/ifCond}}>En Revisión</option>
+            <option value="completado" {{#ifCond ticket.estado "completado"}}selected{{/ifCond}}>Completado</option>
+            <option value="detenido" {{#ifCond ticket.estado "detenido"}}selected{{/ifCond}}>Detenido</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="img_problema">Subir Imagen del Problema (opcional)</label>
+          <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/png, image/jpeg, image/webp">
+        </div>
+
+        <!-- Mostrar la imagen actual y la nueva imagen seleccionada una al lado de la otra -->
+        <div class="form-group row">
+          {{#if ticket.img_problema}}
+            <div class="col-6">
+              <label>Imagen Actual:</label><br>
+              <img src="{{ticket.img_problema}}" alt="Imagen Actual" style="max-width: 100%; height: auto;">
+            </div>
+          {{/if}}
+
+          <!-- Contenedor para la nueva imagen a reemplazar -->
+          <div class="col-6" id="newImagePreview" style="display: none;">
+            <label>Imagen a Reemplazar:</label><br>
+            <img id="previewImage" src="#" alt="Nueva Imagen" style="max-width: 100%; height: auto;">
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <div class="col-6 pl-1">
+            <a href="/tickets" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Incluir Mapbox JS y otros scripts -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  const tipoTicketSelect = document.getElementById('tipoTicketId');
+  const resolverGroup = document.getElementById('resolverGroup');
+  const resolverSelect = document.getElementById('resolverId');
+  const locationFields = document.getElementById('locationFields');
+  const direccionInput = document.getElementById('direccion');
+  const coordenadasInput = document.getElementById('coordenadas');
+  let mapInitialized = false;
+  let marker;
+  let direccionModified = false;
+  let markerMoved = false; // Nuevo flag para detectar si el marcador ha sido movido
+
+  // Datos de resolutores y tipos pasados desde el servidor
+  const resolutores = {{{json resolutores}}};
+  const tipos = {{{json tipos}}};
+
+  // Variable para el resolverId actual
+  const ticketResolverId = '{{ticket.resolverId}}' || null;
+
+  // Inicializar la lógica al cargar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectedTipoId = tipoTicketSelect.value;
+    const selectedTipoOption = tipoTicketSelect.options[tipoTicketSelect.selectedIndex];
+    const tipoNombre = selectedTipoOption ? selectedTipoOption.getAttribute('data-nombre').toLowerCase() : '';
+
+    // Mostrar u ocultar los campos de ubicación según el tipo de ticket actual
+    if (tipoNombre === 'mantenimiento' || tipoNombre === 'instalacion') {
+      locationFields.style.display = 'block';
+      if (!mapInitialized) {
+        initializeMap();
+        mapInitialized = true;
+      }
+    } else {
+      locationFields.style.display = 'none';
+    }
+
+    // Actualizar resolutores según el tipo de ticket actual
+    updateResolutores(tipoNombre);
+  });
+
+  tipoTicketSelect.addEventListener('change', function() {
+    const selectedTipoId = this.value;
+    const selectedTipoOption = this.options[this.selectedIndex];
+    const tipoNombre = selectedTipoOption ? selectedTipoOption.getAttribute('data-nombre').toLowerCase() : '';
+    
+    // Mostrar u ocultar los campos de ubicación
+    if (tipoNombre === 'mantenimiento' || tipoNombre === 'instalacion') {
+      locationFields.style.display = 'block';
+      if (!mapInitialized) {
+        initializeMap();
+        mapInitialized = true;
+      }
+    } else {
+      locationFields.style.display = 'none';
+    }
+
+    // Actualizar resolutores según el tipo de ticket
+    updateResolutores(tipoNombre);
+  });
+
+  function updateResolutores(tipoNombre) {
+    const options = resolutores[tipoNombre] || [];
+    resolverSelect.innerHTML = '<option value="">No asignado</option>';
+    options.forEach(resolver => {
+      const option = document.createElement('option');
+      option.value = resolver.id;
+      option.textContent = resolver.nombre;
+      resolverSelect.appendChild(option);
+    });
+
+    // Seleccionar el resolutor actual si coincide
+    resolverSelect.value = ticketResolverId || '';
+
+    // Mostrar u ocultar el grupo de resolutor
+    if (options.length > 0) {
+      resolverGroup.style.display = 'block';
+    } else {
+      resolverGroup.style.display = 'none';
+    }
+  }
+
+  function initializeMap() {
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w'; // Reemplaza con tu token de Mapbox
+    const lat = parseFloat('{{ticket.latitud}}') || 13.770057886610703;
+    const lng = parseFloat('{{ticket.longitud}}') || -89.70401928084173;
+    const initialCoordinates = [lng, lat];
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: initialCoordinates,
+      zoom: 13
+    });
+
+    // Crear el marcador y añadirlo al mapa
+    marker = new mapboxgl.Marker({
+      draggable: true
+    })
+    .setLngLat(initialCoordinates)
+    .addTo(map);
+
+    // Actualizar campos cuando se mueve el marcador
+    marker.on('dragend', onDragEnd);
+
+    // No llamar a 'onDragEnd' aquí para evitar actualizar la dirección al cargar
+    coordenadasInput.value = `${lat}, ${lng}`;
+  }
+
+  function onDragEnd() {
+    const lngLat = marker.getLngLat();
+    coordenadasInput.value = `${lngLat.lat}, ${lngLat.lng}`;
+    markerMoved = true; // Marcar que el marcador ha sido movido
+
+    // Solo actualizar la dirección si el usuario no la ha modificado manualmente
+    if (!direccionModified) {
+      // Obtener la dirección a partir de las coordenadas usando Mapbox Geocoding API
+      fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            direccionInput.value = data.features[0].place_name;
+          } else {
+            direccionInput.value = 'Dirección no encontrada';
+          }
+        })
+        .catch(error => {
+          console.error('Error al obtener la dirección:', error);
+          direccionInput.value = 'Error al obtener la dirección';
+        });
+    }
+  }
+
+  // Detectar cambios manuales en el campo de dirección
+  direccionInput.addEventListener('input', function() {
+    direccionModified = true;
+  });
+
+  // Restablecer el flag si el usuario borra todo el contenido
+  direccionInput.addEventListener('change', function() {
+    if (direccionInput.value.trim() === '') {
+      direccionModified = false;
+      // Si el marcador ha sido movido, actualizar la dirección
+      if (markerMoved) {
+        onDragEnd();
+      }
+    }
+  });
+
+  // JavaScript para mostrar la vista previa de la nueva imagen
+  document.getElementById('img_problema').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const previewContainer = document.getElementById('newImagePreview');
+      const previewImage = document.getElementById('previewImage');
+      previewImage.src = URL.createObjectURL(file);
+      previewContainer.style.display = 'block';
+    } else {
+      // Ocultar el contenedor si no hay archivo seleccionado
+      document.getElementById('newImagePreview').style.display = 'none';
+    }
+  });
+</script>

@@ -1,0 +1,99 @@
+<div class="container-fluid">
+  <br>
+  <div class="card">
+    <div class="card-header">
+      <div class="container-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">LISTADO DE TICKETS</h3>
+
+        <!-- Mostrar botón de crear ticket para cliente, administrador o soporte -->
+        {{#if (or (or (eq user.rol "Cliente") (eq user.rol "Administrador")) (eq user.rol "Soporte Tecnico"))}}
+          <a href="/tickets/new"
+             class="btn btn-success 
+             {{#if (and (eq user.rol "Cliente") (not (canCreateTicket ultimoTicketEstado)))}}disabled{{/if}}"
+             {{#if (and (eq user.rol "Cliente") (not (canCreateTicket ultimoTicketEstado)))}}
+                aria-disabled="true" tabindex="-1" 
+             {{/if}}>
+            <i class="fas fa-plus"></i> Crear Ticket
+          </a>
+        {{/if}}
+      </div>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="tickets" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+          <thead>
+            <tr>
+              <th>NUMERO DE TICKET</th>
+              <th>TITULO</th>
+              <th>
+                {{#if (eq user.rol "Cliente")}}
+                  GESTIONADO POR
+                {{else}}
+                  ASIGNADO A
+                {{/if}}
+              </th>
+              <th>ESTADO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each tickets}}
+              <tr>
+                <td>
+                  <span class="badge badge-{{getBadgeClass this.tipoTicket.nombre}}">{{this.numeroTicket}}</span>
+                </td>
+                <td>{{this.titulo}}</td>
+                <td>
+                  {{#if this.resolver}}
+                    {{this.resolver.nombre}}
+                  {{else}}
+                    No asignado
+                  {{/if}}
+                </td> 
+                <td>{{getStatusBadgeClass this.estado}}</td>
+                <td style="white-space: nowrap;">
+                  <a href="/tickets/timeline/{{this.id}}" class="btn btn-info btn-sm" title="Ver Timeline">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  {{#if (or (eq ../user.rol "Administrador") (eq ../user.rol "Soporte Tecnico"))}}
+                    <a href="/tickets/edit/{{this.id}}" class="btn btn-primary btn-sm" title="Modificar">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <form id="deleteForm-{{this.id}}" method="POST" action="/tickets/delete/{{this.id}}?_method=DELETE"
+                      style="display: inline;" onsubmit="return confirmDelete('{{this.id}}', '{{this.numeroTicket}}')">
+                      <button type="submit" class="btn btn-danger btn-sm" title="Eliminar Ticket">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </form>
+                  {{/if}}
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Incluye SweetAlert2 para las alertas -->
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+  function confirmDelete(id, numeroTicket) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Eliminar el ticket: ${numeroTicket}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById(`deleteForm-${id}`).submit();
+      }
+    });
+  }
+</script>

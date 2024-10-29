@@ -7,12 +7,24 @@ module.exports = {
     try {
       console.log('--- INICIO MIDDLEWARE ---');
 
-      const authOnlyRoutes = ['/logout', '/perfil', '/'];
+      // Define las rutas que requieren solo autenticación
+      const authOnlyRoutes = new Set([
+        '/logout',
+        '/perfil',
+        '/',
+        '/tickets',               // Listar tickets
+        '/tickets/new',           // Crear nuevo ticket
+        '/tickets/timeline/:id',  // Ver timeline de un ticket
+        '/tickets/:id/messages',    // Responder al ticket
+        '/tickets//:id/updateStatus'
+      ]);
 
+      // Si la ruta es para favicon, permite el paso sin más verificaciones
       if (req.originalUrl.includes('favicon.ico')) {
         return next();
       }
 
+      // Si el usuario no está autenticado, redirigir al login
       if (!req.session.user) {
         console.log('Usuario no autenticado. Redirigiendo a login.');
         return res.redirect('/login');
@@ -21,27 +33,22 @@ module.exports = {
       let path = req.originalUrl.split('?')[0].toLowerCase();
       if (path === '') path = '/';
       console.log('Ruta solicitada:', path);
-
       res.locals.currentRoute = path;
 
-      // Buscar el usuario y su rol, incluyendo los módulos asignados a través de RolModulo
+      // Obtener usuario y su rol, con módulos y permisos
       const usuario = await prisma.usuario.findUnique({
         where: { email: req.session.user },
         include: {
           rol: {
             include: {
               modulos: {
-                include: {
-                  modulo: true, // Obtenemos los detalles de los módulos
-                },
+                include: { modulo: true },
               },
               permisos: {
                 include: {
                   permiso: {
                     include: {
-                      moduloPermisos: {
-                        include: { modulo: true },
-                      },
+                      moduloPermisos: { include: { modulo: true } },
                     },
                   },
                 },
@@ -51,57 +58,55 @@ module.exports = {
         },
       });
 
-      if (!usuario) {
-        console.log('Usuario no encontrado en la base de datos.');
+      if (!usuario || !usuario.rol) {
+        console.log('Usuario o rol no encontrado en la base de datos.');
         return res.redirect('/login');
       }
+
+      console.log('Usuario:', usuario.email, 'Rol:', usuario.rol.nombre);
 
       const rol = usuario.rol;
-      if (!rol) {
-        console.log('Rol no asignado al usuario.');
-        return res.redirect('/login');
-      }
-
-      console.log('Usuario:', usuario.email, 'Rol:', rol.nombre);
       const permisos = rol.permisos.map((p) => p.permiso);
-
-      // Verificar módulos activos a través de RolModulo y ordenar por id ascendente
       const modulosActivos = rol.modulos
         .map((rolModulo) => rolModulo.modulo)
         .filter((modulo) => modulo.activo)
-        .sort((a, b) => a.id - b.id); // Ordenar por ID de módulo ascendente
+        .sort((a, b) => a.id - b.id);
 
-      // Filtrar los módulos con permisos
+      // Obtener todas las rutas de los módulos activos en una sola consulta
+      const rutas = await prisma.ruta.findMany({
+        where: { moduloId: { in: modulosActivos.map((m) => m.id) } },
+        orderBy: { id: 'asc' },
+      });
+
+      const rutasPorModulo = rutas.reduce((acc, ruta) => {
+        if (!acc[ruta.moduloId]) acc[ruta.moduloId] = [];
+        acc[ruta.moduloId].push(ruta);
+        return acc;
+      }, {});
+
+      // Filtrar los módulos que tienen rutas permitidas para el usuario
       const modulosConPermisos = [];
       for (const modulo of modulosActivos) {
         console.log('Verificando módulo:', modulo.nombre);
-        const rutas = await prisma.ruta.findMany({
-          where: { moduloId: modulo.id },
-          orderBy: { id: 'asc' }, // Ordenar las rutas por ID ascendente
-        });
-
-        // Filtrar las rutas a las que el usuario tiene acceso
-        const rutasConPermiso = rutas.filter((ruta) =>
+        const rutasConPermiso = (rutasPorModulo[modulo.id] || []).filter((ruta) =>
           permisos.some((permiso) =>
-            permiso.moduloPermisos.some(mp => mp.moduloId === modulo.id) &&
+            permiso.moduloPermisos.some((mp) => mp.moduloId === modulo.id) &&
             isMatch(permiso.ruta, ruta.ruta) &&
             permiso.metodo === req.method
           )
         );
 
-        // Solo agregar el módulo si tiene rutas permitidas
         if (rutasConPermiso.length > 0) {
           modulo.rutas = rutasConPermiso;
           modulosConPermisos.push(modulo);
         }
       }
 
-      console.log('Módulos con permisos permitidos:', modulosConPermisos.map(m => m.nombre));
+      console.log('Módulos con permisos permitidos:', modulosConPermisos.map((m) => m.nombre));
+      res.locals.modulos_menu = modulosConPermisos;
 
-      res.locals.modulos_menu = modulosConPermisos; // Enviar los módulos permitidos al menú
-
-      // Si la ruta está en authOnlyRoutes, saltar la verificación de permisos
-      if (authOnlyRoutes.includes(path)) {
+      // Si la ruta está en `authOnlyRoutes`, saltar la verificación de permisos
+      if (authOnlyRoutes.has(path)) {
         return next();
       }
 
@@ -110,7 +115,7 @@ module.exports = {
 
       // Verificar si el usuario tiene permiso para la ruta solicitada
       const hasPermission = permisos.some((permiso) =>
-        permiso.moduloPermisos.some(mp => modulosActivos.map(mod => mod.id).includes(mp.moduloId)) &&
+        permiso.moduloPermisos.some((mp) => modulosActivos.map((mod) => mod.id).includes(mp.moduloId)) &&
         isMatch(permiso.ruta, path) &&
         permiso.metodo === method
       );
@@ -126,9 +131,6 @@ module.exports = {
     } catch (error) {
       console.error('Error en el middleware de autenticación:', error);
       return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
-    } finally {
-      await prisma.$disconnect();
-      console.log('--- FIN MIDDLEWARE ---');
     }
   },
 

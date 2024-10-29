@@ -1,42 +1,47 @@
+<!-- Hojas de estilo -->
+<link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
 <div class="container p-4">
     <div class="row justify-content-center">
         <h1>Agregar Nuevo Contrato</h1>
     </div>
-  
+
     <div class="row justify-content-center mt-4">
         <div class="col-md-6">
-        
+
             {{#if errors}}
-                <div class="alert alert-danger">
-                    <ul>
-                        {{#each errors}}
-                            <li>{{this.msg}}</li>
-                        {{/each}}
-                    </ul>
-                </div>
+            <div class="alert alert-danger">
+                <ul>
+                    {{#each errors}}
+                    <li>{{this.msg}}</li>
+                    {{/each}}
+                </ul>
+            </div>
             {{/if}}
 
             <form method="POST" action="/contratos/new" id="alertFormSave">
                 <div class="form-group">
                     <label for="clienteId">Cliente</label>
-                    <select class="form-control" name="clienteId" required>
+                    <select class="form-control select2" id="select-cliente" name="clienteId" required>
                         <option value="" disabled selected>Seleccione un cliente</option>
                         {{#each clientes}}
-                            <option value="{{this.id}}">{{this.nombres}} {{this.apellidos}}</option>
+                        <option value="{{this.id}}">{{this.nombres}} {{this.apellidos}}</option>
                         {{/each}}
                     </select>
+
+
                 </div>
 
                 <div class="form-group">
                     <label for="servicios">Seleccione los Servicios</label>
                     <div class="form-check">
                         {{#each servicios}}
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="servicioIds" value="{{this.id}}" id="servicio-{{this.id}}">
-                                <label class="form-check-label" for="servicio-{{this.id}}">
-                                    {{this.servicio}} - ${{this.precio}} ({{this.tipo_pago}})
-                                </label>
-                            </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="servicioIds" value="{{this.id}}"
+                                id="servicio-{{this.id}}">
+                            <label class="form-check-label" for="servicio-{{this.id}}">
+                                {{this.servicio}} - ${{this.precio}} ({{this.tipo_pago}})
+                            </label>
+                        </div>
                         {{/each}}
                     </div>
                 </div>
@@ -48,7 +53,7 @@
 
                 <div class="form-group">
                     <label for="fecha_contrato">Fecha de Contrato</label>
-                    <input type="date" class="form-control" name="fecha_contrato" required>
+                    <input type="datetime-local" class="form-control" name="fecha_contrato" required>
                 </div>
 
                 <div class="form-group">
@@ -58,7 +63,7 @@
                         <option value="false">Inactivo</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group row">
                     <div class="col-6 pl-1">
                         <a href="/contratos" class="btn btn-secondary btn-block">Cancelar</a>
@@ -72,3 +77,12 @@
         </div>
     </div>
 </div>
+<!-- Incluir jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Scripts -->
+<script src="/plugins/select2/js/select2.full.min.js"></script>
+<script>
+    $('#select-cliente').select2();
+</script>
+

@@ -14,11 +14,8 @@
                     <thead>
                         <tr>
                             <th>ANEXO</th>
-                            <th>FECHA DE CONTRATO</th>
                             <th>SERVICIO ADQUIRIDO</th>
-                            <th>PRECIO DEL SERVICIO</th>
-                            <th>ALIAS</th>
-                            <th>A NOMBRE DE</th>
+                            <th>CLIENTE</th>
                             <th>TELEFONO</th>
                             <th>ESTADO</th>
                             <th>ACCIONES</th>
@@ -28,19 +25,13 @@
                         {{#each contratos}}
                             <tr>
                                 <td>{{this.anexo}}</td>
-                                <td>{{formatDate this.fecha_contrato}}</td>
+                                
                                 <td>
                                     {{#each this.servicios}}
                                         {{this.servicio.servicio}}<br>
                                     {{/each}}
                                 </td>
-                                <td>
-                                    {{#each this.servicios}}
-                                        ${{this.servicio.precio}}<br>
-                                    {{/each}}
-                                </td>
-                                <td>{{this.cliente.alias}}</td>
-                                <td>{{this.cliente.nombres}} {{this.cliente.apellidos}}</td>
+                                <td>{{this.cliente.alias}} - {{this.cliente.nombres}} {{this.cliente.apellidos}}</td>
                                 <td>{{this.cliente.telefono}}</td>
                                 <td>
                                     {{#if activo}}
