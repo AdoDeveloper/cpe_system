@@ -15,10 +15,8 @@
                 <table id="servicios" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
                     <thead>
                         <tr>
-                            <th>No. Servicio</th>
                             <th>NOMBRE</th>
                             <th>PRECIO</th>
-                            <th>DESCRIPCIÓN</th>
                             <th>TIPO DE PAGO</th>
                             <th>ACCIONES</th>
                         </tr>
@@ -26,10 +24,8 @@
                     <tbody>
                         {{#each servicios}}
                             <tr>
-                                <td>{{id}}</td>
                                 <td>{{servicio}}</td>
                                 <td>${{precio}}</td>
-                                <td>{{descripcion}}</td>
                                 <td>{{tipo_pago}}</td>
                                 <td style="white-space: nowrap;">
                                     <a href="/servicios/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
