@@ -60,9 +60,8 @@
                     <a href="/tickets/edit/{{this.id}}" class="btn btn-primary btn-sm" title="Modificar">
                       <i class="fas fa-edit"></i>
                     </a>
-                    <form id="deleteForm-{{this.id}}" method="POST" action="/tickets/delete/{{this.id}}?_method=DELETE"
-                      style="display: inline;" onsubmit="return confirmDelete('{{this.id}}', '{{this.numeroTicket}}')">
-                      <button type="submit" class="btn btn-danger btn-sm" title="Eliminar Ticket">
+                    <form id="deleteForm-{{this.id}}" method="POST" action="/tickets/delete/{{this.id}}?_method=DELETE" style="display: inline;">
+                      <button type="button" onclick="confirmDelete('{{this.id}}', '{{this.numeroTicket}}')" class="btn btn-danger btn-sm" title="Eliminar Ticket">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     </form>

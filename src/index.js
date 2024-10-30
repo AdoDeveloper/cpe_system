@@ -60,6 +60,10 @@ app.use(session({
   }
 }));
 
+
+const notificacionesMiddleware = require('./middlewares/notificacionesMiddleware');
+app.use(notificacionesMiddleware);
+
 // Middleware para mostrar mensajes flash
 app.use(flash());
 

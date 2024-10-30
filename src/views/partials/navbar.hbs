@@ -7,30 +7,56 @@
       </a>
     </li>
 
-    <!-- Breadcrumb dinámico junto a Inicio -->
-    <li class="nav-item">
+    <!-- Breadcrumb dinámico junto a Inicio, oculto en pantallas pequeñas -->
+    <li class="nav-item d-none d-md-block">
       <nav aria-label="breadcrumb" class="breadcrumb-nav">
-        <span>{{createBreadcrumb currentRoute}}</span> <!-- Usar el helper de breadcrumb aquí -->
+        <span>{{createBreadcrumb currentRoute}}</span>
       </nav>
     </li>
   </ul>
 
   <!-- Right navbar links -->
   <ul class="navbar-nav ml-auto">
+    <!-- Notificaciones -->
+    <li class="nav-item dropdown">
+      <a class="nav-link" data-toggle="dropdown" href="#">
+        <i class="far fa-bell"></i>
+        <span id="notificationCount" class="badge badge-warning navbar-badge">{{notificationCount}}</span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="notificationDropdown">
+        <span class="dropdown-header font-weight-bold text-center">Notificaciones</span>
+        <div class="dropdown-divider"></div>
+        <div id="notificationList" class="notification-list">
+          {{#each notificaciones}}
+          <a href="/tickets/timeline/{{this.ticketId}}" class="dropdown-item d-flex align-items-center notification-item">
+            <div class="icon mr-3">
+              <i class="fas fa-ticket-alt text-primary"></i>
+            </div>
+            <div class="text">
+              <span class="notification-message font-weight-bold">{{this.mensaje}}</span>
+              <div class="text-muted small">{{formatDate this.createdAt}}</div>
+            </div>
+          </a>
+          {{/each}}
+        </div>
+        <div class="dropdown-divider"></div>
+        <a href="/notificaciones" class="dropdown-item dropdown-footer text-center text-primary font-weight-bold">
+          Ver todas las notificaciones
+        </a>
+      </div>
+    </li>
+
     <!-- Perfil de usuario -->
     <li class="nav-item dropdown">
       <a class="nav-link" data-toggle="dropdown" href="#">
         <i class="far fa-user"></i>
-        <span>{{ userName }}</span> <!-- Mostrar el nombre del usuario -->
+        <span>{{ userName }}</span>
       </a>
       <div class="dropdown-menu dropdown-menu-right">
-        <!-- Enlace al perfil de usuario -->
         <a href="/perfil" class="dropdown-item">
           <i class="fas fa-user-cog"></i> Perfil
         </a>
         <div class="dropdown-divider"></div>
-
-        <!-- Formulario para el cierre de sesión -->
         <form id="logout-form" action="/logout" method="GET" style="display: none;"></form>
         
         <a href="#" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">
@@ -40,3 +66,32 @@
     </li>
   </ul>
 </nav>
+
+<style>
+  /* Estilo para cada notificación */
+  .notification-item {
+    display: flex;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    text-decoration: none !important;
+    color: inherit;
+  }
+  .notification-item:hover {
+    background-color: #f4f6f9; /* Color de hover */
+    text-decoration: none;
+  }
+  .notification-item .icon i {
+    font-size: 1.5rem;
+  }
+  .notification-item .text {
+    flex: 1;
+    font-size: 0.9rem;
+  }
+  .notification-item .notification-message {
+    color: #495057;
+  }
+  .notification-item .text-muted {
+    font-size: 0.8rem;
+  }
+</style>

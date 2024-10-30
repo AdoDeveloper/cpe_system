@@ -3,6 +3,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cloudinary = require('cloudinary').v2;
+// Importar la función desde notificacionesController
+const { crearYEmitirNotificacion } = require('./notificacionesController');
+const { empty } = require('@prisma/client/runtime/library');
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -297,7 +300,7 @@ exports.createTicket = async (req, res) => {
     }
 
     // Crear el ticket en la base de datos
-    await prisma.ticket.create({
+    const nuevoTicket = await prisma.ticket.create({
       data: {
         numeroTicket,
         titulo,
@@ -313,6 +316,17 @@ exports.createTicket = async (req, res) => {
         longitud,
       },
     });
+
+     // Si se asigna un resolver, crear y emitir una notificación
+     if (nuevoTicket.resolverId) {
+      const mensajeNotificacion = `Se te ha asignado el ticket #${nuevoTicket.numeroTicket}.`;
+      await crearYEmitirNotificacion(
+        nuevoTicket.resolverId,
+        'ticket_asignado',
+        mensajeNotificacion,
+        nuevoTicket.id
+      );
+    }
 
     req.flash('success_msg', 'Ticket creado correctamente');
     res.redirect('/tickets');
@@ -455,7 +469,7 @@ exports.updateTicket = async (req, res) => {
     const updatedTipoTicketId = tipoTicketId && tipoTicketId.trim() !== '' ? parseInt(tipoTicketId) : ticket.tipoTicketId;
 
     // Actualizar el ticket en la base de datos
-    await prisma.ticket.update({
+    const ticketActualizado = await prisma.ticket.update({
       where: { id: ticketId },
       data: {
         titulo,
@@ -470,6 +484,17 @@ exports.updateTicket = async (req, res) => {
         longitud: longitud,
       },
     });
+
+     // Si se asigna un nuevo resolver, crear y emitir una notificación
+     if (updatedResolverId && (updatedResolverId !== ticket.resolverId)) {
+      const mensajeNotificacion = `Se te ha asignado el ticket #${ticketActualizado.numeroTicket}.`;
+      await crearYEmitirNotificacion(
+        updatedResolverId,
+        'ticket_asignado',
+        mensajeNotificacion,
+        ticketActualizado.id
+      );
+    }
 
     req.flash('success_msg', 'Ticket actualizado correctamente');
     res.redirect('/tickets');
@@ -490,13 +515,21 @@ exports.deleteTicket = async (req, res) => {
       where: { id: ticketId },
     });
 
+    // Registrar el resultado para depuración
+   //console.log("Ticket encontrado para eliminación:", ticket);
+
+    if (!ticket) {
+      req.flash('error_msg', 'El ticket no existe.');
+      return res.redirect('/tickets');
+    }
+
     // Eliminar mensajes asociados al ticket antes de eliminar el ticket
     await prisma.ticketMessage.deleteMany({
       where: { ticketId: ticketId },
     });
 
     // Eliminar imagen de Cloudinary si existe
-    if (ticket.img_problema) {
+    if (ticket.img_problema) { // Verificar si img_problema no es null
       await deleteFileFromCloudinary(ticket.numeroTicket);
     }
 
@@ -516,7 +549,6 @@ exports.deleteTicket = async (req, res) => {
 
 // ======= TIMELINE ======= //
 
-// Función para mostrar el timeline del ticket
 exports.showTimeline = async (req, res) => {
   try {
     const ticketId = parseInt(req.params.id);
@@ -533,6 +565,23 @@ exports.showTimeline = async (req, res) => {
         resolver: true,
       },
     });
+
+    // Verificar que el ticket exista
+    if (!ticket) {
+      req.flash('error_msg', 'El ticket no existe.');
+      return res.redirect('/tickets');
+    }
+
+    // Validar que el usuario tiene acceso al ticket
+    if (
+      userRole === 'Cliente' &&
+      ticket.usuarioId !== userId || userRole === 'Tecnico' &&
+      ticket.resolverId !== userId || userRole === 'Instalador' &&
+      ticket.resolverId !== userId
+    ) {
+      req.flash('error_msg', 'No tienes permiso para ver este ticket.');
+      return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
+    }
 
     // Obtener los mensajes del ticket
     const mensajes = await prisma.ticketMessage.findMany({

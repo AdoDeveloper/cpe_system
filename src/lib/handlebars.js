@@ -8,6 +8,31 @@ Handlebars.registerHelper('eq', function (a, b) {
     return resultado;
 });
 
+Handlebars.registerHelper('gt', function(a, b) {
+    return a > b;
+  });
+  
+  Handlebars.registerHelper('lt', function(a, b) {
+    return a < b;
+  });
+  
+  Handlebars.registerHelper('add', function(a, b) {
+    return a + b;
+  });
+  
+  Handlebars.registerHelper('subtract', function(a, b) {
+    return a - b;
+  });
+  
+  // Helper para generar un rango de números
+  Handlebars.registerHelper('range', function(from, to, options) {
+    let accum = '';
+    for(let i = from; i <= to; i++) {
+      accum += options.fn(i);
+    }
+    return accum;
+  });
+
 // Helper para verificar si al menos uno de los argumentos es verdadero
 Handlebars.registerHelper('or', function(...args) {
     // El último argumento es el objeto de opciones de Handlebars

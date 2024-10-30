@@ -50,6 +50,7 @@ model Usuario {
   tickets      Ticket[]  // Tickets creados por el usuario
   resoluciones Ticket[]  @relation("TicketResolver") // Tickets asignados como resolutor
   mensajes       TicketMessage[]
+  notificaciones Notificacion[]
 
   @@map("usuarios")
 }
@@ -333,7 +334,6 @@ model CuentaContable {
 
   @@map("cuentas_contables")
 }
-
 model TipoTicket {
   id          Int       @id @default(autoincrement())
   nombre      String    @unique
@@ -353,21 +353,21 @@ model Ticket {
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt      @map("updated_at")
   
-  direccion      String?     // Campo para almacenar la dirección en texto
-  latitud        Float?      // Campo para almacenar la latitud de la ubicación
-  longitud       Float?      // Campo para almacenar la longitud de la ubicación
+  direccion      String?     // Dirección en texto
+  latitud        Float?      // Latitud de la ubicación
+  longitud       Float?      // Longitud de la ubicación
 
-  tipoTicketId   Int?        @map("tipo_ticket_id") // Permitir que sea null
-  tipoTicket     TipoTicket? @relation(fields: [tipoTicketId], references: [id])
+  tipoTicketId   Int?        @map("tipo_ticket_id")
+  tipoTicket     TipoTicket? @relation(fields: [tipoTicketId], references: [id]) // Relación opcional con TipoTicket
 
   usuarioId      Int         @map("usuario_id")
   usuario        Usuario     @relation(fields: [usuarioId], references: [id])
 
-  clienteId      Int?        @map("cliente_id") // Permitir que sea null
-  cliente        Cliente?    @relation(fields: [clienteId], references: [id])
+  clienteId      Int?        @map("cliente_id")
+  cliente        Cliente?    @relation(fields: [clienteId], references: [id]) // Relación opcional con Cliente
 
-  resolverId     Int?        @map("resolver_id") // Resolver opcional
-  resolver       Usuario?    @relation("TicketResolver", fields: [resolverId], references: [id])
+  resolverId     Int?        @map("resolver_id")
+  resolver       Usuario?    @relation("TicketResolver", fields: [resolverId], references: [id]) // Resolver opcional
 
   mensajes       TicketMessage[]
 
@@ -388,4 +388,18 @@ model TicketMessage {
   usuario    Usuario  @relation(fields: [usuarioId], references: [id])
 
   @@map("tickets_mensajes")
+}
+
+model Notificacion {
+  id           Int       @id @default(autoincrement())
+  usuarioId    Int       @map("usuario_id") // ID del usuario que recibe la notificación
+  tipo         String    // Tipo de notificación (e.g., 'ticket_asignado', 'nuevo_mensaje')
+  mensaje      String    // Mensaje de la notificación
+  ticketId     Int?      @map("ticket_id") // ID del ticket relacionado (si aplica)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt      @map("updated_at")
+
+  usuario      Usuario   @relation(fields: [usuarioId], references: [id])
+
+  @@map("notificaciones")
 }
