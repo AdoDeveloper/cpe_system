@@ -1,0 +1,212 @@
+<div class="container-fluid"> 
+        <br>
+        <div class="card">
+            <div class="card-header">
+                <div class="container-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">LISTA DE FACTURAS</h3>
+                    <!-- Filtro de facturas -->
+                    <select id="filterStatus" class="form-control w-auto">
+                        <option value="no_canceladas" selected>No Canceladas</option>
+                        <option value="canceladas">Canceladas</option>
+                        <option value="todas">Todas</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Mensajes de éxito y error -->
+                {{#if success_msg}}
+                <div class="alert alert-success">{{success_msg}}</div>
+                {{/if}}
+                {{#if error_msg}}
+                <div class="alert alert-danger">{{error_msg}}</div>
+                {{/if}}
+
+                <div class="table-responsive">
+                    <table id="facturas" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                        <thead>
+                            <tr>
+                                <th>N° FACTURA</th>
+                                <th>FAMILIA</th>
+                                <th>CLIENTE</th>
+                                <th>FECHA DE PAGO</th>
+                                <th>CONCEPTO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facturas-tbody">
+                            {{#each facturas}}
+                            <tr class="{{#if this.cancelada}}cancelada{{else}}no-cancelada{{/if}}">
+                                <td>{{this.numero}}</td>
+                                <td>{{this.cliente.alias}}</td>
+                                <td>{{this.cliente.nombres}} {{this.cliente.apellidos}}</td>
+                                <td>{{formatDatePDF this.fecha}}</td>
+                                <td>
+                                    {{#each this.detalles}}
+                                    {{this.concepto}} ${{this.subtotal}}<br>
+                                    {{/each}}
+                                </td>
+                                <td style="white-space: nowrap;">
+                                    <!-- Botón modificado para abrir el modal -->
+                                    <button onclick="mostrarDetalles('{{this.id}}')" class="btn btn-primary btn-sm" title="Ver Detalles">
+                                        <i class="fas fa-info-circle"></i> Detalles
+                                    </button>
+                                    <!-- Mostrar el botón "Generar Pago" solo si la factura no está cancelada -->
+                                    {{#unless this.cancelada}}
+                                    <button onclick="confirmGeneratePago('{{this.id}}', '{{this.cliente.nombres}} {{this.cliente.apellidos}}')" class="btn btn-success btn-sm" title="Generar Pago y Facturar">
+                                        <i class="fas fa-dollar-sign"></i> Generar Pago
+                                    </button>
+                                    {{/unless}}
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Detalles de la Factura -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg"> <!-- Puedes ajustar el tamaño del modal aquí -->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalDetallesLabel">DETALLES DE LA FACTURA</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Aquí se cargará el contenido de la factura -->
+            <div id="contenidoFactura"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Script personalizado -->
+    <script>
+        // Función para mostrar los detalles de la factura en el modal
+        function mostrarDetalles(idFactura) {
+            // Realizar una solicitud AJAX para obtener el contenido de la factura
+            fetch('/facturacion/detalle/' + idFactura)
+                .then(response => response.text())
+                .then(data => {
+                    // Insertar el contenido en el modal
+                    document.getElementById('contenidoFactura').innerHTML = data;
+                    // Mostrar el modal
+                    $('#modalDetalles').modal('show');
+                    // Inicializar eventos después de cargar el contenido
+                    inicializarEventosFactura();
+                })
+                .catch(error => console.error('Error al cargar los detalles de la factura:', error));
+        }
+
+        // Función para inicializar eventos en el contenido de la factura
+        function inicializarEventosFactura() {
+            const downloadButton = document.getElementById('downloadPDF');
+            if (downloadButton) {
+                downloadButton.addEventListener('click', () => {
+                    const invoiceElement = document.querySelector('#contenidoFactura .container-fluid');
+
+                    const logo = invoiceElement.querySelector('#invoice-logo');
+                    const imgSrc = logo.src;
+                    const imageLoader = new Image();
+                    imageLoader.src = imgSrc;
+
+                    imageLoader.onload = () => {
+                        downloadButton.style.visibility = 'hidden';
+
+                        // Obtener alias del cliente desde el elemento con clase 'alias-cliente'
+                        const aliasClienteElement = invoiceElement.querySelector('.alias-cliente');
+                        const aliasCliente = aliasClienteElement ? aliasClienteElement.innerText.replace(/\s+/g, '_') : 'Cliente';
+
+                        // Obtener y formatear la fecha para el nombre del archivo
+                        const fechaFacturaTexto = invoiceElement.querySelector('.fecha-factura')?.innerText || ''; // Formato esperado: DD/MM/YYYY
+                        let facturaMonth = '';
+                        if (fechaFacturaTexto) {
+                            const partesFecha = fechaFacturaTexto.split('/');
+                            if (partesFecha.length === 3) {
+                                const facturaDate = new Date(partesFecha[2], partesFecha[1] - 1, partesFecha[0]);
+                                const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+                                facturaMonth = monthNames[facturaDate.getMonth()];
+                            }
+                        }
+
+                        // Configuración de html2pdf
+                        const options = {
+                            margin: 3,
+                            filename: `Factura-${aliasCliente}-${facturaMonth}.pdf`,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                            jsPDF: { unit: 'mm', format: 'legal', orientation: 'portrait' }
+                        };
+
+                        html2pdf()
+                            .set(options)
+                            .from(invoiceElement)
+                            .toPdf()
+                            .get('pdf')
+                            .then((pdf) => {
+                                while (pdf.internal.getNumberOfPages() > 1) {
+                                    pdf.deletePage(2);
+                                }
+                            })
+                            .save()
+                            .finally(() => {
+                                downloadButton.style.visibility = 'visible';
+                            });
+                    };
+                });
+            }
+        }
+
+        // Función para confirmar la generación de pago
+        function confirmGeneratePago(idFactura, nombreCliente) {
+            Swal.fire({
+                title: '¿Generar pago?',
+                text: `Estás a punto de registrar el pago para: ${nombreCliente}.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, generar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Crear formulario y enviarlo
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/facturacion/generar-pago/${idFactura}?_method=PUT`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Script para filtrar facturas
+        document.getElementById('filterStatus').addEventListener('change', function () {
+            const selectedFilter = this.value;
+            const rows = document.querySelectorAll('#facturas-tbody tr');
+
+            rows.forEach(row => {
+                const isCancelled = row.classList.contains('cancelada');
+
+                if (selectedFilter === 'canceladas') {
+                    row.style.display = isCancelled ? '' : 'none';
+                } else if (selectedFilter === 'no_canceladas') {
+                    row.style.display = !isCancelled ? '' : 'none';
+                } else {
+                    row.style.display = '';
+                }
+            });
+        });
+
+        // Disparar el evento change al cargar la página para aplicar el filtro inicial
+        document.getElementById('filterStatus').dispatchEvent(new Event('change'));
+    </script>

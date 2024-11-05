@@ -4,11 +4,13 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('Iniciando semilla.');
+  console.log('Verificando si ya existe el rol Administrador.');
   // Verificar si ya existe el rol Administrador
   const existingAdminRole = await prisma.rol.findUnique({
     where: { nombre: 'Administrador' },
   });
-
+  console.log('Creando modulos.');
   if (!existingAdminRole) {
     // Crear los módulos con su estado activo
     const dashboardModulo = await prisma.modulo.create({
@@ -103,7 +105,7 @@ async function main() {
         },
       });
     }
-
+    console.log('Creando rutas para modulos.');
     // Crear las rutas para cada módulo con sus íconos
     const rutasData = [
       // Dashboard Rutas
@@ -117,7 +119,7 @@ async function main() {
       // Facturación Rutas
       {
         nombre: 'Generar Facturas',
-        ruta: '/facturacion/generar',
+        ruta: '/facturacion',
         icono: 'fas fa-file-invoice-dollar',
         moduloId: facturacionModulo.id,
       },
@@ -129,7 +131,7 @@ async function main() {
       },
       {
         nombre: 'Historial de Pagos',
-        ruta: '/facturacion/historial',
+        ruta: '/pagos',
         icono: 'far fa-clock',
         moduloId: facturacionModulo.id,
       },
@@ -219,6 +221,7 @@ async function main() {
       createdRutas.push(createdRuta);
     }
 
+    console.log('Creando permisos.');
     // Crear los permisos incluyendo las rutas CRUD existentes
     const permisosData = [
       // Permisos de clientes
@@ -301,6 +304,27 @@ async function main() {
       { ruta: '/tickets/edit/:id', metodo: 'GET', descripcion: 'Formulario editar tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/edit/:id', metodo: 'PUT', descripcion: 'Actualizar tickets', tipo: 'escritura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar tickets', tipo: 'eliminación', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/timeline/:id', metodo: 'GET', descripcion: 'Ver detalles del ticket asignado', tipo: 'lectura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/timeline/:id', metodo: 'POST', descripcion: 'Responder al ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/:id/updatestatus', metodo: 'PUT', descripcion: 'Actualizar el estado del ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
+
+      // Permisos de facturacion
+       { ruta: '/facturacion', metodo: 'GET', descripcion: 'Listar facturas', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/facturacion/detalle/:id', metodo: 'GET', descripcion: 'Ver detalles de factura', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/facturacion/generar-pago/:id', metodo: 'PUT', descripcion: 'Realizar el pago de factura', tipo: 'escritura', moduloId: facturacionModulo.id },
+
+       // Permisos de movimientos
+       { ruta: '/movimientos', metodo: 'GET', descripcion: 'Listar movimientos', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/movimientos/new', metodo: 'GET', descripcion: 'Formulario agregar movimiento', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/movimientos/new', metodo: 'POST', descripcion: 'Crear movimiento', tipo: 'escritura', moduloId: facturacionModulo.id },
+       { ruta: '/movimientos/edit/:id', metodo: 'GET', descripcion: 'Formulario editar movimiento', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/movimientos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar movimiento', tipo: 'escritura', moduloId: facturacionModulo.id },
+       { ruta: '/movimientos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar movimiento', tipo: 'eliminación', moduloId: facturacionModulo.id },
+
+      // Permisos de historial de pagos
+       { ruta: '/pagos', metodo: 'GET', descripcion: 'Listar historial de pagos', tipo: 'lectura', moduloId: facturacionModulo.id },
+       { ruta: '/pagos/detalle/:id', metodo: 'GET', descripcion: 'Listar detalles de pago', tipo: 'lectura', moduloId: facturacionModulo.id },
+
       // Permisos de home y login
       //{ ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id},
       //{ ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
@@ -331,6 +355,7 @@ async function main() {
       createdPermisos.push(createdPermiso);
     }
 
+    console.log('Asignando todos los permisos al rol administrador.');
     // Conectar el rol Administrador a los permisos mediante RolPermiso
     for (const permiso of createdPermisos) {
       await prisma.rolPermiso.create({
@@ -341,6 +366,7 @@ async function main() {
       });
     }
 
+    console.log('Creando usuario administrador.');
     // Crear un usuario administrador por defecto
     const hashedPassword = await bcrypt.hash('adminpassword', 10); // Cambia la contraseña si es necesario
     await prisma.usuario.create({
@@ -365,31 +391,32 @@ async function main() {
       },
     });
 
+    console.log('Creando los servicios.');
     // Insertar servicios
     const serviciosData = [
       {
         servicio: 'Servicio de Internet 8mps',
-        precio: 25.0,
+        precio: 25.00,
         descripcion:
           'Velocidad de 8 Megas para que puedas conectar tu SmartTV, ver Netflix, ver televisión (IPTV), escuchar música y más.',
         tipo_pago: 'Recurrente',
       },
       {
         servicio: 'Servicio de Internet 3mps',
-        precio: 15.0,
+        precio: 15.00,
         descripcion:
           'Velocidad de 3 Megas para que puedas navegar por internet, estudiar, ver videos y escuchar música.',
         tipo_pago: 'Recurrente',
       },
       {
         servicio: 'Instalacion de equipo CPE',
-        precio: 25.0,
+        precio: 25.00,
         descripcion: 'Instalación de equipo para el contrato del servicio.',
         tipo_pago: 'Unico',
       },
       {
         servicio: 'Servicio de canales IPTV',
-        precio: 5.5,
+        precio: 5.50,
         descripcion:
           'Ahora puedes ver televisión por internet desde tu Smart TV con la nueva tecnología IPTV donde podrás disfrutar tus canales nacionales e internacionales.',
         tipo_pago: 'Recurrente',
@@ -402,6 +429,7 @@ async function main() {
       });
     }
 
+    console.log('Creando las politicas.');
     // Insertar políticas en la tabla Politica
     const politicasData = [
       {
@@ -459,6 +487,7 @@ async function main() {
       });
     }
 
+    console.log('Creando las cuentas contables.');
     // Insertar registros en la tabla CuentasContables
     const cuentasContablesData = [
       { tipocc: 'CCI', nombre_cuenta: 'Cuenta de Ingreso', descripcion: null },
@@ -474,6 +503,7 @@ async function main() {
       });
     }
 
+    console.log('Creando los tipos de tickets.');
     // Agregar los tipos de tickets solicitados
     const tiposTicket = [
       { nombre: 'resolucion', descripcion: 'Soporte técnico para resolver problemas' },
@@ -487,6 +517,7 @@ async function main() {
       });
     }
 
+    console.log('Creando el resto de roles.');
     // Crear roles por defecto
     const rolesData = [
       { nombre: 'Cliente', esAdmin: false },
@@ -530,6 +561,7 @@ async function main() {
 
     // Crear permisos específicos para cada rol
 
+    console.log('Asignando los permisos especificos al rol cliente.');
     // Permisos para Cliente
     const permisosCliente = [
       { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id },
@@ -538,7 +570,7 @@ async function main() {
       { ruta: '/tickets', metodo: 'GET', descripcion: 'Listar sus tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/new', metodo: 'GET', descripcion: 'Formulario agregar tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/new', metodo: 'POST', descripcion: 'Crear tickets', tipo: 'escritura', moduloId: helpdeskModulo.id },
-      { ruta: '/tickets/timeline:id', metodo: 'GET', descripcion: 'Ver detalles del ticket', tipo: 'lectura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/timeline/:id', metodo: 'GET', descripcion: 'Ver detalles del ticket', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/timeline/:id', metodo: 'POST', descripcion: 'Responder al ticket', tipo: 'escritura', moduloId: helpdeskModulo.id },
     ];
 
@@ -569,13 +601,19 @@ async function main() {
       });
     }
 
+    console.log('Asignando los permisos especificos al rol tecnico.');
     // Permisos para Tecnico
     const permisosTecnico = [
       { ruta: '/equipos', metodo: 'GET', descripcion: 'Listar equipos', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/new', metodo: 'GET', descripcion: 'Formulario agregar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/new', metodo: 'POST', descripcion: 'Crear equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/edit/:id', metodo: 'GET', descripcion: 'Formulario editar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar equipo', tipo: 'eliminación', moduloId: gestionCpesModulo.id },
       { ruta: '/tickets', metodo: 'GET', descripcion: 'Listar tickets asignados', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/timeline/:id', metodo: 'GET', descripcion: 'Ver detalles del ticket asignado', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/timeline/:id', metodo: 'POST', descripcion: 'Responder al ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/:id/updatestatus', metodo: 'PUT', descripcion: 'Actualizar el estado del ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
     ];
 
     for (const permiso of permisosTecnico) {
@@ -605,13 +643,19 @@ async function main() {
       });
     }
 
+    console.log('Asignando los permisos especificos al rol instalador.');
     // Permisos para Instalador
     const permisosInstalador = [
       { ruta: '/equipos', metodo: 'GET', descripcion: 'Listar equipos', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/new', metodo: 'GET', descripcion: 'Formulario agregar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/new', metodo: 'POST', descripcion: 'Crear equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/edit/:id', metodo: 'GET', descripcion: 'Formulario editar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
+      { ruta: '/equipos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar equipo', tipo: 'eliminación', moduloId: gestionCpesModulo.id },
       { ruta: '/tickets', metodo: 'GET', descripcion: 'Listar tickets asignados', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/timeline/:id', metodo: 'GET', descripcion: 'Ver detalles del ticket asignado', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/timeline/:id', metodo: 'POST', descripcion: 'Responder al ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/:id/updatestatus', metodo: 'PUT', descripcion: 'Actualizar el estado del ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
     ];
 
     for (const permiso of permisosInstalador) {
@@ -641,6 +685,7 @@ async function main() {
       });
     }
 
+    console.log('Asignando los permisos especificos al rol soporte tecnico.');
     // Permisos para Soporte Tecnico
     const permisosSoporte = [
       // Permisos de helpdesk
@@ -650,6 +695,9 @@ async function main() {
       { ruta: '/tickets/edit/:id', metodo: 'GET', descripcion: 'Formulario editar tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/edit/:id', metodo: 'PUT', descripcion: 'Actualizar tickets', tipo: 'escritura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar tickets', tipo: 'eliminación', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/timeline/:id', metodo: 'GET', descripcion: 'Ver detalles del ticket asignado', tipo: 'lectura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/timeline/:id', metodo: 'POST', descripcion: 'Responder al ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
+      { ruta: '/tickets/:id/updatestatus', metodo: 'PUT', descripcion: 'Actualizar el estado del ticket asignado', tipo: 'escritura', moduloId: helpdeskModulo.id },
     ];
 
     for (const permiso of permisosSoporte) {
@@ -720,36 +768,37 @@ async function main() {
 
     // === Agregar Usuarios Adicionales ===
 
-// Definir los datos de los nuevos usuarios
-const nuevosUsuarios = [
-  {
-    email: 'carlos.instalador@airlink.com',
-    password: 'PasswordInstalador123',
-    nombre: 'Carlos Alberto González Hernández',
-    rol: 'Instalador',
-  },
-  {
-    email: 'sergio.tecnico@airlink.com',
-    password: 'PasswordTecnico123',
-    nombre: 'Sergio Agustin Rivas Torres',
-    rol: 'Tecnico',
-  },
-  {
-    email: 'maria.soporte@airlink.com',
-    password: 'PasswordSoporte123',
-    nombre: 'María Isabel Ramírez Leonor',
-    rol: 'Soporte Tecnico',
-  },
-];
+  console.log('Creando usuarios por defecto para cada rol restante.');
+  // Definir los datos de los nuevos usuarios
+  const nuevosUsuarios = [
+    {
+      email: 'carlos.instalador@airlink.com',
+      password: 'PasswordInstalador123',
+      nombre: 'Carlos Alberto González Hernández',
+      rol: 'Instalador',
+    },
+    {
+      email: 'sergio.tecnico@airlink.com',
+      password: 'PasswordTecnico123',
+      nombre: 'Sergio Agustin Rivas Torres',
+      rol: 'Tecnico',
+    },
+    {
+      email: 'maria.soporte@airlink.com',
+      password: 'PasswordSoporte123',
+      nombre: 'María Isabel Ramírez Leonor',
+      rol: 'Soporte Tecnico',
+    },
+  ];
 
-// Crear los nuevos usuarios
-for (const usuario of nuevosUsuarios) {
-  // Verificar si el usuario ya existe
-  const usuarioExistente = await prisma.usuario.findUnique({
-    where: { email: usuario.email },
-  });
+  // Crear los nuevos usuarios
+  for (const usuario of nuevosUsuarios) {
+    // Verificar si el usuario ya existe
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { email: usuario.email },
+    });
 
-  if (!usuarioExistente) {
+    if (!usuarioExistente) {
     // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(usuario.password, 10);
 

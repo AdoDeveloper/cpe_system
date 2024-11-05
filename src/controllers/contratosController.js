@@ -51,8 +51,6 @@ exports.renderCreateForm = async (req, res) => {
 
 exports.createContrato = async (req, res) => {
     try {
-        //console.log(req.body); // Para depuración
-
         const { clienteId, servicioIds, anexo, fecha_contrato, activo } = req.body;
 
         // Verificar si se seleccionaron servicios
@@ -76,7 +74,7 @@ exports.createContrato = async (req, res) => {
         }
 
         // Crear el contrato
-        await prisma.contrato.create({
+        const nuevoContrato = await prisma.contrato.create({
             data: {
                 anexo,
                 fecha_contrato: new Date(fecha_contrato),
@@ -90,11 +88,75 @@ exports.createContrato = async (req, res) => {
             }
         });
 
-        req.flash('success_msg', 'Contrato creado exitosamente.');
+        // Obtener detalles de los servicios seleccionados
+        const servicios = await prisma.servicio.findMany({
+            where: { id: { in: serviciosValidos } }
+        });
+
+        // Filtrar los servicios por tipo de pago
+        const serviciosUnicos = servicios.filter(s => s.tipo_pago === 'Unico');
+        const serviciosRecurrentes = servicios.filter(s => s.tipo_pago === 'Recurrente');
+
+        const subtotalUnicos = serviciosUnicos.reduce((total, serv) => total + serv.precio, 0);
+        const subtotalRecurrentes = serviciosRecurrentes.reduce((total, serv) => total + serv.precio, 0);
+
+        // Función para generar un número aleatorio de 6 caracteres (mayúsculas y números), con al menos 2 letras y 2 números
+        function generarNumeroFactura() {
+            const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const numeros = '0123456789';
+            let numero = '';
+
+            // Agregar al menos 2 letras y 2 números al inicio
+            for (let i = 0; i < 2; i++) {
+                numero += letras[Math.floor(Math.random() * letras.length)];
+            }
+            for (let i = 0; i < 2; i++) {
+                numero += numeros[Math.floor(Math.random() * numeros.length)];
+            }
+
+            // Completar los caracteres restantes, eligiendo entre letras y números aleatoriamente
+            const caracteres = letras + numeros;
+            while (numero.length < 6) {
+                const randomChar = caracteres[Math.floor(Math.random() * caracteres.length)];
+                numero += randomChar;
+            }
+
+            // Mezclar los caracteres para que el orden sea aleatorio
+            numero = numero.split('').sort(() => Math.random() - 0.5).join('');
+
+            return numero;
+        }
+
+        // Crear la factura inicial
+        await prisma.factura.create({
+            data: {
+                numero: generarNumeroFactura(),
+                fecha: new Date(fecha_contrato),
+                clienteId: parseInt(clienteId),
+                total: subtotalUnicos + subtotalRecurrentes,
+                observacion: 'Factura inicial generada al crear el contrato',
+                detalles: {
+                    create: [
+                        ...serviciosUnicos.map(serv => ({
+                            concepto: serv.servicio,
+                            cantidad: 1,
+                            subtotal: serv.precio
+                        })),
+                        ...serviciosRecurrentes.map(serv => ({
+                            concepto: serv.servicio,
+                            cantidad: 1,
+                            subtotal: serv.precio
+                        }))
+                    ]
+                }
+            }
+        });
+
+        req.flash('success_msg', 'Contrato y factura inicial creados exitosamente.');
         res.status(201).redirect('/contratos');
     } catch (error) {
-        console.error('Error al crear el contrato:', error);
-        req.flash('error_msg', 'Error al crear el contrato.');
+        console.error('Error al crear el contrato y la factura:', error);
+        req.flash('error_msg', 'Error al crear el contrato y la factura.');
         return res.status(500).redirect('/contratos');
     } finally {
         await prisma.$disconnect();
@@ -281,7 +343,7 @@ exports.generateContratoPDF = async (req, res) => {
         // Convertir contenido HTML a texto sin etiquetas y sin wordwrap
         const textoPolitica = htmlToText(politica.contenido, {
             wordwrap: false,  // Desactiva el ajuste de línea
-            preserveNewlines: true,  // Mantiene los saltos de línea originales
+            preserveNewlines: false,  // Mantiene los saltos de línea originales
         });
 
             doc.text(textoPolitica).moveDown(1);

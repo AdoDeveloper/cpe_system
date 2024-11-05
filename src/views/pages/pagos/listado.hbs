@@ -1,0 +1,45 @@
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTADO DE PAGOS DE CLIENTES</h3>
+                <a href="/pagos/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Pago
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="pagos" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>CLIENTE</th>
+                            <th>ALIAS</th>
+                            <th>CONCEPTO</th>
+                            <th>MONTO</th>
+                            <th>FECHA DE PAGO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each pagos}}
+                            <tr>
+                                <td>{{this.cliente.nombres}} {{this.cliente.apellidos}}</td>
+                                <td>{{this.alias}}</td>
+                                <td>{{this.concepto}}</td>
+                                <td><span style="color: #24b124;">+${{this.total}}</span></td>
+                                <td>{{formatDate this.fecha_pago}}</td>
+                                <td style="white-space: nowrap;">
+                                    <a href="/pagos/detalle/{{this.id}}" class="btn btn-primary btn-sm" title="Ver Detalles">
+                                         <i class="fas fa-info-circle"></i> Detalles
+                                    </a>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

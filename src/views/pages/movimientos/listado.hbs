@@ -1,0 +1,138 @@
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTADO DE MOVIMIENTOS</h3>
+                <a href="/movimientos/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Movimiento
+                </a>
+            </div>
+            <!-- Filtro de movimientos -->
+            <div class="mt-2">
+                <select id="filtroMovimientos" class="form-control" style="width: auto;" onchange="filtrarMovimientos()">
+                    <option value="actual">Movimientos del mes actual</option>
+                    <option value="todos">Todos los movimientos</option>
+                    <option value="aportes">Movimientos que aportan</option>
+                    <option value="restan">Movimientos que restan</option>
+                    <option value="rango">Filtrar por rango de fechas</option>
+                </select>
+            </div>
+            <!-- Filtro de rango de fechas -->
+            <div id="filtroRangoFechas" class="mt-2" style="display: none;">
+                <label for="fechaInicio">Fecha inicio:</label>
+                <input type="date" id="fechaInicio" class="form-control" style="width: auto; display: inline;">
+                <label for="fechaFin">Fecha fin:</label>
+                <input type="date" id="fechaFin" class="form-control" style="width: auto; display: inline;">
+                <button onclick="filtrarMovimientos()" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="movimientos" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>CONCEPTO</th>
+                            <th>MONTO</th>
+                            <th>FECHA</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each movimientos}}
+                            <tr class="movimiento-row" data-tipocc="{{tipocc}}" data-fecha="{{fecha}}">
+                                <td>{{toUpperCase concepto}}</td>
+                                <td>
+                                    {{#if (eq tipocc "CCI")}}
+                                        <span style="color: #24b124;">+${{monto}}</span>
+                                    {{else}}
+                                        <span style="color: red;">-${{monto}}</span>
+                                    {{/if}}
+                                </td>
+                                <td>{{formatDate fecha}}</td>
+                                <td style="white-space: nowrap;">
+                                    <a href="/movimientos/edit/{{id}}" class="btn btn-primary btn-sm" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST" action="/movimientos/delete/{{id}}?_method=DELETE" style="display:inline;" onsubmit="return confirmDeleteMovimiento(event, '{{id}}', '{{concepto}}')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+    // Función para confirmar eliminación de movimientos
+    function confirmDeleteMovimiento(event, id, concepto) {
+        event.preventDefault();
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar el movimiento: ${concepto}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
+
+    // Mostrar/ocultar el filtro de rango de fechas
+    document.getElementById('filtroMovimientos').addEventListener('change', function() {
+        const filtroRango = document.getElementById('filtroRangoFechas');
+        filtroRango.style.display = this.value === 'rango' ? 'block' : 'none';
+    });
+
+    // Función para filtrar los movimientos según el filtro seleccionado o el rango de fechas
+    function filtrarMovimientos() {
+        const filtro = document.getElementById('filtroMovimientos').value;
+        const filas = document.querySelectorAll('.movimiento-row');
+        const fechaActual = new Date();
+        const fechaInicio = new Date(document.getElementById('fechaInicio').value);
+        const fechaFin = new Date(document.getElementById('fechaFin').value);
+
+        filas.forEach(fila => {
+            const tipoCC = fila.getAttribute('data-tipocc');
+            const fechaMovimiento = new Date(fila.getAttribute('data-fecha'));
+            let mostrarFila = false;
+
+            switch (filtro) {
+                case 'actual':
+                    mostrarFila = fechaMovimiento.getMonth() === fechaActual.getMonth() && fechaMovimiento.getFullYear() === fechaActual.getFullYear();
+                    break;
+                case 'todos':
+                    mostrarFila = true;
+                    break;
+                case 'aportes':
+                    mostrarFila = tipoCC === 'CCI';
+                    break;
+                case 'restan':
+                    mostrarFila = tipoCC !== 'CCI';
+                    break;
+                case 'rango':
+                    if (!isNaN(fechaInicio) && !isNaN(fechaFin)) {
+                        mostrarFila = fechaMovimiento >= fechaInicio && fechaMovimiento <= fechaFin;
+                    }
+                    break;
+            }
+            fila.style.display = mostrarFila ? '' : 'none';
+        });
+    }
+
+    // Ejecutar el filtro al cargar la página para mostrar el mes actual
+    document.addEventListener('DOMContentLoaded', filtrarMovimientos);
+</script>

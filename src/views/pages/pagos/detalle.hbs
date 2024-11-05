@@ -1,0 +1,57 @@
+<div class="container-fluid p-4">
+    <div class="card">
+        <div class="card-header d-flex align-items-center">
+            <h3 class="card-title flex-grow-1">Detalle del Pago</h3>
+            <a href="/pagos" class="btn btn-secondary ml-auto">
+                <i class="fas fa-arrow-left"></i> Volver al Listado
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Información del Cliente -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title m-0">Información del Cliente</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Nombre Completo:</strong> {{pago.nombre_completo}}</p>
+                            <p><strong>Alias:</strong> {{pago.alias}}</p>
+                            <p><strong>Contacto:</strong> {{pago.contacto}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Pago -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title m-0">Información del Pago</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Concepto:</strong> {{pago.concepto}}</p>
+                            <p><strong>Monto Total:</strong> ${{pago.total}}</p>
+                            <p><strong>Fecha de Pago:</strong> {{formatDate pago.fecha_pago}}</p>
+                            <p><strong>Anexo:</strong> {{pago.anexo}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de la Factura -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title m-0">Información de la Factura</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Número de Factura:</strong> {{pago.factura.numero}}</p>
+                            <p><strong>Fecha de Factura:</strong> {{formatDate pago.factura.fecha}}</p>
+                            <p><strong>Total Factura:</strong> ${{pago.factura.total}}</p>
+                            <p><strong>Observación:</strong> {{pago.factura.observacion}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

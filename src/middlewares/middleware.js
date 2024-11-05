@@ -105,6 +105,7 @@ module.exports = {
       console.log('Módulos con permisos permitidos:', modulosConPermisos.map((m) => m.nombre));
       res.locals.modulos_menu = modulosConPermisos;
       res.locals.userId = usuario.id;
+      res.locals.userRol = usuario.rol.nombre;
       // Si la ruta está en `authOnlyRoutes`, saltar la verificación de permisos
       if (authOnlyRoutes.has(path)) {
         return next();

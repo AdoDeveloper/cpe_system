@@ -114,6 +114,9 @@ const politicasRoutes = require('./routes/politicasRoutes');
 const configuracionesRoutes = require('./routes/configuracionesRoutes');
 const perfilRoute = require('./routes/perfilRoute');
 const ticketsRoutes = require('./routes/ticketsRoutes');
+const facturacionRoutes = require('./routes/facturacionRoutes');
+const movimientosRoutes = require('./routes/movimientosRoutes');
+const pagosRoutes = require('./routes/pagosRoutes');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -132,6 +135,9 @@ app.use('/contratos', authMiddleware, contratosRoutes);
 app.use('/politicas', authMiddleware, politicasRoutes);
 app.use('/configuraciones', authMiddleware, configuracionesRoutes);
 app.use('/tickets', authMiddleware, ticketsRoutes);
+app.use('/facturacion',authMiddleware, facturacionRoutes);
+app.use('/movimientos',authMiddleware, movimientosRoutes);
+app.use('/pagos',authMiddleware, pagosRoutes);
 
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 
@@ -148,6 +154,23 @@ app.use((req, res, next) => {
 // Importar y ejecutar la función para inicializar Socket.IO
 const { initializeSocket } = require('./controllers/ticketsController');
 initializeSocket(io);
+
+// Configuración de Prisma y node-cron
+const cron = require('node-cron');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+// Configuración de node-cron para ejecutar el procedimiento almacenado el primer día de cada mes a la medianoche
+cron.schedule('0 0 1 * *', async () => {
+    console.log('Ejecutando el procedimiento almacenado el primer día de cada mes a medianoche...');
+  
+    try {
+        await prisma.$executeRaw`CALL public.generarpagosfactmensual()`;
+        console.log('Procedimiento ejecutado exitosamente');
+    } catch (error) {
+        console.error('Error al ejecutar el procedimiento:', error.message);
+    }
+});
 
 // Iniciar el servidor usando `server.listen` en lugar de `app.listen`
 server.listen(app.get("port"), () => {

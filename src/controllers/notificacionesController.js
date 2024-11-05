@@ -2,17 +2,15 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Función para obtener notificaciones del usuario y eliminar aquellas con tickets inexistentes
+// Función para obtener y limpiar notificaciones obsoletas
 exports.obtenerNotificaciones = async (userId) => {
   try {
-    // Obtener las últimas 5 notificaciones para el usuario
     const notificaciones = await prisma.notificacion.findMany({
       where: { usuarioId: userId },
       orderBy: { createdAt: 'desc' },
-      take: 5 // Limitar el número de notificaciones mostradas
+      take: 5, // Limitar a 5 notificaciones recientes
     });
 
-    // Filtrar y eliminar notificaciones con tickets inexistentes
     const validNotificaciones = [];
     for (const notificacion of notificaciones) {
       if (notificacion.ticketId) {
@@ -20,14 +18,24 @@ exports.obtenerNotificaciones = async (userId) => {
           where: { id: notificacion.ticketId },
         });
 
-        // Si el ticket no existe, eliminamos la notificación
-        if (!ticket) {
-          await prisma.notificacion.delete({
-            where: { id: notificacion.id },
-          });
-          console.log(`Notificación con ID ${notificacion.id} eliminada porque el ticket no existe.`);
-        } else {
+        // Verificar si el ticket existe y si el usuario sigue asignado
+        if (ticket && ticket.resolverId === userId) {
           validNotificaciones.push(notificacion);
+        } else {
+          // Si el ticket ya no está asignado a este usuario, reasignar o eliminar
+          if (ticket) {
+            // Si el ticket existe, reasignar la notificación
+            await prisma.notificacion.update({
+              where: { id: notificacion.id },
+              data: { usuarioId: ticket.resolverId }, // Reasigna la notificación
+            });
+          } else {
+            // Si el ticket no existe, eliminar la notificación
+            await prisma.notificacion.delete({
+              where: { id: notificacion.id },
+            });
+            console.log(`Notificación con ID ${notificacion.id} eliminada porque el ticket no existe.`);
+          }
         }
       } else {
         validNotificaciones.push(notificacion); // Notificaciones sin ticket están permitidas
@@ -40,6 +48,7 @@ exports.obtenerNotificaciones = async (userId) => {
     return [];
   }
 };
+
 
 
 // Función para crear y emitir una notificación

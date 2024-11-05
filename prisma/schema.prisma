@@ -265,19 +265,21 @@ model Movimiento {
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt      @map("updated_at")
 
-  clienteId  Int       @map("cliente_id")
-  cliente    Cliente   @relation(fields: [clienteId], references: [id])
+  clienteId  Int?       @map("cliente_id")
+  cliente    Cliente?   @relation(fields: [clienteId], references: [id])
 
-  facturaId  Int       @unique @map("factura_id")
-  factura    Factura   @relation(fields: [facturaId], references: [id])
+  facturaId  Int?       @unique @map("factura_id")
+  factura    Factura?   @relation(fields: [facturaId], references: [id])
 
   @@map("movimientos")
 }
 
 model Factura {
   id           Int       @id @default(autoincrement())
+  numero       String    @unique
   fecha        DateTime  @default(now())
   cancelada    Boolean   @default(false)
+  estado       Int       @default(0)
   clienteId    Int       @map("cliente_id")
   cliente      Cliente   @relation(fields: [clienteId], references: [id])
   total        Float

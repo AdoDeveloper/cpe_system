@@ -70,6 +70,12 @@ Handlebars.registerHelper('capitalize', function(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 });
 
+// Helper para convertir una cadena a mayúsculas
+Handlebars.registerHelper('toUpperCase', function(str) {
+    if (typeof str !== 'string') return '';
+    return str.charAt(0).toUpperCase();
+});
+
 // Helper para formatear una fecha en formato dd/mm/aaaa hh:mm:ss en horario América Central/El Salvador
 Handlebars.registerHelper('formatDate', function (date) {
     if (!date) return '';
@@ -84,6 +90,22 @@ Handlebars.registerHelper('formatDate', function (date) {
         minute: '2-digit',
         second: '2-digit',
         hour12: true,
+    };
+    
+    const formattedDate = new Date(date).toLocaleString('es-SV', options);
+    
+    return formattedDate.replace(',', ''); // Eliminar la coma para obtener el formato deseado
+});
+
+Handlebars.registerHelper('formatDatePDF', function (date) {
+    if (!date) return '';
+
+    // Convertir la fecha a la zona horaria América Central/El Salvador (UTC-6)
+    const options = {
+        timeZone: 'America/El_Salvador',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
     };
     
     const formattedDate = new Date(date).toLocaleString('es-SV', options);
@@ -153,8 +175,9 @@ Handlebars.registerHelper('ifActiveModule', function(rutas, currentRoute, option
 
 // Helper para crear una ruta de navegación (breadcrumb) a partir de una ruta
 Handlebars.registerHelper('createBreadcrumb', function(route) {
-    const segments = route.split('/').filter(Boolean); // Divide la ruta y elimina los valores vacíos
+    if (typeof route !== 'string') return ''; // Verifica si route es una cadena
 
+    const segments = route.split('/').filter(Boolean); // Divide la ruta y elimina los valores vacíos
     let breadcrumbHtml = '<a href="/" class="breadcrumb-item">Inicio</a>'; // El primer elemento es "Inicio"
     let accumulatedPath = '';
 
@@ -227,6 +250,15 @@ Handlebars.registerHelper('isImage', function(url, options) {
 // Helper para verificar si una cadena contiene una subcadena específica
 Handlebars.registerHelper('includes', function (str, substring) {
     return str && str.includes(substring);
+});
+
+// Definir el helper `times`
+Handlebars.registerHelper('times', function(n, options) {
+    let accum = '';
+    for (let i = 0; i < n; i++) {
+        accum += options.fn(this);
+    }
+    return accum;
 });
 
 module.exports = Handlebars;

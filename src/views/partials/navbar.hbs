@@ -68,6 +68,13 @@
 </nav>
 
 <style>
+  /* Contenedor del dropdown para evitar que el contenido sobresalga */
+  #notificationDropdown {
+    max-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
   /* Estilo para cada notificación */
   .notification-item {
     display: flex;
@@ -76,6 +83,9 @@
     transition: background-color 0.2s ease;
     text-decoration: none !important;
     color: inherit;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .notification-item:hover {
     background-color: #f4f6f9; /* Color de hover */
@@ -87,9 +97,16 @@
   .notification-item .text {
     flex: 1;
     font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .notification-item .notification-message {
     color: #495057;
+    display: block;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .notification-item .text-muted {
     font-size: 0.8rem;

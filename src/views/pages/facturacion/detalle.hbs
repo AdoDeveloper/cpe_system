@@ -1,0 +1,144 @@
+<!-- factura-detalle.hbs -->
+
+<div class="container-fluid position-relative">
+    <div class="card card-outline card-primary">
+        <!-- Encabezado de la factura -->
+        <div class="card-header text-center">
+            <h2 class="text-dark font-weight-bold mb-1">Airlink Internet Satelital</h2>
+            <p class="mb-0 text-muted">Col. Las Marías, Sonzacate, Sonsonate</p>
+            <p class="mb-0 text-muted">Contacto: 7747-9525</p>
+        </div>
+
+        <div class="card-body">
+            <!-- Título de la factura -->
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="text-primary font-weight-bold">FACTURA COMERCIAL</h3>
+                <img id="invoice-logo" src="https://res.cloudinary.com/dldgicsdi/image/upload/v1730360129/img/imagepdf.jpg" alt="Logo" style="height: 70px;">
+            </div>
+
+            <!-- Información de la factura -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered">
+                    <tr class="bg-primary text-white text-center">
+                        <th>
+                            <span class="info-box-text"><strong>N.º DE FACTURA</strong></span>
+                        </th>
+                        <th>
+                            <span class="info-box-text"><strong>FECHA</strong></span>
+                        </th>
+                    </tr>
+                    <tr class="text-center">
+                        <td>
+                            <span class="info-box-number">{{factura.numero}}</span>
+                        </td>
+                        <td>
+                            <span class="info-box-number fecha-factura">{{formatDatePDF factura.fecha}}</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Información del cliente -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered">
+                    <tr class="bg-primary text-white text-center">
+                        <th>FACTURAR A</th>
+                        <th>ID. CLIENTE</th>
+                        <th>TÉRMINOS</th>
+                    </tr>
+                    <tr class="text-center">
+                        <td>{{toUpperCase factura.cliente.nombres}} {{toUpperCase factura.cliente.apellidos}}</td>
+                        <td class="alias-cliente">{{factura.cliente.alias}}</td>
+                        <td style="white-space: normal; word-wrap: break-word; max-width: 200px; text-align: justify;">
+                            <small>Los servicios se suspenderán automáticamente luego de 3 días sin realizar el pago en la fecha correspondiente.</small>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Detalles de la factura -->
+            <div class="table-responsive mb-4 position-relative">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="bg-primary text-white text-center">
+                            <th>DESCRIPCIÓN</th>
+                            <th>CANT.</th>
+                            <th>PRECIO UNITARIO</th>
+                            <th>IMPORTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each factura.detalles}}
+                        <tr class="text-center">
+                            <td class="text-left">{{toUpperCase this.concepto}}</td>
+                            <td>{{this.cantidad}}</td>
+                            <td>${{this.subtotal}}</td>
+                            <td>${{this.subtotal}}</td>
+                        </tr>
+                        {{/each}}
+                        <!-- Filas vacías para completar el diseño -->
+                        {{#times 5}}
+                        <tr class="text-center text-muted">
+                            <td class="text-left">----</td>
+                            <td>----</td>
+                            <td>$0.00</td>
+                            <td>$0.00</td>
+                        </tr>
+                        {{/times}}
+                    </tbody>
+                </table>
+
+                <!-- Sello de "CANCELADA" en la zona de filas vacías -->
+                {{#if factura.cancelada}}
+                <div class="sello-cancelado">CANCELADA</div>
+                {{/if}}
+            </div>
+
+            <!-- Totales y agradecimiento -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <p class="text-primary font-italic mt-4 ml-5" style="font-size: 1.2rem;">Gracias por su confianza en nuestros servicios</p>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr class="bg-primary text-white">
+                            <th class="text-right">SUBTOTAL</th>
+                            <td class="text-right">${{factura.total}}</td>
+                        </tr>
+                        <tr class="bg-primary text-white">
+                            <th class="text-right">TOTAL</th>
+                            <td class="text-right">${{factura.total}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Botón para descargar PDF -->
+            <div class="text-center mt-4">
+                <button id="downloadPDF" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Descargar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos del sello "CANCELADA" -->
+<style>
+    .sello-cancelado {
+        position: absolute;
+        bottom: 25%;
+        left: 30%;
+        transform: translateX(-50%) rotate(-25deg);
+        font-size: 3rem;
+        color: rgba(255, 0, 0, 0.3);
+        font-weight: bold;
+        border: 3px solid rgba(255, 0, 0, 0.3);
+        padding: 10px 40px;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 100;
+    }
+</style>
