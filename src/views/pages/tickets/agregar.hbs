@@ -30,7 +30,8 @@
 
         <div class="form-group">
           <label for="descripcion">Descripción del Problema</label>
-          <textarea class="form-control" name="descripcion" id="descripcion" placeholder="Describe el problema" rows="3" required></textarea>
+          <textarea class="form-control" name="descripcion" id="descripcion" placeholder="Describe el problema" rows="3"
+            required></textarea>
         </div>
 
         <!-- Campos adicionales para Administrador y Soporte Técnico -->
@@ -73,7 +74,8 @@
 
           <div class="form-group">
             <label for="coordenadas">Coordenadas</label>
-            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud" readonly>
+            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud"
+              readonly>
           </div>
 
           <div class="form-group">
@@ -87,15 +89,17 @@
             <label for="img_problema">Subir Imagen del Problema (opcional)</label>
             <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*">
           {{else}}
-            <label for="img_problema">Subir Imagen o PDF del Problema</label>
-            <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*,application/pdf">
+            <label for="img_problema">Subir Imagen o PDF del Ticket</label>
+            <input type="file" class="form-control-file" name="img_problema" id="img_problema"
+              accept="image/*,application/pdf">
           {{/if}}
         </div>
 
         <!-- Contenedor para la vista previa del archivo seleccionado -->
         <div class="form-group" id="filePreview" style="display: none;">
           <label>Vista Previa del Archivo:</label><br>
-          <img id="previewImage" src="#" alt="Vista Previa de Imagen" style="max-width: 100%; height: auto; display: none;">
+          <img id="previewImage" src="#" alt="Vista Previa de Imagen"
+            style="max-width: 100%; height: auto; display: none;">
           <p id="previewText" style="display: none;">Archivo PDF cargado: <span id="pdfName"></span></p>
         </div>
 
@@ -130,14 +134,14 @@
     let marker;
     let direccionModified = false;
 
-    const resolutores = {{{json resolutores}}};
-    const tipos = {{{json tipos}}};
+    const resolutores = {{{ json resolutores }}};
+    const tipos = {{{ json tipos }}};
 
-    tipoTicketSelect.addEventListener('change', function() {
+    tipoTicketSelect.addEventListener('change', function () {
       const selectedTipoId = this.value;
       const selectedTipoOption = this.options[this.selectedIndex];
       const tipoNombre = selectedTipoOption.getAttribute('data-nombre').toLowerCase();
-      
+
       if (tipoNombre === 'mantenimiento' || tipoNombre === 'instalacion') {
         locationFields.style.display = 'block';
         imgProblemaInput.setAttribute('accept', 'image/*,application/pdf'); // Permitir PDF e imágenes
@@ -166,7 +170,7 @@
       mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
       const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
         center: [-89.70401928084173, 13.770057886610703],
         zoom: 13
       });
@@ -177,13 +181,67 @@
 
       marker.on('dragend', onDragEnd);
       onDragEnd();
+
+      // Opciones de capas en español
+      const layerOptions = [
+        { id: 'Calles', style: 'mapbox://styles/mapbox/streets-v12' },
+        { id: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+        { id: 'Relieves', style: 'mapbox://styles/mapbox/outdoors-v12' }
+      ];
+
+      // Crear el botón de cambio de capa con ícono
+      const layerControlButton = document.createElement('button');
+      layerControlButton.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-layer-control';
+      layerControlButton.type = 'button';
+      layerControlButton.innerHTML = '<i class="fas fa-layer-group"></i>'; // Ícono de capas
+
+      // Crear el menú de selección de capas
+      const layerMenu = document.createElement('div');
+      layerMenu.className = 'layer-menu';
+      layerMenu.style.display = 'none';
+      layerMenu.style.position = 'absolute';
+      layerMenu.style.backgroundColor = 'white';
+      layerMenu.style.border = '1px solid #ccc';
+      layerMenu.style.padding = '10px';
+      layerMenu.style.borderRadius = '4px';
+
+      // Añadir las opciones de capa al menú
+      layerOptions.forEach(option => {
+        const layerOption = document.createElement('div');
+        layerOption.className = 'layer-option';
+        layerOption.style.cursor = 'pointer';
+        layerOption.style.padding = '5px';
+        layerOption.textContent = option.id;
+        layerOption.addEventListener('click', () => {
+          map.setStyle(option.style);
+          layerMenu.style.display = 'none'; // Cerrar el menú después de seleccionar
+        });
+        layerMenu.appendChild(layerOption);
+      });
+
+      // Alternar la visibilidad del menú al hacer clic en el botón
+      layerControlButton.addEventListener('click', () => {
+        layerMenu.style.display = layerMenu.style.display === 'none' ? 'block' : 'none';
+      });
+
+      // Posicionar el botón y el menú en el lado izquierdo del mapa
+      const layerControlContainer = document.createElement('div');
+      layerControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+      layerControlContainer.style.position = 'absolute';
+      layerControlContainer.style.top = '10px';
+      layerControlContainer.style.left = '10px';
+      layerControlContainer.style.zIndex = '1';
+      layerControlContainer.appendChild(layerControlButton);
+      layerControlContainer.appendChild(layerMenu);
+
+      map.getContainer().appendChild(layerControlContainer);
     }
 
     function onDragEnd() {
       const lngLat = marker.getLngLat();
       coordenadasInput.value = `${lngLat.lat}, ${lngLat.lng}`;
       if (!direccionModified) {
-        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w`)
+        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token={{mapboxAccessToken}}`)
           .then(response => response.json())
           .then(data => {
             direccionInput.value = data.features?.[0]?.place_name || 'Dirección no encontrada';
@@ -191,6 +249,7 @@
           .catch(() => direccionInput.value = 'Error al obtener la dirección');
       }
     }
+
 
     direccionInput.addEventListener('input', () => direccionModified = true);
     direccionInput.addEventListener('change', () => {
@@ -203,7 +262,7 @@
 {{/if}}
 
 <script>
-  document.getElementById('img_problema').addEventListener('change', function(event) {
+  document.getElementById('img_problema').addEventListener('change', function (event) {
     const file = event.target.files[0];
     const previewContainer = document.getElementById('filePreview');
     const previewImage = document.getElementById('previewImage');

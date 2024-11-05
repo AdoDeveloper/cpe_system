@@ -40,6 +40,7 @@ exports.renderCreateForm = async (req, res) => {
         clientes,
         antenas,
         routers,
+        mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
         errors: []
       });
     } catch (error) {
@@ -143,6 +144,7 @@ exports.renderEditForm = async (req, res) => {
             clientes,       // Lista de clientes disponibles
             antenas,        // Lista de antenas filtradas
             routers,        // Lista de routers filtrados
+            mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
             errors: []      // Lista de errores vacía
         });
     } catch (error) {

@@ -13,7 +13,8 @@
             <h4>{{ticket.titulo}}</h4>
             <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
             <p><strong>Estado:</strong>
-              <span id="estadoBadge" class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
+              <span id="estadoBadge"
+                class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
                 {{ticket.estado}}
               </span>
             </p>
@@ -34,10 +35,12 @@
                 <div class="form-group">
                   <label for="estado">Estado</label>
                   <select id="estado" name="estado" class="form-control" required>
-                    <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
-                    <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
-                    <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
-                    <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
+                    <option value="enviado" {{#if (eq ticket.estado 'enviado' )}}selected{{/if}}>Enviado</option>
+                    <option value="en_revision" {{#if (eq ticket.estado 'en_revision' )}}selected{{/if}}>En revisión
+                    </option>
+                    <option value="detenido" {{#if (eq ticket.estado 'detenido' )}}selected{{/if}}>Detenido</option>
+                    <option value="completado" {{#if (eq ticket.estado 'completado' )}}selected{{/if}}>Completado
+                    </option>
                   </select>
                 </div>
                 <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
@@ -67,9 +70,10 @@
                 <div class="d-flex justify-content-end mb-2">
                   <div class="p-2 rounded chat-bubble sent">
                     {{#if this.mediaUrl}}
-                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2"
+                        style="max-width: 200px;">
                     {{/if}}
-                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
+                    <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
                     <small class="d-block text-right">{{formatDate this.createdAt}}</small>
                   </div>
                 </div>
@@ -78,7 +82,8 @@
                 <div class="d-flex justify-content-start mb-2">
                   <div class="p-2 rounded chat-bubble received">
                     {{#if this.mediaUrl}}
-                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2"
+                        style="max-width: 200px;">
                     {{/if}}
                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
                     <small class="d-block text-left">{{formatDate this.createdAt}}</small>
@@ -92,7 +97,8 @@
             <div class="card-footer">
               <form id="messageForm">
                 <div class="input-group">
-                  <textarea id="mensaje" name="mensaje" class="form-control" rows="1" placeholder="Escribe un mensaje..." required></textarea>
+                  <textarea id="mensaje" name="mensaje" class="form-control" rows="1"
+                    placeholder="Escribe un mensaje..." required></textarea>
                   <div class="input-group-append">
                     <label class="btn btn-secondary mb-0">
                       <i class="fas fa-paperclip"></i>
@@ -101,7 +107,8 @@
                     <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                   </div>
                 </div>
-                <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none; max-width: 200px;">
+                <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2"
+                  style="display: none; max-width: 200px;">
               </form>
             </div>
           {{else}}
@@ -132,7 +139,8 @@
         <h4>{{ticket.titulo}}</h4>
         <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
         <p><strong>Estado:</strong>
-          <span id="estadoBadge" class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
+          <span id="estadoBadge"
+            class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
             {{ticket.estado}}
           </span>
         </p>
@@ -140,9 +148,9 @@
         {{#if ticket.img_problema}}
           <p><strong>Archivo adjunto:</strong></p>
           {{#if (includes ticket.img_problema ".pdf")}}
-              <a href="{{ticket.img_problema}}" class="btn btn-info" target="_blank">Ver o Descargar PDF</a>
+            <a href="{{ticket.img_problema}}" class="btn btn-info" target="_blank">Ver o Descargar PDF</a>
           {{else}}
-              <img src="{{ticket.img_problema}}" alt="Imagen de problema" class="img-thumbnail w-25">
+            <img src="{{ticket.img_problema}}" alt="Imagen de problema" class="img-thumbnail w-25">
           {{/if}}
         {{/if}}
       </div>
@@ -154,7 +162,8 @@
       <p><strong>Dirección:</strong> {{ticket.direccion}}</p>
       <!-- Mapa de ubicación -->
       <div id="map" style="height: 400px;"></div>
-      <a href="https://www.google.com/maps/dir/?api=1&destination={{ticket.latitud}},{{ticket.longitud}}" target="_blank" class="btn btn-success mt-3">
+      <a href="https://www.google.com/maps/dir/?api=1&destination={{ticket.latitud}},{{ticket.longitud}}"
+        target="_blank" class="btn btn-success mt-3">
         Iniciar Ruta en Google Maps
       </a>
     </div>
@@ -167,10 +176,10 @@
           <div class="form-group">
             <label for="estado">Estado</label>
             <select id="estado" name="estado" class="form-control" required>
-              <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
-              <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
-              <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
-              <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
+              <option value="enviado" {{#if (eq ticket.estado 'enviado' )}}selected{{/if}}>Enviado</option>
+              <option value="en_revision" {{#if (eq ticket.estado 'en_revision' )}}selected{{/if}}>En revisión</option>
+              <option value="detenido" {{#if (eq ticket.estado 'detenido' )}}selected{{/if}}>Detenido</option>
+              <option value="completado" {{#if (eq ticket.estado 'completado' )}}selected{{/if}}>Completado</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
@@ -221,28 +230,84 @@
 
 <script>
   // Mostrar el mapa si es mantenimiento o instalación
-  {{#unless (eq ticket.tipoTicket.nombre 'resolucion')}}
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
-    const lat = parseFloat('{{ticket.latitud}}');
-    const lng = parseFloat('{{ticket.longitud}}');
+  { { #unless(eq ticket.tipoTicket.nombre 'resolucion') } }
+  mapboxgl.accessToken = '{{mapboxAccessToken}}';
+  const lat = parseFloat('{{ticket.latitud}}');
+  const lng = parseFloat('{{ticket.longitud}}');
 
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [lng, lat],
-      zoom: 14
+  // Crear el mapa con un estilo inicial
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-streets-v12', // Estilo inicial
+    center: [lng, lat],
+    zoom: 13
+  });
+
+  // Agregar un marcador en la ubicación del ticket
+  new mapboxgl.Marker()
+    .setLngLat([lng, lat])
+    .addTo(map);
+
+  // Opciones de capas en español con iconos
+  const layerOptions = [
+    { id: 'Calles', style: 'mapbox://styles/mapbox/streets-v12' },
+    { id: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+    { id: 'Relieves', style: 'mapbox://styles/mapbox/outdoors-v12' }
+  ];
+
+  // Crear el botón de cambio de capa con ícono
+  const layerControlButton = document.createElement('button');
+  layerControlButton.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-layer-control';
+  layerControlButton.type = 'button';
+  layerControlButton.innerHTML = '<i class="fas fa-layer-group"></i>'; // Ícono de capas
+
+  // Crear el menú de selección de capas
+  const layerMenu = document.createElement('div');
+  layerMenu.className = 'layer-menu';
+  layerMenu.style.display = 'none';
+  layerMenu.style.position = 'absolute';
+  layerMenu.style.backgroundColor = 'white';
+  layerMenu.style.border = '1px solid #ccc';
+  layerMenu.style.padding = '10px';
+  layerMenu.style.borderRadius = '4px';
+
+  // Añadir las opciones de capa al menú
+  layerOptions.forEach(option => {
+    const layerOption = document.createElement('div');
+    layerOption.className = 'layer-option';
+    layerOption.style.cursor = 'pointer';
+    layerOption.style.padding = '5px';
+    layerOption.textContent = option.id;
+    layerOption.addEventListener('click', () => {
+      map.setStyle(option.style);
+      layerMenu.style.display = 'none'; // Cerrar el menú después de seleccionar
     });
+    layerMenu.appendChild(layerOption);
+  });
 
-    new mapboxgl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(map);
-  {{/unless}}
+  // Alternar la visibilidad del menú al hacer clic en el botón
+  layerControlButton.addEventListener('click', () => {
+    layerMenu.style.display = layerMenu.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Posicionar el botón y el menú en el lado izquierdo del mapa
+  const layerControlContainer = document.createElement('div');
+  layerControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+  layerControlContainer.style.position = 'absolute';
+  layerControlContainer.style.top = '10px';
+  layerControlContainer.style.left = '10px';
+  layerControlContainer.style.zIndex = '1';
+  layerControlContainer.appendChild(layerControlButton);
+  layerControlContainer.appendChild(layerMenu);
+
+  map.getContainer().appendChild(layerControlContainer);
+  { {/unless } }
 
   // Configuración de Socket.IO
   const socket = io();
 
   // Unirse a la sala específica del ticket
-  socket.emit('joinTicket', { ticketId: {{ticket.id}} });
+  socket.emit('joinTicket', { ticketId: {{ ticket.id }} });
 
   // Función para actualizar la interfaz de acuerdo al estado
   function updateMessageFormAndStatus(newState) {
@@ -306,7 +371,7 @@
   }
 
   // Escuchar eventos de socket para los diferentes estados del ticket
-  socket.on('ticketStatusChanged', function(data) {
+  socket.on('ticketStatusChanged', function (data) {
     const { newState } = data;
     updateMessageFormAndStatus(newState);
   });
@@ -318,56 +383,58 @@
     const previewImage = document.getElementById('previewImage');
 
     if (messageForm) {
-      messageForm.addEventListener('submit', function(event) {
+      messageForm.addEventListener('submit', function (event) {
         event.preventDefault();
         const mensaje = document.getElementById('mensaje').value;
-        const userId = {{user.id}};
-        const ticketId = {{ticket.id}};
+        const userId = {{ user.id }
+      };
+      const ticketId = {{ ticket.id }
+    };
 
-        if (mediaInput.files.length > 0) {
-          const file = mediaInput.files[0];
-          if (!file.type.match('image.*')) {
-            alert('Solo se permiten imágenes.');
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const imageData = e.target.result.split(',')[1];
-            socket.emit('sendMessage', { ticketId, userId, mensaje, imageData });
-          };
-          reader.readAsDataURL(file);
-        } else {
-          socket.emit('sendMessage', { ticketId, userId, mensaje });
-        }
-        messageForm.reset();
+    if (mediaInput.files.length > 0) {
+      const file = mediaInput.files[0];
+      if (!file.type.match('image.*')) {
+        alert('Solo se permiten imágenes.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const imageData = e.target.result.split(',')[1];
+        socket.emit('sendMessage', { ticketId, userId, mensaje, imageData });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      socket.emit('sendMessage', { ticketId, userId, mensaje });
+    }
+    messageForm.reset();
+    previewImage.style.display = 'none';
+  });
+    }
+
+  // Mostrar vista previa de la imagen seleccionada
+  if (mediaInput) {
+    mediaInput.addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file && file.type.match('image.*')) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+          previewImage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImage.src = '#';
         previewImage.style.display = 'none';
-      });
-    }
-
-    // Mostrar vista previa de la imagen seleccionada
-    if (mediaInput) {
-      mediaInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file && file.type.match('image.*')) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            previewImage.src = e.target.result;
-            previewImage.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          previewImage.src = '#';
-          previewImage.style.display = 'none';
-        }
-      });
-    }
+      }
+    });
+  }
   }
 
   // Inicializar el formulario al cargar la página
   setupMessageForm();
 
   // Escuchar nuevos mensajes
-  socket.on('newMessage', function(data) {
+  socket.on('newMessage', function (data) {
     const mensajesContainer = document.getElementById('chatContainer');
     const mensaje = data.mensaje;
 
@@ -375,42 +442,43 @@
     const messageDiv = document.createElement('div');
 
     // Determinar si el mensaje es enviado o recibido
-    if (mensaje.usuario.id === {{user.id}}) {
-      // Mensaje enviado
-      messageDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
-      messageDiv.innerHTML = `
+    if (mensaje.usuario.id === {{ user.id }
+  }) {
+    // Mensaje enviado
+    messageDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
+    messageDiv.innerHTML = `
         <div class="p-2 rounded chat-bubble sent">
           ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
           <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
           <small class="d-block text-right">${new Date(mensaje.createdAt).toLocaleString()}</small>
         </div>
       `;
-    } else {
-      // Mensaje recibido
-      messageDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
-      messageDiv.innerHTML = `
+  } else {
+    // Mensaje recibido
+    messageDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+    messageDiv.innerHTML = `
         <div class="p-2 rounded chat-bubble received">
           ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
           <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
           <small class="d-block text-left">${new Date(mensaje.createdAt).toLocaleString()}</small>
         </div>
       `;
-    }
+  }
 
-    // Añadir el mensaje al contenedor
-    mensajesContainer.appendChild(messageDiv);
+  // Añadir el mensaje al contenedor
+  mensajesContainer.appendChild(messageDiv);
 
-    // Hacer scroll hacia el último mensaje
-    mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
+  // Hacer scroll hacia el último mensaje
+  mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
   });
 
   // Escuchar mensajes de error
-  socket.on('errorMessage', function(message) {
+  socket.on('errorMessage', function (message) {
     alert(message);
   });
 
   // Al cargar la página, hacer scroll al último mensaje
-  window.onload = function() {
+  window.onload = function () {
     const mensajesContainer = document.getElementById('chatContainer');
     if (mensajesContainer) {
       mensajesContainer.scrollTop = mensajesContainer.scrollHeight;

@@ -213,7 +213,7 @@
     input.addEventListener('change', () => validateField(3));
   });
 
-  // Configuración de Mapbox
+  // Configuración de Mapbox y capas
   const coordenadas = { lat: 13.770057886610703, long: -89.70401928084173 };
   const marker = new mapboxgl.Marker({ draggable: true });
   marker.on('dragend', onDragEnd);
@@ -227,7 +227,7 @@
   }
 
   function displayMap() {
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w';
+    mapboxgl.accessToken = '{{mapboxAccessToken}}';
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -235,6 +235,60 @@
       zoom: 16,
     });
     marker.setLngLat([coordenadas.long, coordenadas.lat]).addTo(map);
+
+    // Opciones de capas en español
+    const layerOptions = [
+      { id: 'Calles', style: 'mapbox://styles/mapbox/streets-v12' },
+      { id: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+      { id: 'Relieves', style: 'mapbox://styles/mapbox/outdoors-v12' }
+    ];
+
+    // Crear el botón de cambio de capa con ícono
+    const layerControlButton = document.createElement('button');
+    layerControlButton.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-layer-control';
+    layerControlButton.type = 'button';
+    layerControlButton.innerHTML = '<i class="fas fa-layer-group"></i>'; // Ícono de capas
+
+    // Crear el menú de selección de capas
+    const layerMenu = document.createElement('div');
+    layerMenu.className = 'layer-menu';
+    layerMenu.style.display = 'none';
+    layerMenu.style.position = 'absolute';
+    layerMenu.style.backgroundColor = 'white';
+    layerMenu.style.border = '1px solid #ccc';
+    layerMenu.style.padding = '10px';
+    layerMenu.style.borderRadius = '4px';
+
+    // Añadir las opciones de capa al menú
+    layerOptions.forEach(option => {
+      const layerOption = document.createElement('div');
+      layerOption.className = 'layer-option';
+      layerOption.style.cursor = 'pointer';
+      layerOption.style.padding = '5px';
+      layerOption.textContent = option.id;
+      layerOption.addEventListener('click', () => {
+        map.setStyle(option.style);
+        layerMenu.style.display = 'none'; // Cerrar el menú después de seleccionar
+      });
+      layerMenu.appendChild(layerOption);
+    });
+
+    // Alternar la visibilidad del menú al hacer clic en el botón
+    layerControlButton.addEventListener('click', () => {
+      layerMenu.style.display = layerMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Posicionar el botón y el menú en el lado izquierdo del mapa
+    const layerControlContainer = document.createElement('div');
+    layerControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    layerControlContainer.style.position = 'absolute';
+    layerControlContainer.style.top = '10px';
+    layerControlContainer.style.left = '10px';
+    layerControlContainer.style.zIndex = '1';
+    layerControlContainer.appendChild(layerControlButton);
+    layerControlContainer.appendChild(layerMenu);
+
+    map.getContainer().appendChild(layerControlContainer);
   }
 
   // Inicializar select2 y bs-stepper

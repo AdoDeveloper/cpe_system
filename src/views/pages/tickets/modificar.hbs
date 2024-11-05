@@ -21,16 +21,19 @@
       {{/if}}
 
       <!-- Formulario para modificar el ticket -->
-      <form method="POST" action="/tickets/edit/{{ticket.id}}?_method=PUT" enctype="multipart/form-data" id="alertFormEdit">
+      <form method="POST" action="/tickets/edit/{{ticket.id}}?_method=PUT" enctype="multipart/form-data"
+        id="alertFormEdit">
 
         <div class="form-group">
           <label for="titulo">Título del Ticket</label>
-          <input type="text" class="form-control" name="titulo" id="titulo" value="{{ticket.titulo}}" required autofocus>
+          <input type="text" class="form-control" name="titulo" id="titulo" value="{{ticket.titulo}}" required
+            autofocus>
         </div>
 
         <div class="form-group">
           <label for="descripcion">Descripción del Problema</label>
-          <textarea class="form-control" name="descripcion" id="descripcion" rows="3" required>{{ticket.descripcion}}</textarea>
+          <textarea class="form-control" name="descripcion" id="descripcion" rows="3"
+            required>{{ticket.descripcion}}</textarea>
         </div>
 
         <!-- Campos adicionales para Administrador y Soporte Técnico -->
@@ -40,7 +43,8 @@
             <select class="form-control" name="tipoTicketId" id="tipoTicketId" required>
               <option value="">Selecciona un tipo de ticket</option>
               {{#each tipos}}
-                <option value="{{this.id}}" data-nombre="{{this.nombre}}" {{#ifCond this.id ../ticket.tipoTicket.id}}selected{{/ifCond}}>{{this.nombre}}</option>
+                <option value="{{this.id}}" data-nombre="{{this.nombre}}" {{#ifCond this.id
+                  ../ticket.tipoTicket.id}}selected{{/ifCond}}>{{this.nombre}}</option>
               {{/each}}
             </select>
           </div>
@@ -50,7 +54,8 @@
             <select class="form-control" name="clienteId" id="clienteId" required>
               <option value="">Selecciona un cliente</option>
               {{#each clientes}}
-                <option value="{{this.cliente.id}}" {{#ifCond this.cliente.id ../ticket.cliente.id}}selected{{/ifCond}}>{{this.cliente.nombres}} {{this.cliente.apellidos}}</option>
+                <option value="{{this.cliente.id}}" {{#ifCond this.cliente.id ../ticket.cliente.id}}selected{{/ifCond}}>
+                  {{this.cliente.nombres}} {{this.cliente.apellidos}}</option>
               {{/each}}
             </select>
           </div>
@@ -68,12 +73,14 @@
         <div id="locationFields" style="display: none;">
           <div class="form-group">
             <label for="direccion">Dirección</label>
-            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Dirección" value="{{ticket.direccion}}">
+            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Dirección"
+              value="{{ticket.direccion}}">
           </div>
 
           <div class="form-group">
             <label for="coordenadas">Coordenadas</label>
-            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud" readonly value="{{ticket.latitud}}, {{ticket.longitud}}">
+            <input type="text" class="form-control" name="coordenadas" id="coordenadas" placeholder="Latitud, Longitud"
+              readonly value="{{ticket.latitud}}, {{ticket.longitud}}">
           </div>
 
           <div class="form-group">
@@ -85,22 +92,24 @@
         <div class="form-group">
           <label for="estado">Estado del Ticket</label>
           <select class="form-control" name="estado" id="estado" required>
-            <option value="enviado" {{#ifCond ticket.estado "enviado"}}selected{{/ifCond}}>Enviado</option>
-            <option value="en_revision" {{#ifCond ticket.estado "en_revision"}}selected{{/ifCond}}>En Revisión</option>
-            <option value="completado" {{#ifCond ticket.estado "completado"}}selected{{/ifCond}}>Completado</option>
-            <option value="detenido" {{#ifCond ticket.estado "detenido"}}selected{{/ifCond}}>Detenido</option>
+            <option value="enviado" {{#ifCond ticket.estado "enviado" }}selected{{/ifCond}}>Enviado</option>
+            <option value="en_revision" {{#ifCond ticket.estado "en_revision" }}selected{{/ifCond}}>En Revisión</option>
+            <option value="completado" {{#ifCond ticket.estado "completado" }}selected{{/ifCond}}>Completado</option>
+            <option value="detenido" {{#ifCond ticket.estado "detenido" }}selected{{/ifCond}}>Detenido</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="img_problema">Subir Imagen o PDF del Problema (opcional)</label>
-          <input type="file" class="form-control-file" name="img_problema" id="img_problema" accept="image/*,application/pdf">
+          <label for="img_problema">Subir Imagen o PDF del Ticket (opcional)</label>
+          <input type="file" class="form-control-file" name="img_problema" id="img_problema"
+            accept="image/*,application/pdf">
         </div>
 
         <!-- Contenedor para la vista previa del archivo seleccionado -->
         <div class="form-group" id="filePreview" style="display: none;">
           <label>Vista Previa del Archivo:</label><br>
-          <img id="previewImage" src="#" alt="Vista Previa de Imagen" style="max-width: 100%; height: auto; display: none;">
+          <img id="previewImage" src="#" alt="Vista Previa de Imagen"
+            style="max-width: 100%; height: auto; display: none;">
           <p id="previewText" style="display: none;">Archivo PDF cargado: <span id="pdfName"></span></p>
         </div>
 
@@ -156,14 +165,14 @@
   let markerMoved = false; // Nuevo flag para detectar si el marcador ha sido movido
 
   // Datos de resolutores y tipos pasados desde el servidor
-  const resolutores = {{{json resolutores}}};
-  const tipos = {{{json tipos}}};
+  const resolutores = {{{ json resolutores }}};
+  const tipos = {{{ json tipos }}};
 
   // Variable para el resolverId actual
   const ticketResolverId = '{{ticket.resolverId}}' || null;
 
   // Inicializar la lógica al cargar la página
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const selectedTipoId = tipoTicketSelect.value;
     const selectedTipoOption = tipoTicketSelect.options[tipoTicketSelect.selectedIndex];
     const tipoNombre = selectedTipoOption ? selectedTipoOption.getAttribute('data-nombre').toLowerCase() : '';
@@ -183,11 +192,11 @@
     updateResolutores(tipoNombre);
   });
 
-  tipoTicketSelect.addEventListener('change', function() {
+  tipoTicketSelect.addEventListener('change', function () {
     const selectedTipoId = this.value;
     const selectedTipoOption = this.options[this.selectedIndex];
     const tipoNombre = selectedTipoOption ? selectedTipoOption.getAttribute('data-nombre').toLowerCase() : '';
-    
+
     // Mostrar u ocultar los campos de ubicación
     if (tipoNombre === 'mantenimiento' || tipoNombre === 'instalacion') {
       locationFields.style.display = 'block';
@@ -225,27 +234,79 @@
   }
 
   function initializeMap() {
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w'; // Reemplaza con tu token de Mapbox
+    mapboxgl.accessToken = '{{mapboxAccessToken}}';
     const lat = parseFloat('{{ticket.latitud}}') || 13.770057886610703;
     const lng = parseFloat('{{ticket.longitud}}') || -89.70401928084173;
     const initialCoordinates = [lng, lat];
 
     const map = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12', // Estilo inicial
       center: initialCoordinates,
       zoom: 13
     });
 
     // Crear el marcador y añadirlo al mapa
-    marker = new mapboxgl.Marker({
-      draggable: true
-    })
-    .setLngLat(initialCoordinates)
-    .addTo(map);
+    marker = new mapboxgl.Marker({ draggable: true })
+      .setLngLat(initialCoordinates)
+      .addTo(map);
 
     // Actualizar campos cuando se mueve el marcador
     marker.on('dragend', onDragEnd);
+
+    // Opciones de capas en español
+    const layerOptions = [
+      { id: 'Calles', style: 'mapbox://styles/mapbox/streets-v12' },
+      { id: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+      { id: 'Relieves', style: 'mapbox://styles/mapbox/outdoors-v12' }
+    ];
+
+    // Crear el botón de cambio de capa con ícono
+    const layerControlButton = document.createElement('button');
+    layerControlButton.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-layer-control';
+    layerControlButton.type = 'button';
+    layerControlButton.innerHTML = '<i class="fas fa-layer-group"></i>'; // Ícono de capas
+
+    // Crear el menú de selección de capas
+    const layerMenu = document.createElement('div');
+    layerMenu.className = 'layer-menu';
+    layerMenu.style.display = 'none';
+    layerMenu.style.position = 'absolute';
+    layerMenu.style.backgroundColor = 'white';
+    layerMenu.style.border = '1px solid #ccc';
+    layerMenu.style.padding = '10px';
+    layerMenu.style.borderRadius = '4px';
+
+    // Añadir las opciones de capa al menú
+    layerOptions.forEach(option => {
+      const layerOption = document.createElement('div');
+      layerOption.className = 'layer-option';
+      layerOption.style.cursor = 'pointer';
+      layerOption.style.padding = '5px';
+      layerOption.textContent = option.id;
+      layerOption.addEventListener('click', () => {
+        map.setStyle(option.style);
+        layerMenu.style.display = 'none'; // Cerrar el menú después de seleccionar
+      });
+      layerMenu.appendChild(layerOption);
+    });
+
+    // Alternar la visibilidad del menú al hacer clic en el botón
+    layerControlButton.addEventListener('click', () => {
+      layerMenu.style.display = layerMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Posicionar el botón y el menú en el lado izquierdo del mapa
+    const layerControlContainer = document.createElement('div');
+    layerControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    layerControlContainer.style.position = 'absolute';
+    layerControlContainer.style.top = '10px';
+    layerControlContainer.style.left = '10px';
+    layerControlContainer.style.zIndex = '1';
+    layerControlContainer.appendChild(layerControlButton);
+    layerControlContainer.appendChild(layerMenu);
+
+    map.getContainer().appendChild(layerControlContainer);
 
     // No llamar a 'onDragEnd' aquí para evitar actualizar la dirección al cargar
     coordenadasInput.value = `${lat}, ${lng}`;
@@ -254,12 +315,11 @@
   function onDragEnd() {
     const lngLat = marker.getLngLat();
     coordenadasInput.value = `${lngLat.lat}, ${lngLat.lng}`;
-    markerMoved = true; // Marcar que el marcador ha sido movido
+    markerMoved = true;
 
     // Solo actualizar la dirección si el usuario no la ha modificado manualmente
     if (!direccionModified) {
-      // Obtener la dirección a partir de las coordenadas usando Mapbox Geocoding API
-      fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=pk.eyJ1IjoiYWxleDk3IiwiYSI6ImNqdWZyNm1oazBoYzIzeXBrNDM2NnlyZHEifQ.Wfjlumf_PJzaNUhB9yy29w`)
+      fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token={{mapboxAccessToken}}`)
         .then(response => response.json())
         .then(data => {
           if (data.features && data.features.length > 0) {
@@ -275,13 +335,14 @@
     }
   }
 
+
   // Detectar cambios manuales en el campo de dirección
-  direccionInput.addEventListener('input', function() {
+  direccionInput.addEventListener('input', function () {
     direccionModified = true;
   });
 
   // Restablecer el flag si el usuario borra todo el contenido
-  direccionInput.addEventListener('change', function() {
+  direccionInput.addEventListener('change', function () {
     if (direccionInput.value.trim() === '') {
       direccionModified = false;
       // Si el marcador ha sido movido, actualizar la dirección
@@ -292,7 +353,7 @@
   });
 
   // JavaScript para mostrar la vista previa de la nueva imagen o PDF
-  document.getElementById('img_problema').addEventListener('change', function(event) {
+  document.getElementById('img_problema').addEventListener('change', function (event) {
     const file = event.target.files[0];
     const previewContainer = document.getElementById('newFilePreview');
     const previewImage = document.getElementById('newPreviewImage');

@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 const cloudinary = require('cloudinary').v2;
 // Importar la función desde notificacionesController
 const { crearYEmitirNotificacion } = require('./notificacionesController');
-const { empty } = require('@prisma/client/runtime/library');
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -169,7 +168,8 @@ exports.renderCreateForm = async (req, res) => {
       user: { rol: userRole },
       tipos,
       clientes,
-      resolutores
+      resolutores,
+      mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN
     });
   } catch (error) {
     console.error('Error al renderizar el formulario de creación de ticket:', error);
@@ -389,6 +389,7 @@ exports.renderEditForm = async (req, res) => {
       clientes,
       tipos,
       user: { rol: req.session.userRole },  // Pasar toda la información del usuario a la vista
+      mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
     });
   } catch (error) {
     console.error('Error al renderizar el formulario de modificación de ticket:', error);
@@ -598,6 +599,7 @@ exports.showTimeline = async (req, res) => {
       ticket,
       mensajes,
       user: { id: userId, rol: userRole },
+      mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
     });
   } catch (error) {
     console.error('Error al mostrar el timeline del ticket:', error);
