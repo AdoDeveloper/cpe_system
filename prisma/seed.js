@@ -326,7 +326,7 @@ async function main() {
        { ruta: '/pagos/detalle/:id', metodo: 'GET', descripcion: 'Listar detalles de pago', tipo: 'lectura', moduloId: facturacionModulo.id },
 
       // Permisos de home y login
-      //{ ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id},
+      { ruta: '/dashboard', metodo: 'GET', descripcion: 'Acceso al dashboard', tipo: 'lectura', moduloId: dashboardModulo.id},
       //{ ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
       //{ ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura'},
       //{ ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura'},
@@ -604,6 +604,7 @@ async function main() {
     console.log('Asignando los permisos especificos al rol tecnico.');
     // Permisos para Tecnico
     const permisosTecnico = [
+      { ruta: '/dashboard', metodo: 'GET', descripcion: 'Acceso al dashboard', tipo: 'lectura', moduloId: dashboardModulo.id},
       { ruta: '/equipos', metodo: 'GET', descripcion: 'Listar equipos', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/new', metodo: 'GET', descripcion: 'Formulario agregar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/new', metodo: 'POST', descripcion: 'Crear equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
@@ -646,6 +647,7 @@ async function main() {
     console.log('Asignando los permisos especificos al rol instalador.');
     // Permisos para Instalador
     const permisosInstalador = [
+      { ruta: '/dashboard', metodo: 'GET', descripcion: 'Acceso al dashboard', tipo: 'lectura', moduloId: dashboardModulo.id},
       { ruta: '/equipos', metodo: 'GET', descripcion: 'Listar equipos', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/new', metodo: 'GET', descripcion: 'Formulario agregar equipo', tipo: 'lectura', moduloId: gestionCpesModulo.id },
       { ruta: '/equipos/new', metodo: 'POST', descripcion: 'Crear equipo', tipo: 'escritura', moduloId: gestionCpesModulo.id },
@@ -688,7 +690,7 @@ async function main() {
     console.log('Asignando los permisos especificos al rol soporte tecnico.');
     // Permisos para Soporte Tecnico
     const permisosSoporte = [
-      // Permisos de helpdesk
+      { ruta: '/dashboard', metodo: 'GET', descripcion: 'Acceso al dashboard', tipo: 'lectura', moduloId: dashboardModulo.id},
       { ruta: '/tickets', metodo: 'GET', descripcion: 'Listar tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/new', metodo: 'GET', descripcion: 'Formulario agregar tickets', tipo: 'lectura', moduloId: helpdeskModulo.id },
       { ruta: '/tickets/new', metodo: 'POST', descripcion: 'Crear tickets', tipo: 'escritura', moduloId: helpdeskModulo.id },

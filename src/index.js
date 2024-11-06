@@ -9,6 +9,7 @@ const morgan = require('morgan'); // Middleware para ver las solicitudes en la c
 const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
 const methodOverride = require('method-override'); // Importar method-override
 const http = require('http'); // Importar el módulo http para crear el servidor
+const axios = require('axios');
 
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 
@@ -170,6 +171,16 @@ cron.schedule('0 0 1 * *', async () => {
     } catch (error) {
         console.error('Error al ejecutar el procedimiento:', error.message);
     }
+});
+
+// Configuración de cron para mantener activo el servidor con una auto-petición cada 10 minutos
+cron.schedule('*/10 * * * *', async () => {
+  try {
+      await axios.get('https://airlinksystem.onrender.com'); // Asegúrate de que esta URL sea la de tu servidor en Render
+      console.log('Auto-petición enviada para mantener el servidor activo.');
+  } catch (error) {
+      console.error('Error al intentar mantener el servidor activo:', error.message);
+  }
 });
 
 // Iniciar el servidor usando `server.listen` en lugar de `app.listen`

@@ -61,7 +61,7 @@ loginController.processLogin = async (req, res) => {
 
     // Redirigir según si es administrador o no
     if (usuario.rol.esAdmin) {
-      return res.status(200).redirect('/');
+      return res.status(200).redirect('/dashboard');
     } else {
       return res.status(200).redirect('/');
     }
