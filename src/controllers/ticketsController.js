@@ -20,7 +20,7 @@ const uploadFileToCloudinary = async (fileBuffer, folder, public_id, isPDF) => {
       folder: folder,
       public_id: public_id,
     };
-    
+
     // Si es PDF, no cambiar el formato
     if (!isPDF) {
       options.format = 'webp';
@@ -317,15 +317,26 @@ exports.createTicket = async (req, res) => {
       },
     });
 
-     // Si se asigna un resolver, crear y emitir una notificación
-     if (nuevoTicket.resolverId) {
-      const mensajeNotificacion = `Se te ha asignado el ticket #${nuevoTicket.numeroTicket}.`;
-      await crearYEmitirNotificacion(
-        nuevoTicket.resolverId,
-        'ticket_asignado',
-        mensajeNotificacion,
-        nuevoTicket.id
-      );
+    // Si se asigna un resolver, verificar si ya existe una notificación y evitar duplicados
+    if (nuevoTicket.resolverId) {
+      // Verificar si ya existe una notificación para este ticket y usuario
+      const notificacionExistente = await prisma.notificacion.findFirst({
+        where: {
+          usuarioId: nuevoTicket.resolverId,
+          ticketId: nuevoTicket.id,
+          tipo: 'ticket_asignado',
+        },
+      });
+
+      if (!notificacionExistente) {
+        const mensajeNotificacion = `Se te ha asignado el ticket #${nuevoTicket.numeroTicket}.`;
+        await crearYEmitirNotificacion(
+          nuevoTicket.resolverId,
+          'ticket_asignado',
+          mensajeNotificacion,
+          nuevoTicket.id
+        );
+      }
     }
 
     req.flash('success_msg', 'Ticket creado correctamente');
@@ -486,15 +497,26 @@ exports.updateTicket = async (req, res) => {
       },
     });
 
-     // Si se asigna un nuevo resolver, crear y emitir una notificación
-     if (updatedResolverId && (updatedResolverId !== ticket.resolverId)) {
-      const mensajeNotificacion = `Se te ha asignado el ticket #${ticketActualizado.numeroTicket}.`;
-      await crearYEmitirNotificacion(
-        updatedResolverId,
-        'ticket_asignado',
-        mensajeNotificacion,
-        ticketActualizado.id
-      );
+    // Si se asigna un nuevo resolver, verificar si ya existe una notificación y evitar duplicados
+    if (updatedResolverId && (updatedResolverId !== ticket.resolverId)) {
+      // Verificar si ya existe una notificación para este ticket y usuario
+      const notificacionExistente = await prisma.notificacion.findFirst({
+        where: {
+          usuarioId: updatedResolverId,
+          ticketId: ticketActualizado.id,
+          tipo: 'ticket_asignado',
+        },
+      });
+
+      if (!notificacionExistente) {
+        const mensajeNotificacion = `Se te ha asignado el ticket #${ticketActualizado.numeroTicket}.`;
+        await crearYEmitirNotificacion(
+          updatedResolverId,
+          'ticket_asignado',
+          mensajeNotificacion,
+          ticketActualizado.id
+        );
+      }
     }
 
     req.flash('success_msg', 'Ticket actualizado correctamente');
@@ -515,9 +537,6 @@ exports.deleteTicket = async (req, res) => {
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
     });
-
-    // Registrar el resultado para depuración
-   //console.log("Ticket encontrado para eliminación:", ticket);
 
     if (!ticket) {
       req.flash('error_msg', 'El ticket no existe.');
@@ -575,10 +594,9 @@ exports.showTimeline = async (req, res) => {
 
     // Validar que el usuario tiene acceso al ticket
     if (
-      userRole === 'Cliente' &&
-      ticket.usuarioId !== userId || userRole === 'Tecnico' &&
-      ticket.resolverId !== userId || userRole === 'Instalador' &&
-      ticket.resolverId !== userId
+      (userRole === 'Cliente' && ticket.usuarioId !== userId) ||
+      (userRole === 'Tecnico' && ticket.resolverId !== userId) ||
+      (userRole === 'Instalador' && ticket.resolverId !== userId)
     ) {
       req.flash('error_msg', 'No tienes permiso para ver este ticket.');
       return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
