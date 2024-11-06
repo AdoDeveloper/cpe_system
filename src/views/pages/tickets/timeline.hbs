@@ -13,9 +13,8 @@
             <h4>{{ticket.titulo}}</h4>
             <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
             <p><strong>Estado:</strong>
-              <span id="estadoBadge"
-                class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
-                {{ticket.estado}}
+              <span id="estadoBadge">
+                {{getStatusBadgeClass ticket.estado}}
               </span>
             </p>
             <p><strong>Cliente:</strong> {{ticket.cliente.nombres}} {{ticket.cliente.apellidos}}</p>
@@ -27,7 +26,7 @@
         </div>
 
         <!-- Permitir a técnicos e instaladores actualizar el estado del ticket -->
-        {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador') ))}}
+        {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador')))}}
           <div class="card">
             <div class="card-body">
               <h4>Actualizar Estado del Ticket</h4>
@@ -35,12 +34,10 @@
                 <div class="form-group">
                   <label for="estado">Estado</label>
                   <select id="estado" name="estado" class="form-control" required>
-                    <option value="enviado" {{#if (eq ticket.estado 'enviado' )}}selected{{/if}}>Enviado</option>
-                    <option value="en_revision" {{#if (eq ticket.estado 'en_revision' )}}selected{{/if}}>En revisión
-                    </option>
-                    <option value="detenido" {{#if (eq ticket.estado 'detenido' )}}selected{{/if}}>Detenido</option>
-                    <option value="completado" {{#if (eq ticket.estado 'completado' )}}selected{{/if}}>Completado
-                    </option>
+                    <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
+                    <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
+                    <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
+                    <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
                   </select>
                 </div>
                 <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
@@ -60,7 +57,6 @@
                 - {{ticket.resolver.nombre}}
               {{/if}}
             </h4>
-            <script></script>
           </div>
           <div class="card-body" id="chatContainer" style="height: 500px; overflow-y: auto;">
             {{#each mensajes}}
@@ -70,8 +66,7 @@
                 <div class="d-flex justify-content-end mb-2">
                   <div class="p-2 rounded chat-bubble sent">
                     {{#if this.mediaUrl}}
-                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2"
-                        style="max-width: 200px;">
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
                     {{/if}}
                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
                     <small class="d-block text-right">{{formatDate this.createdAt}}</small>
@@ -82,8 +77,7 @@
                 <div class="d-flex justify-content-start mb-2">
                   <div class="p-2 rounded chat-bubble received">
                     {{#if this.mediaUrl}}
-                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2"
-                        style="max-width: 200px;">
+                      <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
                     {{/if}}
                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
                     <small class="d-block text-left">{{formatDate this.createdAt}}</small>
@@ -97,8 +91,7 @@
             <div class="card-footer">
               <form id="messageForm">
                 <div class="input-group">
-                  <textarea id="mensaje" name="mensaje" class="form-control" rows="1"
-                    placeholder="Escribe un mensaje..." required></textarea>
+                  <textarea id="mensaje" name="mensaje" class="form-control" rows="1" placeholder="Escribe un mensaje..." required></textarea>
                   <div class="input-group-append">
                     <label class="btn btn-secondary mb-0">
                       <i class="fas fa-paperclip"></i>
@@ -107,8 +100,7 @@
                     <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                   </div>
                 </div>
-                <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2"
-                  style="display: none; max-width: 200px;">
+                <img id="previewImage" src="#" alt="Vista previa" class="img-thumbnail mt-2" style="display: none; max-width: 200px;">
               </form>
             </div>
           {{else}}
@@ -139,9 +131,8 @@
         <h4>{{ticket.titulo}}</h4>
         <p><strong>Descripción:</strong> {{ticket.descripcion}}</p>
         <p><strong>Estado:</strong>
-          <span id="estadoBadge"
-            class="badge badge-{{#if (eq ticket.estado 'completado')}}success{{else if (eq ticket.estado 'detenido')}}danger{{else}}info{{/if}}">
-            {{ticket.estado}}
+          <span id="estadoBadge">
+            {{getStatusBadgeClass ticket.estado}}
           </span>
         </p>
         <p><strong>Cliente:</strong> {{ticket.cliente.nombres}} {{ticket.cliente.apellidos}}</p>
@@ -162,24 +153,23 @@
       <p><strong>Dirección:</strong> {{ticket.direccion}}</p>
       <!-- Mapa de ubicación -->
       <div id="map" style="height: 400px;"></div>
-      <a href="https://www.google.com/maps/dir/?api=1&destination={{ticket.latitud}},{{ticket.longitud}}"
-        target="_blank" class="btn btn-success mt-3">
+      <a href="https://www.google.com/maps/dir/?api=1&destination={{ticket.latitud}},{{ticket.longitud}}" target="_blank" class="btn btn-success mt-3">
         Iniciar Ruta en Google Maps
       </a>
     </div>
 
     <!-- Permitir actualización del estado para técnicos e instaladores -->
-    {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador') ))}}
+    {{#if (and (not (eq user.rol 'Cliente')) (or (eq user.rol 'Tecnico') (eq user.rol 'Instalador') (eq user.rol 'Soporte Tecnico') (eq user.rol 'Administrador')))}}
       <div class="mt-4">
         <h4>Actualizar Estado del Ticket</h4>
         <form action="/tickets/{{ticket.id}}/updatestatus?_method=PUT" method="POST" id="alertFormEdit">
           <div class="form-group">
             <label for="estado">Estado</label>
             <select id="estado" name="estado" class="form-control" required>
-              <option value="enviado" {{#if (eq ticket.estado 'enviado' )}}selected{{/if}}>Enviado</option>
-              <option value="en_revision" {{#if (eq ticket.estado 'en_revision' )}}selected{{/if}}>En revisión</option>
-              <option value="detenido" {{#if (eq ticket.estado 'detenido' )}}selected{{/if}}>Detenido</option>
-              <option value="completado" {{#if (eq ticket.estado 'completado' )}}selected{{/if}}>Completado</option>
+              <option value="enviado" {{#if (eq ticket.estado 'enviado')}}selected{{/if}}>Enviado</option>
+              <option value="en_revision" {{#if (eq ticket.estado 'en_revision')}}selected{{/if}}>En revisión</option>
+              <option value="detenido" {{#if (eq ticket.estado 'detenido')}}selected{{/if}}>Detenido</option>
+              <option value="completado" {{#if (eq ticket.estado 'completado')}}selected{{/if}}>Completado</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary mb-2">Actualizar Estado</button>
@@ -230,7 +220,7 @@
 
 <script>
   // Mostrar el mapa si es mantenimiento o instalación
-  { { #unless(eq ticket.tipoTicket.nombre 'resolucion') } }
+  {{#unless (eq ticket.tipoTicket.nombre 'resolucion')}}
   mapboxgl.accessToken = '{{mapboxAccessToken}}';
   const lat = parseFloat('{{ticket.latitud}}');
   const lng = parseFloat('{{ticket.longitud}}');
@@ -301,13 +291,13 @@
   layerControlContainer.appendChild(layerMenu);
 
   map.getContainer().appendChild(layerControlContainer);
-  { {/unless } }
+  {{/unless}}
 
   // Configuración de Socket.IO
   const socket = io();
 
   // Unirse a la sala específica del ticket
-  socket.emit('joinTicket', { ticketId: {{ ticket.id }} });
+  socket.emit('joinTicket', { ticketId: {{ticket.id}} });
 
   // Función para actualizar la interfaz de acuerdo al estado
   function updateMessageFormAndStatus(newState) {
@@ -386,48 +376,46 @@
       messageForm.addEventListener('submit', function (event) {
         event.preventDefault();
         const mensaje = document.getElementById('mensaje').value;
-        const userId = {{ user.id }
-      };
-      const ticketId = {{ ticket.id }
-    };
+        const userId = {{user.id}};
+        const ticketId = {{ticket.id}};
 
-    if (mediaInput.files.length > 0) {
-      const file = mediaInput.files[0];
-      if (!file.type.match('image.*')) {
-        alert('Solo se permiten imágenes.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const imageData = e.target.result.split(',')[1];
-        socket.emit('sendMessage', { ticketId, userId, mensaje, imageData });
-      };
-      reader.readAsDataURL(file);
-    } else {
-      socket.emit('sendMessage', { ticketId, userId, mensaje });
-    }
-    messageForm.reset();
-    previewImage.style.display = 'none';
-  });
-    }
-
-  // Mostrar vista previa de la imagen seleccionada
-  if (mediaInput) {
-    mediaInput.addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (file && file.type.match('image.*')) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImage.src = e.target.result;
-          previewImage.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        previewImage.src = '#';
+        if (mediaInput.files.length > 0) {
+          const file = mediaInput.files[0];
+          if (!file.type.match('image.*')) {
+            alert('Solo se permiten imágenes.');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const imageData = e.target.result.split(',')[1];
+            socket.emit('sendMessage', { ticketId, userId, mensaje, imageData });
+          };
+          reader.readAsDataURL(file);
+        } else {
+          socket.emit('sendMessage', { ticketId, userId, mensaje });
+        }
+        messageForm.reset();
         previewImage.style.display = 'none';
-      }
-    });
-  }
+      });
+    }
+
+    // Mostrar vista previa de la imagen seleccionada
+    if (mediaInput) {
+      mediaInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file && file.type.match('image.*')) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        } else {
+          previewImage.src = '#';
+          previewImage.style.display = 'none';
+        }
+      });
+    }
   }
 
   // Inicializar el formulario al cargar la página
@@ -442,34 +430,33 @@
     const messageDiv = document.createElement('div');
 
     // Determinar si el mensaje es enviado o recibido
-    if (mensaje.usuario.id === {{ user.id }
-  }) {
-    // Mensaje enviado
-    messageDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
-    messageDiv.innerHTML = `
-        <div class="p-2 rounded chat-bubble sent">
-          ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
-          <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
-          <small class="d-block text-right">${new Date(mensaje.createdAt).toLocaleString()}</small>
-        </div>
-      `;
-  } else {
-    // Mensaje recibido
-    messageDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
-    messageDiv.innerHTML = `
-        <div class="p-2 rounded chat-bubble received">
-          ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
-          <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
-          <small class="d-block text-left">${new Date(mensaje.createdAt).toLocaleString()}</small>
-        </div>
-      `;
-  }
+    if (mensaje.usuario.id === {{user.id}}) {
+      // Mensaje enviado
+      messageDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
+      messageDiv.innerHTML = `
+          <div class="p-2 rounded chat-bubble sent">
+            ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
+            <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
+            <small class="d-block text-right">${new Date(mensaje.createdAt).toLocaleString()}</small>
+          </div>
+        `;
+    } else {
+      // Mensaje recibido
+      messageDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+      messageDiv.innerHTML = `
+          <div class="p-2 rounded chat-bubble received">
+            ${mensaje.mediaUrl ? `<img src="${mensaje.mediaUrl}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">` : ''}
+            <p class="mb-1"><strong>${mensaje.usuario.nombre}:</strong> ${mensaje.mensaje}</p>
+            <small class="d-block text-left">${new Date(mensaje.createdAt).toLocaleString()}</small>
+          </div>
+        `;
+    }
 
-  // Añadir el mensaje al contenedor
-  mensajesContainer.appendChild(messageDiv);
+    // Añadir el mensaje al contenedor
+    mensajesContainer.appendChild(messageDiv);
 
-  // Hacer scroll hacia el último mensaje
-  mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
+    // Hacer scroll hacia el último mensaje
+    mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
   });
 
   // Escuchar mensajes de error

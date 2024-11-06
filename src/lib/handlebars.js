@@ -1,5 +1,6 @@
 // src/lib/handlebars.js
 const Handlebars = require('handlebars');
+const moment = require('moment');
 
 // Helper para comparar dos valores y devolver verdadero si son iguales
 Handlebars.registerHelper('eq', function (a, b) {
@@ -96,6 +97,24 @@ Handlebars.registerHelper('formatDate', function (date) {
     
     return formattedDate.replace(',', ''); // Eliminar la coma para obtener el formato deseado
 });
+
+Handlebars.registerHelper('formatDuration', function(durationMs) {
+    if (!durationMs || durationMs <= 0) return 'En proceso';
+  
+    let duration = moment.duration(durationMs);
+    let days = duration.days();
+    let hours = duration.hours();
+    let minutes = duration.minutes();
+    let seconds = duration.seconds();
+  
+    let result = '';
+    if (days > 0) result += days + 'd ';
+    if (hours > 0) result += hours + 'h ';
+    if (minutes > 0) result += minutes + 'm ';
+    result += seconds + 's';
+  
+    return result;
+  });
 
 Handlebars.registerHelper('formatDatePDF', function (date) {
     if (!date) return '';

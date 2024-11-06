@@ -1,0 +1,387 @@
+<!-- views/dashboard/dashboard.hbs -->
+
+{{#if (eq user.rol 'Administrador')}}
+  <!-- Vista para Administrador -->
+  <div class="container-fluid">
+    <!-- Tarjetas superiores -->
+    <div class="row">
+      <!-- Caja Principal -->
+      <div class="col-lg-4 col-6">
+        <div class="small-box bg-info">
+          <div class="inner">
+            <h3>${{cajaPrincipalTotal}}</h3>
+            <p>Caja Principal</p>
+          </div>
+          <div class="icon">
+            <i class="fas fa-cash-register"></i>
+          </div>
+        </div>
+      </div>
+      <!-- Facturación Actual -->
+      <div class="col-lg-4 col-6">
+        <div class="small-box bg-success">
+          <div class="inner">
+            <h3>${{facturacionActualTotal}}</h3>
+            <p>Facturación Actual</p>
+          </div>
+          <div class="icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+        </div>
+      </div>
+      <!-- Por Facturar -->
+      <div class="col-lg-4 col-6">
+        <div class="small-box bg-warning">
+          <div class="inner">
+            <h3>${{porFacturasTotal}}</h3>
+            <p>Por Facturar</p>
+          </div>
+          <div class="icon">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Gráficos -->
+    <div class="row">
+      <!-- Gráfico de Líneas -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Ingresos Mensuales</h3>
+            <div class="card-tools">
+              <!-- Botones para cambiar la vista: Año, Mes, Semana -->
+              <div class="btn-group">
+                <button type="button" class="btn btn-default btn-sm" onclick="changeMetricsView('year')">Año</button>
+                <button type="button" class="btn btn-default btn-sm" onclick="changeMetricsView('month')">Mes</button>
+                <button type="button" class="btn btn-default btn-sm" onclick="changeMetricsView('week')">Semana</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Gráfico de Barras -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Egresos Mensuales</h3>
+          </div>
+          <div class="card-body">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <!-- Gráfico de Pastel -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Distribución de Tipos de Movimientos</h3>
+          </div>
+          <div class="card-body">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Gráfico de Donut -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Proporción de Ingresos vs Egresos</h3>
+          </div>
+          <div class="card-body">
+            <canvas id="doughnutChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Mapa de Mapbox -->
+    <div class="row" style="margin-top: 20px;">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">MAPA DE CLIENTES CON SERVICIO ACTIVO</h3>
+          </div>
+          <div class="card-body">
+            <div id="map" style="width: 100%; height: 500px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incluir Chart.js y Mapbox -->
+  <script src="/plugins/chart.js/Chart.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://momentjs.com/downloads/moment.min.js"></script>
+
+  <script>
+    // Datos para los gráficos
+    let rawMetricsData = {{{ json metricsData }}};
+
+    let lineChartInstance, barChartInstance, pieChartInstance, doughnutChartInstance;
+    let currentView = 'year';
+
+    function processMetricsData(view) {
+      let labels = [];
+      let ingresosData = [];
+      let egresosData = [];
+
+      let ingresosGrouped = {};
+      let egresosGrouped = {};
+
+      rawMetricsData.forEach(data => {
+        let date = new Date(data.fecha);
+
+        let label;
+        if (view === 'year') {
+          label = date.getFullYear();
+        } else if (view === 'month') {
+          label = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2);
+        } else if (view === 'week') {
+          label = date.getFullYear() + '-W' + moment(date).week();
+        }
+
+        // Inicializar los grupos si no existen
+        if (!ingresosGrouped[label]) ingresosGrouped[label] = 0;
+        if (!egresosGrouped[label]) egresosGrouped[label] = 0;
+
+        // Clasificar los movimientos en ingresos y egresos
+        if (data.tipocc === 'CCI') {
+          ingresosGrouped[label] += data.monto;
+        } else if (['CCC', 'CCCxP', 'CCG', 'CCPR'].includes(data.tipocc)) {
+          egresosGrouped[label] += data.monto;
+        }
+      });
+
+      labels = Object.keys(ingresosGrouped).sort();
+
+      ingresosData = labels.map(label => ingresosGrouped[label]);
+      egresosData = labels.map(label => egresosGrouped[label]);
+
+      return { labels, ingresosData, egresosData };
+    }
+
+    function renderCharts(view) {
+      const { labels, ingresosData, egresosData } = processMetricsData(view);
+
+      // Destruir instancias previas
+      if (lineChartInstance) lineChartInstance.destroy();
+      if (barChartInstance) barChartInstance.destroy();
+      if (pieChartInstance) pieChartInstance.destroy();
+      if (doughnutChartInstance) doughnutChartInstance.destroy();
+
+      // Gráfico de Líneas (Ingresos)
+      const lineCtx = document.getElementById('lineChart').getContext('2d');
+      lineChartInstance = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Ingresos',
+            data: ingresosData,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+        },
+      });
+
+      // Gráfico de Barras (Egresos)
+      const barCtx = document.getElementById('barChart').getContext('2d');
+      barChartInstance = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Egresos',
+            data: egresosData,
+            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+          }],
+        },
+        options: {
+          responsive: true,
+        },
+      });
+
+      // Gráfico de Pastel (Distribución de Tipos de Movimientos)
+      const tiposMovimientos = {};
+      rawMetricsData.forEach(data => {
+        if (!tiposMovimientos[data.tipocc]) {
+          tiposMovimientos[data.tipocc] = 0;
+        }
+        tiposMovimientos[data.tipocc] += data.monto;
+      });
+
+      const pieLabels = Object.keys(tiposMovimientos);
+      const pieData = pieLabels.map(label => tiposMovimientos[label]);
+
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      pieChartInstance = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: pieLabels,
+          datasets: [{
+            data: pieData,
+            backgroundColor: [
+              '#007bff',
+              '#dc3545',
+              '#ffc107',
+              '#28a745',
+              '#17a2b8'
+            ],
+          }],
+        },
+        options: {
+          responsive: true,
+        },
+      });
+
+      // Gráfico de Donut (Proporción de Ingresos vs Egresos)
+      const totalIngresos = ingresosData.reduce((a, b) => a + b, 0);
+      const totalEgresos = egresosData.reduce((a, b) => a + b, 0);
+
+      const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+      doughnutChartInstance = new Chart(doughnutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ingresos', 'Egresos'],
+          datasets: [{
+            data: [totalIngresos, totalEgresos],
+            backgroundColor: ['#28a745', '#dc3545'],
+          }],
+        },
+        options: {
+          responsive: true,
+        },
+      });
+    }
+
+    function changeMetricsView(view) {
+      currentView = view;
+      renderCharts(view);
+    }
+
+    // Inicializar los gráficos
+    renderCharts(currentView);
+
+    // Configuración de Mapbox
+    mapboxgl.accessToken = '{{mapboxAccessToken}}';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      center: [-89.70401928084173, 13.770057886610703], // Ajusta las coordenadas según sea necesario
+      zoom: 14,
+    });
+
+    // Añadir marcadores desde configuraciones
+    const configuraciones = {{{ json configuraciones }}};
+    configuraciones.forEach(config => {
+      if (config.lat && config.clong) {
+        new mapboxgl.Marker()
+          .setLngLat([parseFloat(config.clong), parseFloat(config.lat)])
+          .setPopup(new mapboxgl.Popup().setHTML(`<strong>${config.cliente.nombres} ${config.cliente.apellidos}</strong>`))
+          .addTo(map);
+      }
+    });
+
+    // Añadir control de capas
+    const layerOptions = [
+      { id: 'Calles', style: 'mapbox://styles/mapbox/streets-v12' },
+      { id: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+      { id: 'Relieves', style: 'mapbox://styles/mapbox/outdoors-v12' }
+    ];
+
+    const layerControlButton = document.createElement('button');
+    layerControlButton.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-layer-control';
+    layerControlButton.type = 'button';
+    layerControlButton.innerHTML = '<i class="fas fa-layer-group"></i>';
+
+    const layerMenu = document.createElement('div');
+    layerMenu.className = 'layer-menu';
+    layerMenu.style.display = 'none';
+    layerMenu.style.position = 'absolute';
+    layerMenu.style.backgroundColor = 'white';
+    layerMenu.style.border = '1px solid #ccc';
+    layerMenu.style.padding = '10px';
+    layerMenu.style.borderRadius = '4px';
+
+    layerOptions.forEach(option => {
+      const layerOption = document.createElement('div');
+      layerOption.className = 'layer-option';
+      layerOption.style.cursor = 'pointer';
+      layerOption.style.padding = '5px';
+      layerOption.textContent = option.id;
+      layerOption.addEventListener('click', () => {
+        map.setStyle(option.style);
+        layerMenu.style.display = 'none';
+      });
+      layerMenu.appendChild(layerOption);
+    });
+
+    layerControlButton.addEventListener('click', () => {
+      layerMenu.style.display = layerMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    const layerControlContainer = document.createElement('div');
+    layerControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    layerControlContainer.style.position = 'absolute';
+    layerControlContainer.style.top = '10px';
+    layerControlContainer.style.left = '10px';
+    layerControlContainer.style.zIndex = '1';
+    layerControlContainer.appendChild(layerControlButton);
+    layerControlContainer.appendChild(layerMenu);
+
+    map.getContainer().appendChild(layerControlContainer);
+  </script>
+{{else}}
+  <!-- Vista para otros roles -->
+  <div class="container-fluid">
+    <div class="row" style="margin-top: 20px;">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-history"></i> Historial de Tickets Asignados</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th><i class="fas fa-hashtag"></i> Número de Ticket</th>
+                  <th><i class="fas fa-heading"></i> Título</th>
+                  <th><i class="fas fa-info-circle"></i> Estado</th>
+                  <th><i class="fas fa-clock"></i> Tiempo de Resolución</th>
+                  <th><i class="fas fa-calendar-alt"></i> Fecha de Creación</th>
+                  <th><i class="fas fa-eye"></i> Ver</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each ticketsConTiempo}}
+                <tr>
+                  <td>{{this.numeroTicket}}</td>
+                  <td>{{this.titulo}}</td>
+                  <td>{{getStatusBadgeClass this.estado}}</td>
+                  <td>{{formatDuration this.tiempoResolucion}}</td>
+                  <td>{{formatDate this.createdAt}}</td>
+                  <td>
+                    <a href="/tickets/timeline/{{this.id}}" class="btn btn-info btn-sm" title="Ver Ticket">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{{/if}}

@@ -494,7 +494,7 @@ async function main() {
       { tipocc: 'CCC', nombre_cuenta: 'Cuenta de Costos', descripcion: null },
       { tipocc: 'CCG', nombre_cuenta: 'Cuenta de Gastos', descripcion: null },
       { tipocc: 'CCCxP', nombre_cuenta: 'Cuentas por Pagar', descripcion: null },
-      { tipocc: 'CCPR', nombre_cuenta: 'Cuentas de préstamos', descripcion: null },
+      { tipocc: 'CCPR', nombre_cuenta: 'Cuentas de Préstamos', descripcion: null },
     ];
 
     for (const cuenta of cuentasContablesData) {
