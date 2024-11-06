@@ -2,7 +2,7 @@
 
 {{#if (eq user.rol 'Administrador')}}
   <!-- Vista para Administrador -->
-  <div class="container-fluid">
+  <div class="container-fluid mt-3">
     <!-- Tarjetas superiores -->
     <div class="row">
       <!-- Caja Principal -->
@@ -48,7 +48,7 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Ingresos Mensuales</h3>
+            <h3 class="card-title">Ingresos y Egresos Mensuales (Línea)</h3>
             <div class="card-tools">
               <!-- Botones para cambiar la vista: Año, Mes, Semana -->
               <div class="btn-group">
@@ -67,7 +67,7 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Egresos Mensuales</h3>
+            <h3 class="card-title">Ingresos y Egresos Mensuales (Barras)</h3>
           </div>
           <div class="card-body">
             <canvas id="barChart"></canvas>
@@ -125,7 +125,7 @@
     let rawMetricsData = {{{ json metricsData }}};
 
     let lineChartInstance, barChartInstance, pieChartInstance, doughnutChartInstance;
-    let currentView = 'year';
+    let currentView = 'month'; // Precargar con datos mensuales
 
     function processMetricsData(view) {
       let labels = [];
@@ -159,10 +159,11 @@
         }
       });
 
-      labels = Object.keys(ingresosGrouped).sort();
+      // Obtener todas las etiquetas presentes en ingresos y egresos
+      labels = Array.from(new Set([...Object.keys(ingresosGrouped), ...Object.keys(egresosGrouped)])).sort();
 
-      ingresosData = labels.map(label => ingresosGrouped[label]);
-      egresosData = labels.map(label => egresosGrouped[label]);
+      ingresosData = labels.map(label => ingresosGrouped[label] || 0);
+      egresosData = labels.map(label => egresosGrouped[label] || 0);
 
       return { labels, ingresosData, egresosData };
     }
@@ -176,35 +177,50 @@
       if (pieChartInstance) pieChartInstance.destroy();
       if (doughnutChartInstance) doughnutChartInstance.destroy();
 
-      // Gráfico de Líneas (Ingresos)
+      // Gráfico de Líneas (Ingresos y Egresos)
       const lineCtx = document.getElementById('lineChart').getContext('2d');
       lineChartInstance = new Chart(lineCtx, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Ingresos',
-            data: ingresosData,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            fill: false,
-          }],
+          datasets: [
+            {
+              label: 'Ingresos',
+              data: ingresosData,
+              borderColor: 'rgba(54, 162, 235, 1)', // Azul
+              fill: false,
+            },
+            {
+              label: 'Egresos',
+              data: egresosData,
+              borderColor: 'rgba(255, 99, 132, 1)', // Rojo
+              fill: false,
+            }
+          ],
         },
         options: {
           responsive: true,
         },
       });
 
-      // Gráfico de Barras (Egresos)
+      // Gráfico de Barras (Ingresos y Egresos)
       const barCtx = document.getElementById('barChart').getContext('2d');
       barChartInstance = new Chart(barCtx, {
         type: 'bar',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Egresos',
-            data: egresosData,
-            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-          }],
+          datasets: [
+            {
+              label: 'Ingresos',
+              data: ingresosData,
+              backgroundColor: 'rgba(54, 162, 235, 0.8)', // Azul
+            },
+            {
+              label: 'Egresos',
+              data: egresosData,
+              backgroundColor: 'rgba(255, 99, 132, 0.8)', // Rojo
+            }
+          ],
         },
         options: {
           responsive: true,
