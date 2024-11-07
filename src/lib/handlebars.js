@@ -60,6 +60,34 @@ Handlebars.registerHelper('ifCond', function (v1, v2, options) {
     return options.inverse(this);
 });
 
+// Condicional con operador
+Handlebars.registerHelper('ifCondOp', function (v1, operator, v2, options) {
+    switch (operator) {
+        case '==':
+            return (v1 == v2) ? options.fn(this) : options.inverse(this);
+        case '===':
+            return (v1 === v2) ? options.fn(this) : options.inverse(this);
+        case '!=':
+            return (v1 != v2) ? options.fn(this) : options.inverse(this);
+        case '!==':
+            return (v1 !== v2) ? options.fn(this) : options.inverse(this);
+        case '<':
+            return (v1 < v2) ? options.fn(this) : options.inverse(this);
+        case '<=':
+            return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+        case '>':
+            return (v1 > v2) ? options.fn(this) : options.inverse(this);
+        case '>=':
+            return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+        case '&&':
+            return (v1 && v2) ? options.fn(this) : options.inverse(this);
+        case '||':
+            return (v1 || v2) ? options.fn(this) : options.inverse(this);
+        default:
+            return options.inverse(this);
+    }
+});
+
 // Helper para serializar un objeto en formato JSON
 Handlebars.registerHelper('json', function (context) {
     return new Handlebars.SafeString(JSON.stringify(context));

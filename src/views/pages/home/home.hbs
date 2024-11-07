@@ -1,5 +1,199 @@
-{{!-- views/pages/usuario/home.hbs --}}
-<div class="container pt-5">
-  <h1>Bienvenido, usuario</h1>
-  <p>Esta es tu página de inicio como usuario registrado.</p>
+<div class="container pt-3" style="max-width: 85%;">
+  <!-- Bienvenida -->
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card card-primary shadow">
+        <div class="card-header">
+          <h3 class="card-title">Panel de Usuario</h3>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h5>Hola, <strong>{{user.nombre}}</strong> 👋</h5>
+              <p>Bienvenido a tu panel principal. Aquí podrás gestionar tus servicios, revisar tus pagos y más.</p>
+            </div>
+            <div class="col-md-4">
+              <canvas id="overviewChart" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen de Servicios -->
+  <div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card text-white bg-success mb-3 shadow">
+            <div class="card-header text-center">
+              <h5 class="card-title"><i class="fas fa-check-circle"></i> Pagados</h5>
+            </div>
+            <div class="card-body text-center">
+              <h1 class="display-4">{{estadosGrafico.pagados}}</h1>
+              <p class="card-text">Servicios pagados este mes</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-white bg-danger mb-3 shadow">
+            <div class="card-header text-center">
+              <h5 class="card-title"><i class="fas fa-exclamation-circle"></i> Pendientes</h5>
+            </div>
+            <div class="card-body text-center">
+              <h1 class="display-4">{{estadosGrafico.pendientes}}</h1>
+              <p class="card-text">Servicios pendientes de pago</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-white bg-info mb-3 shadow">
+            <div class="card-header text-center">
+              <h5 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Total Mensual</h5>
+            </div>
+            <div class="card-body text-center">
+              <h1 class="display-4">${{totalMensual}}</h1>
+              <p class="card-text">Monto total de servicios</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información del Servicio Recurrente -->
+  <div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+      <div class="card card-info shadow">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-info-circle"></i> Servicios Asociados</h3>
+        </div>
+        <div class="card-body">
+          {{#each contratosInfo}}
+          <div class="row align-items-center mb-3">
+            <div class="col-md-8">
+              <div class="callout 
+                {{#ifCondOp estadoPago '==' 'pendiente'}}callout-danger
+                {{else}}
+                  {{#ifCondOp estadoPago '==' 'pagada'}}callout-success
+                  {{else}}callout-info{{/ifCondOp}}
+                {{/ifCondOp}}">
+                <h5><i class="fas fa-file-alt"></i> {{servicio}} - <span class="font-weight-bold text-primary">${{precio}}</span></h5>
+                <p>{{descripcion}}</p>
+                <p class="mt-3"><strong>Fecha de pago:</strong> {{formattedFechaPago}}</p>
+                {{#if mensaje}}
+                <p class="font-weight-bold 
+                  {{#ifCondOp estadoPago '==' 'pagada'}}text-success
+                  {{else}}text-danger{{/ifCondOp}}">
+                  {{mensaje}}
+                </p>
+                {{/if}}
+              </div>
+            </div>
+            <div class="col-md-4 text-center">
+              <h1 class="display-4 text-success">${{precio}}</h1>
+              <p class="font-weight-bold">Monto a pagar</p>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carrusel de Videos Promocionales -->
+  <div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+      <div class="card card-secondary shadow">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-tv"></i> Servicios Destacados</h3>
+        </div>
+        <div class="card-body p-0">
+          <div id="servicesCarousel" class="carousel slide" data-ride="carousel" data-interval="8000">
+            <ol class="carousel-indicators">
+              {{#each banners}}
+              <li data-target="#servicesCarousel" data-slide-to="{{@index}}" {{#if active}}class="active"{{/if}}></li>
+              {{/each}}
+            </ol>
+            <div class="carousel-inner">
+              {{#each banners}}
+              <div class="carousel-item {{#if active}}active{{/if}}">
+                <div class="video-container">
+                  {{{contenido}}}
+                </div>
+              </div>
+              {{/each}}
+            </div>
+            <a class="carousel-control-prev" href="#servicesCarousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Anterior</span>
+            </a>
+            <a class="carousel-control-next" href="#servicesCarousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Siguiente</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Estilos -->
+<style>
+  .callout {
+    border-left-width: 5px;
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 8px;
+  }
+
+  .callout-danger {
+    border-left-color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  .callout-success {
+    border-left-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+  }
+
+  .callout-info {
+    border-left-color: #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+  }
+
+  .card .card-body {
+    padding: 20px;
+  }
+
+  .card h1 {
+    font-size: 3rem;
+  }
+</style>
+
+<script src="/plugins/chart.js/Chart.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('overviewChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pagados', 'Pendientes'],
+        datasets: [{
+          data: [{{estadosGrafico.pagados}}, {{estadosGrafico.pendientes}}],
+          backgroundColor: ['#28a745', '#dc3545']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          }
+        }
+      }
+    });
+  });
+</script>
