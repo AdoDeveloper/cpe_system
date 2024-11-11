@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 const prisma = new PrismaClient();
 
 const loginController = {};
@@ -12,9 +13,26 @@ loginController.renderLoginForm = (req, res) => {
 
 // Procesa el formulario de login
 loginController.processLogin = async (req, res) => {
-  const { email, password, remember } = req.body;
+  const { email, password, remember, 'h-captcha-response': hCaptchaToken } = req.body;
 
   try {
+    // Verificar el token de hCaptcha con su API
+    const hCaptchaResponse = await axios.post(
+      'https://hcaptcha.com/siteverify',
+      null,
+      {
+        params: {
+          secret: process.env.HCAPTCHA_SECRET_KEY, // Clave secreta de hCaptcha
+          response: hCaptchaToken,
+        },
+      }
+    );
+
+    if (!hCaptchaResponse.data.success) {
+      req.flash('error_msg', 'La verificación de hCaptcha falló. Inténtalo nuevamente.');
+      return res.redirect('/login');
+    }
+
     // Buscar al usuario por email e incluir el rol con el campo esAdmin
     const usuario = await prisma.usuario.findUnique({
       where: { email: email },
@@ -56,8 +74,8 @@ loginController.processLogin = async (req, res) => {
       res.clearCookie('user_email');
     }
 
-     // Agregar mensaje flash de éxito
-     req.flash('success_msg', 'Inicio de sesión exitoso');
+    // Agregar mensaje flash de éxito
+    req.flash('success_msg', 'Inicio de sesión exitoso');
 
     // Redirigir según si es administrador o no
     if (usuario.rol.esAdmin) {
