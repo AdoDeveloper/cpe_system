@@ -2,39 +2,27 @@
   <div class="input-group mb-2">
     <label for="email" class="sr-only">Correo Electrónico</label>
     <input type="email" name="email" id="email" class="form-control" placeholder="Correo Electrónico" required>
-    <div class="input-group-append">
-      <div class="input-group-text">
-        <span class="fas fa-envelope"></span>
-      </div>
-    </div>
   </div>
 
   <div class="input-group mb-3">
     <label for="password" class="sr-only">Contraseña</label>
     <input type="password" name="password" id="password" class="form-control" placeholder="Contraseña" required>
-    <div class="input-group-append">
-      <div class="input-group-text">
-        <span class="fas fa-lock"></span>
-      </div>
-    </div>
   </div>
 
   <!-- Agregar el widget de hCaptcha -->
   <div class="h-captcha mb-3" data-sitekey="adec0bb6-52a8-4f74-87c2-0706730a6c20"></div>
 
   <div class="row">
-    <div class="col-6 mt-1">
+    <div class="col-6">
       <div class="icheck-primary">
         <input type="checkbox" id="remember" name="remember">
         <label for="remember">Recuérdame</label>
       </div>
     </div>
-
     <div class="col-6">
       <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
     </div>
   </div>
 </form>
 
-<!-- Cargar el script de hCaptcha -->
 <script src="https://hcaptcha.com/1/api.js" async defer></script>
