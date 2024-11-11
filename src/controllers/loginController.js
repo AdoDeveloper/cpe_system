@@ -23,7 +23,7 @@ loginController.processLogin = async (req, res) => {
       return res.redirect('/login');
     }
 
-    console.log('Token de hCaptcha recibido:', hCaptchaToken);
+    //console.log('Token de hCaptcha recibido:', hCaptchaToken);
 
     // Verificar el token de hCaptcha con su API
     const hCaptchaResponse = await axios.post(
@@ -37,7 +37,7 @@ loginController.processLogin = async (req, res) => {
       }
     );
 
-    console.log('Respuesta de hCaptcha:', hCaptchaResponse.data);
+    //console.log('Respuesta de hCaptcha:', hCaptchaResponse.data);
 
     // Validar la respuesta de hCaptcha
     if (!hCaptchaResponse.data.success) {
