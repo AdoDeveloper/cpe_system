@@ -28,17 +28,18 @@ loginController.processLogin = async (req, res) => {
     // Verificar el token de hCaptcha con su API
     const hCaptchaResponse = await axios.post(
       'https://hcaptcha.com/siteverify',
-      null,
+      new URLSearchParams({
+        secret: process.env.HCAPTCHA_SECRET_KEY, // Clave secreta de hCaptcha
+        response: hCaptchaToken,
+      }).toString(),
       {
-        params: {
-          secret: process.env.HCAPTCHA_SECRET_KEY, // Clave secreta de hCaptcha
-          response: hCaptchaToken,
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       }
     );
 
     console.log('Respuesta de hCaptcha:', hCaptchaResponse.data);
 
+    // Validar la respuesta de hCaptcha
     if (!hCaptchaResponse.data.success) {
       console.error('Error: Validación de hCaptcha fallida:', hCaptchaResponse.data['error-codes']);
       req.flash('error_msg', 'La verificación de hCaptcha falló. Inténtalo nuevamente.');
@@ -110,8 +111,8 @@ loginController.logout = (req, res) => {
       req.flash('error_msg', 'Error al cerrar sesión.');
       return res.redirect('/login');
     }
-    res.clearCookie('connect.sid');
-    res.clearCookie('user_email');
+    res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
+    res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
     res.status(200).redirect('/login');
   });
 };
