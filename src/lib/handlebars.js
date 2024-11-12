@@ -105,6 +105,29 @@ Handlebars.registerHelper('toUpperCase', function(str) {
     return str.charAt(0).toUpperCase();
 });
 
+// Helper para formatear una fecha en formato dd/mm/aaaa hh:mm:ss a.m./p.m.
+Handlebars.registerHelper('formatDateBitacora', function (date) {
+    if (!date) return '';
+
+    // Opciones para formatear la fecha en la zona horaria América Central/El Salvador
+    const options = {
+        timeZone: 'America/El_Salvador',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true, // Mostrar formato a.m./p.m.
+    };
+
+    // Convertir y formatear la fecha
+    const formattedDate = new Date(date).toLocaleString('es-SV', options);
+
+    // Eliminar la coma para obtener el formato deseado
+    return formattedDate.replace(',', '');
+});
+
 // Helper para formatear una fecha en formato dd/mm/aaaa hh:mm:ss en horario América Central/El Salvador
 Handlebars.registerHelper('formatDate', function (date) {
     if (!date) return '';

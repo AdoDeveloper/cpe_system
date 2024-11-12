@@ -22,7 +22,7 @@ exports.listBitacoras = async (req, res) => {
             route: log.route,
             action: log.action,
             statusCode: log.statusCode, // Agregar el código de estado HTTP
-            timestamp: new Date(log.timestamp).toLocaleString() // Formatear la fecha
+            timestamp: log.timestamp
         }));
 
         res.render('pages/bitacoras/listado', { logs: logsFormatted, title: 'Bitácoras' });
