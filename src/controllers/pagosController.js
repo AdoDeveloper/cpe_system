@@ -1,4 +1,4 @@
-// controllers/pagosController.js
+// src/controllers/pagosController.js
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ exports.listPagos = async (req, res) => {
                 fecha_pago: 'desc',
             },
         });
-        res.render('pages/pagos/listado', { pagos });
+        res.render('pages/pagos/listado', { pagos, title: 'Pagos' });
     } catch (error) {
         console.error('Error al listar los pagos de clientes:', error);
         req.flash('error_msg', 'Error al listar los pagos de clientes.');
@@ -40,7 +40,7 @@ exports.viewPagoDetail = async (req, res) => {
             req.flash('error_msg', 'Pago no encontrado.');
             return res.redirect('/pagosClientes');
         }
-        res.render('pages/pagos/detalle', { pago });
+        res.render('pages/pagos/detalle', { pago, title: 'Pagos' });
     } catch (error) {
         console.error('Error al obtener el detalle del pago de cliente:', error);
         req.flash('error_msg', 'Error al obtener el detalle del pago.');

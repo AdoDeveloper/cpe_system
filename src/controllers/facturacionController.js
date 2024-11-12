@@ -1,3 +1,5 @@
+// src/controllers/facturacionController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -12,7 +14,7 @@ exports.listFacturas = async (req, res) => {
             orderBy: { fecha: 'desc' },
         });
 
-        res.render('pages/facturacion/listado', { facturas });
+        res.render('pages/facturacion/listado', { facturas, title: 'Facturas' });
     } catch (error) {
         console.error('Error al listar las facturas:', error);
         req.flash('error_msg', 'Error al listar las facturas.');
@@ -41,6 +43,7 @@ exports.viewFacturaDetails = async (req, res) => {
         res.render('pages/facturacion/detalle', { factura, layout: false }); // Renderiza la vista parcial sin el layout principal
     } catch (error) {
         console.error('Error al obtener los detalles de la factura:', error);
+        req.flash('error_msg', 'Error al obtener los detalles de la factura.');
         res.status(500).send('Error al obtener los detalles de la factura.');
     } finally {
         await prisma.$disconnect();
@@ -100,7 +103,7 @@ exports.generatePaymentAndInvoice = async (req, res) => {
         });
 
         req.flash('success_msg', 'Pago y facturación generados exitosamente.');
-        res.redirect('/facturacion');
+        res.status(201).redirect('/facturacion');
     } catch (error) {
         console.error('Error al generar el pago y la facturación:', error);
         req.flash('error_msg', 'Error al generar el pago y la facturación.');

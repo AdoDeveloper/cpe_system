@@ -1,3 +1,5 @@
+// src/controllers/homeController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -165,7 +167,7 @@ homeController.renderHome = async (req, res) => {
       });
 
       res.render('pages/home/home', {
-        title: 'Home Airlink',
+        title: 'Home',
         contratosInfo,
         totalMensual,
         estadosGrafico,

@@ -1,29 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
+  {{!-- Metadatos básicos --}}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
+
+  {{!-- Título dinámico --}}
+  <title>{{title}} | Airlink System</title>
+
+  {{!-- Estilos principales --}}
   <link rel="stylesheet" href="/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  {{!-- Fuente de Apple: San Francisco Pro Display --}}
+  <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+  {{!-- Estilos personalizados --}}
+  <style>
+    .content-wrapper {
+      padding-top: 20px;
+    }
+    body{
+      font-family: 'SF Pro Display', sans-serif;
+    }
+  </style>
 </head>
-<body class="hold-transition layout-top-nav"> <!-- Cambiar a layout-top-nav para usuarios sin sidebar -->
+<body class="hold-transition layout-top-nav">
 
-  {{> messages}} <!-- Partial de mensajes para alertas/notificaciones -->
+  {{!-- Mensajes globales para notificaciones o errores --}}
+  {{> messages}}
 
   <div class="wrapper">
-    <!-- Navbar del cliente (usuario normal) -->
-    {{> navbar-user}} <!-- Partial para el navbar del cliente -->
+    {{!-- Navbar personalizado para usuarios (clientes) --}}
+    {{> navbar-user}}
 
-    <!-- Contenido principal -->
+    {{!-- Contenedor principal del contenido --}}
     <div class="content-wrapper">
-      {{{body}}} <!-- Aquí se renderiza el contenido dinámico de la página -->
+      {{{body}}} {{!-- Aquí se inyecta el contenido de cada vista --}}
     </div>
 
-    {{> footer}} <!-- Partial de Footer -->
+    {{!-- Footer global --}}
+    {{> footer}}
   </div>
 
-  <!-- Scripts -->
+  {{!-- Scripts necesarios --}}
   <script src="/plugins/jquery/jquery.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/dist/js/adminlte.min.js"></script>

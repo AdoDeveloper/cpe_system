@@ -1,45 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
+  {{!-- Metadatos básicos --}}
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
-  <!-- AdminLTE -->
+  
+  {{!-- Título dinámico --}}
+  <title>{{title}} | Airlink System</title>
+  
+  {{!-- Estilos principales --}}
   <link rel="stylesheet" href="/dist/css/adminlte.min.css">
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-  <!-- Bootstrap -->
   <link rel="stylesheet" href="/plugins/bootstrap/css/bootstrap.min.css">
+  {{!-- Fuente de Apple: San Francisco Pro Display --}}
+  <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+  <style>
+    body{
+      font-family: 'SF Pro Display', sans-serif;
+    }
+  </style>
 </head>
 <body class="hold-transition login-page">
-<div class="login-box">
-  <!-- /.login-logo -->
-  <div class="card card-outline card-primary">
-    <div class="card-header text-center">
-      <div class="login-logo" style="margin-bottom: 0;"> <!-- Remover el margen inferior -->
-        <a href="#"><b class="text-bold">Airlink</b> WISP</a>
+  <div class="login-box">
+    {{!-- Encabezado de la tarjeta --}}
+    <div class="card card-outline card-primary">
+      <div class="card-header text-center">
+        <div class="login-logo" style="margin-bottom: 0;">
+          <a href="#"><b class="text-bold">Airlink</b> WISP</a>
+        </div>
+      </div>
+      
+      {{!-- Cuerpo de la tarjeta --}}
+      <div class="card-body login-card-body">
+        {{> messages}} {{!-- Inclusión de mensajes de error o éxito --}}
+        
+        <img src="https://res.cloudinary.com/dldgicsdi/image/upload/v1729269371/img/login.webp" 
+             class="img-fluid mx-auto d-block elevation-1 login-image mb-3" 
+             alt="Login Image">
+        
+        <p class="login-box-msg">Ingresa tus credenciales</p>
+        
+        {{{body}}} {{!-- El contenido del formulario se inyecta aquí --}}
       </div>
     </div>
-    <!-- /.login-logo -->
-    <div class="card-body login-card-body">
-      {{> messages}} <!-- Aquí se incluirán los mensajes de error o éxito -->
-      
-      <img src="https://res.cloudinary.com/dldgicsdi/image/upload/v1729269371/img/login.webp" class="img-fluid mx-auto d-block elevation-1 login-image mb-3" alt="Login Image">
-      
-      <p class="login-box-msg">Ingresa tus credenciales</p>
-      
-      {{{body}}} <!-- El contenido del formulario de login se inyectará aquí -->
-      
-    </div>
-    <!-- /.login-card-body -->
   </div>
-</div>
 
-<!-- jQuery -->
-<script src="/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="/dist/js/adminlte.min.js"></script>
+  {{!-- Scripts necesarios --}}
+  <script src="/plugins/jquery/jquery.min.js"></script>
+  <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/dist/js/adminlte.min.js"></script>
 </body>
 </html>

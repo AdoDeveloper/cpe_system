@@ -1,4 +1,6 @@
-<!-- Incluir Mapbox CSS -->
+{{!-- Hojas de estilo --}}
+<link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
+{{!-- Incluir Mapbox CSS --}}
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 
 <div class="container p-4">
@@ -41,7 +43,7 @@
           <div class="form-group">
             <label for="tipoTicketId">Tipo de Ticket</label>
             <select class="form-control" name="tipoTicketId" id="tipoTicketId" required>
-              <option value="">Selecciona un tipo de ticket</option>
+              <option value="" disabled selected>Selecciona un tipo de ticket</option>
               {{#each tipos}}
                 <option value="{{this.id}}" data-nombre="{{this.nombre}}" {{#ifCond this.id
                   ../ticket.tipoTicket.id}}selected{{/ifCond}}>{{this.nombre}}</option>
@@ -51,8 +53,8 @@
 
           <div class="form-group">
             <label for="clienteId">Cliente a Asignar</label>
-            <select class="form-control" name="clienteId" id="clienteId" required>
-              <option value="">Selecciona un cliente</option>
+            <select class="form-control select2-blue" id="select-cliente" name="clienteId" required>
+              <option value="" disabled selected>Seleccione un cliente</option>
               {{#each clientes}}
                 <option value="{{this.cliente.id}}" {{#ifCond this.cliente.id ../ticket.cliente.id}}selected{{/ifCond}}>
                   {{this.cliente.nombres}} {{this.cliente.apellidos}}</option>
@@ -62,8 +64,8 @@
 
           <div class="form-group" id="resolverGroup" style="display: block;">
             <label for="resolverId">Usuario a Asignar Resolución</label>
-            <select class="form-control" name="resolverId" id="resolverId">
-              <option value="">No asignado</option>
+            <select class="form-control select2-blue" name="resolverId" id="select-resolver">
+              <option value="" disabled selected>Selecciona un resolutor</option>
               <!-- Opciones se llenarán dinámicamente con JavaScript -->
             </select>
           </div>
@@ -147,15 +149,27 @@
     </div>
   </div>
 </div>
+{{!-- Incluir jQuery --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{!-- Scripts --}}
+<script src="/plugins/select2/js/select2.full.min.js"></script>
+<script>
+    $('#select-cliente').select2({
+      width: '100%'
+    });
 
-<!-- Incluir Mapbox JS y otros scripts -->
+    $('#select-resolver').select2({
+      width: '100%'
+    });
+</script>
+{{!-- Incluir Mapbox JS y otros scripts --}}
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
   const tipoTicketSelect = document.getElementById('tipoTicketId');
   const resolverGroup = document.getElementById('resolverGroup');
-  const resolverSelect = document.getElementById('resolverId');
+  const resolverSelect = document.getElementById('select-resolver');
   const locationFields = document.getElementById('locationFields');
   const direccionInput = document.getElementById('direccion');
   const coordenadasInput = document.getElementById('coordenadas');

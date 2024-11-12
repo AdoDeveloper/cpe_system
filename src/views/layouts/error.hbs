@@ -1,42 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  {{!-- Meta básicas --}}
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
-  <!-- AdminLTE -->
-  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
 
+  {{!-- Título dinámico --}}
+  <title>{{title}} | Airlink System</title>
+
+  {{!-- Estilos principales de AdminLTE --}}
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  {{!-- Estilos de Iconos Font Awesome --}}
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  {{!-- Fuente de Apple: San Francisco Pro Display --}}
+  <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+
+  {{!-- Estilos personalizados --}}
   <style>
-    /* Estilos para centrar todo el contenido */
+    body{
+      font-family: 'SF Pro Display', sans-serif;
+    }
     .error-wrapper {
-      height: 100vh; /* 100% de la altura de la ventana */
+      height: 100vh; /* Ocupa toda la altura del viewport */
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
     }
 
-    .error-page h2 {
-      font-size: 5rem;
+    .error-wrapper h1 {
+      font-size: 6rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .error-wrapper p {
+      font-size: 1.25rem;
+      color: #6c757d;
+      margin-bottom: 2rem;
+    }
+
+    .error-wrapper .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body class="hold-transition layout-top-nav">
   <div class="wrapper">
-    <!-- Centrado del contenido -->
+    {{!-- Contenedor principal para el contenido de la página --}}
     <div class="content-wrapper">
       <div class="content">
-        <div class="container error-wrapper"> <!-- Aplicamos el contenedor centrado -->
-          {{{body}}} <!-- Este es el contenido que será cargado en la vista (por ejemplo, el error 404) -->
+        <div class="container error-wrapper">
+          {{{body}}}  {{!-- Aquí se inyecta el contenido de cada vista --}}
         </div>
       </div>
     </div>
   </div>
 
-  <!-- AdminLTE Scripts -->
+  {{!-- Scripts de AdminLTE --}}
   <script src="/plugins/jquery/jquery.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/dist/js/adminlte.min.js"></script>

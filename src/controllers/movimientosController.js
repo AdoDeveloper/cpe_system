@@ -1,3 +1,5 @@
+// src/controllers/movimientosController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -8,7 +10,7 @@ exports.listMovimientos = async (req, res) => {
             include: { cliente: true },
             orderBy: { fecha: 'desc' },
         });
-        res.render('pages/movimientos/listado', { movimientos });
+        res.render('pages/movimientos/listado', { movimientos, title: 'Movimientos' });
     } catch (error) {
         console.error('Error al listar los movimientos:', error);
         req.flash('error_msg', 'Error al listar los movimientos.');
@@ -35,7 +37,8 @@ exports.renderCreateForm = async (req, res) => {
             movimiento: {},
             currentYear,
             currentMonth,
-            errors: []
+            errors: [],
+            title: 'Movimientos'
         });
     } catch (error) {
         console.error('Error al cargar datos para crear el movimiento:', error);
@@ -81,7 +84,7 @@ exports.renderEditForm = async (req, res) => {
             return res.redirect('/movimientos');
         }
         const cuentasContables = await prisma.cuentaContable.findMany();
-        res.render('pages/movimientos/modificar', { cuentasContables, movimiento, errors: [] });
+        res.render('pages/movimientos/modificar', { cuentasContables, movimiento, errors: [], title: 'Movimientos' });
     } catch (error) {
         console.error('Error al obtener el movimiento para editar:', error);
         req.flash('error_msg', 'Error al obtener el movimiento.');

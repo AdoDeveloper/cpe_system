@@ -1,3 +1,5 @@
+// src/controllers/perfilController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -35,6 +37,7 @@ perfilController.renderProfile = async (req, res) => {
       title: 'Perfil de Usuario',
       user: usuario,
       isAdmin: isAdmin, // Enviar el valor isAdmin para saber qué mostrar en la vista
+      title: 'Perfil'
     });
   };
 

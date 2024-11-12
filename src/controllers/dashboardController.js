@@ -1,4 +1,4 @@
-// controllers/dashboardController.js
+// src/controllers/dashboardController.js
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -126,6 +126,7 @@ exports.renderDashboard = async (req, res) => {
         metricsData,
         configuraciones,
         mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+        title: 'Admin Dashboard'
       });
     } else {
       // Para otros roles (Técnico, Instalador, Soporte Técnico, Cliente)
@@ -154,15 +155,18 @@ exports.renderDashboard = async (req, res) => {
         };
       });
 
-      // Renderizar la vista del dashboard para otros roles
+      // Renderizar la vista del Dashboard
       res.render('pages/dashboard/dashboard', {
-        user: { id: userId, rol: userRole },
-        ticketsConTiempo,
+        user: { id: userId, rol: userRole }, // Información del usuario
+        ticketsConTiempo, // Datos adicionales para la vista
+        title: `${userRole}` // Incluir el rol en el título
       });
     }
   } catch (error) {
     console.error('Error al renderizar el dashboard:', error);
     req.flash('error_msg', 'Ocurrió un error al cargar el dashboard.');
     res.redirect('/login');
+  } finally {
+    await prisma.$disconnect();
   }
 };

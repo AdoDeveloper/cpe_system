@@ -1,4 +1,4 @@
-// controllers/ticketsController.js
+// src/controllers/ticketsController.js
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -125,13 +125,16 @@ exports.listTickets = async (req, res) => {
     res.render('pages/tickets/listado', {
       user: { rol: userRole },
       tickets,
-      ultimoTicketEstado // Pasar el estado del último ticket
+      ultimoTicketEstado, // Pasar el estado del último ticket
+      title: 'Soporte'
     });
   } catch (error) {
     console.error('Error al listar los tickets:', error);
     req.flash('error_msg', 'Error al cargar los tickets.');
-    res.redirect('/');
-  }
+    return res.status(500).redirect('/');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // Renderizar el formulario de creación de ticket
@@ -169,13 +172,16 @@ exports.renderCreateForm = async (req, res) => {
       tipos,
       clientes,
       resolutores,
-      mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN
+      mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+      title: 'Soporte'
     });
   } catch (error) {
     console.error('Error al renderizar el formulario de creación de ticket:', error);
     req.flash('error_msg', 'Error al cargar el formulario.');
-    res.redirect('/tickets');
-  }
+    return res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // Función para generar un número único para el ticket que incluya letras y números
@@ -340,12 +346,14 @@ exports.createTicket = async (req, res) => {
     }
 
     req.flash('success_msg', 'Ticket creado correctamente');
-    res.redirect('/tickets');
+    res.status(201).redirect('/tickets');
   } catch (error) {
     console.error('Error al crear el ticket:', error);
     req.flash('error_msg', 'Error al crear el ticket.');
-    res.redirect('/tickets');
-  }
+    return res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // Renderizar el formulario de edición de ticket
@@ -401,12 +409,15 @@ exports.renderEditForm = async (req, res) => {
       tipos,
       user: { rol: req.session.userRole },  // Pasar toda la información del usuario a la vista
       mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+      title: 'Soporte'
     });
   } catch (error) {
     console.error('Error al renderizar el formulario de modificación de ticket:', error);
     req.flash('error_msg', 'Error al cargar el formulario de modificación.');
-    res.redirect('/tickets');
-  }
+    return res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // Función para actualizar un ticket
@@ -416,7 +427,7 @@ exports.updateTicket = async (req, res) => {
     const { titulo, descripcion, estado, resolverId, clienteId, tipoTicketId, direccion, coordenadas } = req.body;
 
     // Registrar los datos recibidos del formulario
-    console.log("Datos recibidos del formulario:", { titulo, descripcion, estado, resolverId, clienteId, tipoTicketId, direccion, coordenadas });
+    //console.log("Datos recibidos del formulario:", { titulo, descripcion, estado, resolverId, clienteId, tipoTicketId, direccion, coordenadas });
 
     // Verificar si el ticket existe antes de actualizar
     const ticket = await prisma.ticket.findUnique({
@@ -520,12 +531,14 @@ exports.updateTicket = async (req, res) => {
     }
 
     req.flash('success_msg', 'Ticket actualizado correctamente');
-    res.redirect('/tickets');
+    res.status(201).redirect('/tickets');
   } catch (error) {
     console.error('Error al actualizar el ticket:', error);
     req.flash('error_msg', 'Error al actualizar el ticket.');
-    res.redirect('/tickets');
-  }
+    return res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // Función para eliminar un ticket
@@ -559,12 +572,14 @@ exports.deleteTicket = async (req, res) => {
     });
 
     req.flash('success_msg', 'Ticket eliminado correctamente.');
-    res.redirect('/tickets');
+    res.status(200).redirect('/tickets');
   } catch (error) {
     console.error('Error al eliminar el ticket:', error);
     req.flash('error_msg', 'Error al eliminar el ticket.');
-    res.redirect('/tickets');
-  }
+    return res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 // ======= TIMELINE ======= //
@@ -618,12 +633,15 @@ exports.showTimeline = async (req, res) => {
       mensajes,
       user: { id: userId, rol: userRole },
       mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+      title: 'Soporte'
     });
   } catch (error) {
     console.error('Error al mostrar el timeline del ticket:', error);
     req.flash('error_msg', 'Error al cargar el timeline del ticket.');
-    res.redirect('/tickets');
-  }
+    res.status(500).redirect('/tickets');
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 let ioInstance; // Variable para almacenar la instancia de io
@@ -720,10 +738,10 @@ exports.updateTicketStatus = async (req, res) => {
     }
 
     req.flash('success_msg', 'Estado del ticket actualizado correctamente.');
-    res.redirect(`/tickets/timeline/${ticketId}`);
+    res.status(201).redirect(`/tickets/timeline/${ticketId}`);
   } catch (error) {
     console.error('Error al actualizar el estado del ticket:', error);
     req.flash('error_msg', 'Error al actualizar el estado del ticket.');
-    res.redirect(`/tickets/timeline/${ticketId}`);
+    res.status(500).redirect(`/tickets/timeline/${ticketId}`);
   }
 };

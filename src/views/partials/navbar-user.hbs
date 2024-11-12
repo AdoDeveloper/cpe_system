@@ -1,45 +1,49 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light w-100">
-  <!-- Left navbar links -->
-  <ul class="navbar-nav">
-    <!-- Enlace de Inicio con ícono de casita -->
-    <li class="nav-item">
-      <a href="/" class="nav-link">
-        <i class="fas fa-home"></i> <!-- Ícono de la casita -->
-        <span>Inicio</span> <!-- Texto "Inicio" -->
-      </a>
-    </li>
-  </ul>
+{{!-- partials/navbar-user.hbs --}}
+<nav class="main-header navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container-fluid">
+    {{!-- Enlace de Inicio --}}
+    <a href="/" class="nav-link text-gray">
+      <i class="fas fa-home"></i> <!-- Ícono de la casita -->
+      <span>Inicio</span> <!-- Texto "Inicio" -->
+    </a>
 
-  <!-- Right navbar links -->
-  <ul class="navbar-nav ml-auto">
-    <!-- Enlace a Soporte -->
-    <li class="nav-item">
-      <a href="/tickets" class="nav-link">
-        <i class="fas fa-life-ring"></i> <!-- Ícono de Soporte -->
-        <span>Soporte</span> <!-- Texto "Soporte" -->
-      </a>
-    </li>
+    {{!-- Botón de Menú para Pantallas Pequeñas --}}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarUserMenu" aria-controls="navbarUserMenu" aria-expanded="false" aria-label="Alternar Navegación">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <!-- Perfil de usuario -->
-    <li class="nav-item dropdown">
-      <a class="nav-link" data-toggle="dropdown" href="#">
-        <i class="far fa-user"></i>
-        <span>{{ userName }}</span> <!-- Mostrar el nombre del usuario -->
-      </a>
-      <div class="dropdown-menu dropdown-menu-right">
-        <!-- Enlace al perfil de usuario -->
-        <a href="/perfil" class="dropdown-item">
-          <i class="fas fa-user-cog"></i> Perfil
-        </a>
-        <div class="dropdown-divider"></div>
-
-        <!-- Formulario para el cierre de sesión -->
-        <form id="logout-form" action="/logout" method="GET" style="display: none;"></form>
-
-        <a href="#" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">
-          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-        </a>
-      </div>
-    </li>
-  </ul>
+    {{!-- Menú Desplegable --}}
+    <div class="collapse navbar-collapse" id="navbarUserMenu">
+      {{!-- Alineación de los enlaces a la derecha --}}
+      <ul class="navbar-nav ml-auto">
+        {{!-- Perfil del Usuario --}}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="far fa-user mr-2"></i>
+            <span>{{userName}}</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+            {{!-- Opción de Soporte --}}
+            <a href="/tickets" class="dropdown-item d-flex align-items-center text-gray">
+              <i class="fas fa-life-ring mr-2"></i>
+              <span>Soporte</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            {{!-- Opción de Perfil --}}
+            <a href="/perfil" class="dropdown-item d-flex align-items-center text-gray">
+              <i class="fas fa-user-cog mr-2"></i>
+              <span>Perfil</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            {{!-- Opción de Cerrar Sesión --}}
+            <form id="logout-form" action="/logout" method="GET" style="display: none;"></form>
+            <a href="#" class="dropdown-item d-flex align-items-center text-gray" onclick="document.getElementById('logout-form').submit();">
+              <i class="fas fa-sign-out-alt mr-2"></i>
+              <span>Cerrar Sesión</span>
+            </a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
 </nav>

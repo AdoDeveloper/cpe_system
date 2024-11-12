@@ -1,4 +1,4 @@
-// configuracionesController.js
+// src/controllers/configuracionesController.js
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ exports.listConfiguraciones = async (req, res) => {
             orderBy: { id: 'asc' },
         });
 
-        res.render('pages/configuraciones/listado', { configuraciones });
+        res.render('pages/configuraciones/listado', { configuraciones, title: 'Configuraciones' });
     } catch (error) {
         console.error('Error al listar las configuraciones:', error);
         req.flash('error_msg', 'Error al listar las configuraciones.');
@@ -28,30 +28,31 @@ exports.listConfiguraciones = async (req, res) => {
 // Renderiza el formulario para crear una nueva configuración
 exports.renderCreateForm = async (req, res) => {
     try {
-      const clientes = await prisma.cliente.findMany();
-      const equipos = await prisma.equipoCPE.findMany();
-  
-      // Filtrar antenas y routers
-      const antenas = equipos.filter(equipo => equipo.tipo === 'ANTENA');
-      const routers = equipos.filter(equipo => equipo.tipo === 'ROUTER');
-  
-      res.render('pages/configuraciones/agregar', {
-        action: 'new',
-        clientes,
-        antenas,
-        routers,
-        mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
-        errors: []
-      });
+        const clientes = await prisma.cliente.findMany();
+        const equipos = await prisma.equipoCPE.findMany();
+
+        // Filtrar antenas y routers
+        const antenas = equipos.filter(equipo => equipo.tipo === 'ANTENA');
+        const routers = equipos.filter(equipo => equipo.tipo === 'ROUTER');
+
+        res.render('pages/configuraciones/agregar', {
+            action: 'new',
+            clientes,
+            antenas,
+            routers,
+            mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
+            errors: [], 
+            title: 'Configuraciones'
+        });
     } catch (error) {
-      console.error('Error al cargar el formulario de configuración:', error);
-      req.flash('error_msg', 'Error al cargar el formulario de configuración.');
-      return res.status(500).redirect('/configuraciones');
+        console.error('Error al cargar el formulario de configuración:', error);
+        req.flash('error_msg', 'Error al cargar el formulario de configuración.');
+        return res.status(500).redirect('/configuraciones');
     } finally {
-      await prisma.$disconnect();
+        await prisma.$disconnect();
     }
-  };
-  
+};
+
 
 // Controlador para crear una nueva configuración
 exports.createConfiguracion = async (req, res) => {
@@ -145,7 +146,8 @@ exports.renderEditForm = async (req, res) => {
             antenas,        // Lista de antenas filtradas
             routers,        // Lista de routers filtrados
             mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
-            errors: []      // Lista de errores vacía
+            errors: [],      // Lista de errores vacía
+            title: 'Configuraciones'
         });
     } catch (error) {
         console.error('Error al cargar la configuración para editar:', error);
@@ -204,7 +206,7 @@ exports.updateConfiguracion = async (req, res) => {
         });
 
         req.flash('success_msg', 'Configuración actualizada exitosamente.');
-        res.status(200).redirect('/configuraciones');
+        res.status(201).redirect('/configuraciones');
     } catch (error) {
         console.error('Error al actualizar la configuración:', error);
         req.flash('error_msg', 'Error al actualizar la configuración.');

@@ -1,48 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    {{!-- Meta básicas --}}
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema CPE Airlink</title>
+
+    {{!-- Título dinámico --}}
+    <title>{{title}} | Airlink System</title>
+
+    {{!-- Estilos principales de AdminLTE --}}
     <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    {{!-- Estilos de Iconos Font Awesome --}}
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    {{!-- Fuente de Apple: San Francisco Pro Display --}}
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+    {{!-- Estilos de DataTables --}}
     <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+    {{!-- Estilos personalizados CSS --}}
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     {{> messages}}
     <div class="wrapper">
-        {{> navbar}} <!-- Partial de Navbar -->
-        {{> sidebar}} <!-- Partial de Sidebar -->
-        
+        {{> navbar}} {{!-- Partials del Navbar --}}
+        {{> sidebar}} {{!-- Partials del Sidebar --}}
+
         <div class="content-wrapper">
-            {{{body}}} <!-- Aquí se inyecta el contenido de cada vista -->
+            {{{body}}} {{!-- Aquí se inyecta el contenido de cada vista --}}
         </div>
 
-        {{> footer}} <!-- Partial de Footer -->
+        {{> footer}} {{!-- Partials del Footer --}}
     </div>
 
-    <!-- Scripts de AdminLTE y jQuery -->
+    {{!-- Scripts de AdminLTE --}}
     <script src="/plugins/jquery/jquery.min.js"></script>
     <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
+    {{!-- Scripts de Alertas (SweetAlert2) --}}
     <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    {{!-- Scripts de DataTables --}}
     <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
     <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script src="/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
     <script src="/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <script src="/plugins/jszip/jszip.min.js"></script>
-    <script src="/plugins/pdfmake/pdfmake.min.js"></script>
-    <script src="/plugins/pdfmake/vfs_fonts.js"></script>
     <script src="/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
     <script src="/plugins/datatables-buttons/js/buttons.print.min.js"></script>
     <script src="/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+    {{!-- Scripts personalizados de JS --}}
     <script src="/js/dataTables-config.js"></script>
     <script src="/js/index.js"></script>
 </body>

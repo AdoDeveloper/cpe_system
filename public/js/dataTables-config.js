@@ -1,8 +1,9 @@
-// Archivo general para inicializar DataTables
+// Archivo general para inicializar DataTables public/js/dataTables-config.js
 $(document).ready(function () {
     // Inicializar todas las tablas con la clase "datatable" usando la misma configuración
     $('.datatable').DataTable({
         "paging": true,
+        "pageLength": 10,
         "lengthChange": true,
         "searching": true,
         "ordering": false,
@@ -10,7 +11,9 @@ $(document).ready(function () {
         "autoWidth": false,
         "responsive": false,  // Desactiva responsive para habilitar scroll si es necesario
         "scrollX": false,     // Cambiar a true si deseas scroll horizontal en todas las tablas
+        "processing": true,
         "language": {
+            "processing": "Cargando datos, por favor espera...",
             "sProcessing": "Procesando...",
             "sLengthMenu": "Mostrar _MENU_ registros",
             "sZeroRecords": "No se encontraron resultados",

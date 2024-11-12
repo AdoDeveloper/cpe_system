@@ -1,3 +1,5 @@
+// src/controllers/contratosController.js
+
 const PDFDocument = require('pdfkit');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -24,7 +26,7 @@ exports.listContratos = async (req, res) => {
             contrato.servicios = contrato.servicios.filter(cs => cs.servicio.tipo_pago === 'Recurrente');
         });
 
-        res.render('pages/contratos/listado', { contratos });
+        res.render('pages/contratos/listado', { contratos, title: 'Contratos' });
     } catch (error) {
         console.error('Error al listar los contratos:', error);
         req.flash('error_msg', 'Error al listar los contratos.');
@@ -39,7 +41,7 @@ exports.renderCreateForm = async (req, res) => {
     try {
         const clientes = await prisma.cliente.findMany(); // Obtener todos los clientes
         const servicios = await prisma.servicio.findMany(); // Obtener todos los servicios
-        res.render('pages/contratos/agregar', { action: 'new', clientes, servicios, errors: [] });
+        res.render('pages/contratos/agregar', { action: 'new', clientes, servicios, errors: [], title: 'Contratos' });
     } catch (error) {
         console.error('Error al cargar el formulario de contrato:', error);
         req.flash('error_msg', 'Error al cargar el formulario de contrato.');
@@ -74,7 +76,7 @@ exports.createContrato = async (req, res) => {
         }
 
         // Crear el contrato
-        const nuevoContrato = await prisma.contrato.create({
+        await prisma.contrato.create({
             data: {
                 anexo,
                 fecha_contrato: new Date(fecha_contrato),
@@ -179,7 +181,7 @@ exports.renderEditForm = async (req, res) => {
         }
         const clientes = await prisma.cliente.findMany();
         const servicios = await prisma.servicio.findMany();
-        res.render('pages/contratos/modificar', { contrato, clientes, servicios, errors: [] });
+        res.render('pages/contratos/modificar', { contrato, clientes, servicios, errors: [], title: 'Contratos' });
     } catch (error) {
         console.error('Error al cargar el contrato para editar:', error);
         req.flash('error_msg', 'Error al cargar el contrato.');
@@ -215,7 +217,7 @@ exports.updateContrato = async (req, res) => {
         });
 
         req.flash('success_msg', 'Contrato actualizado exitosamente.');
-        res.status(200).redirect('/contratos');
+        res.status(201).redirect('/contratos');
     } catch (error) {
         console.error('Error al actualizar el contrato:', error);
         req.flash('error_msg', 'Error al actualizar el contrato.');
@@ -360,7 +362,7 @@ exports.generateContratoPDF = async (req, res) => {
     } catch (error) {
         console.error('Error al generar el contrato PDF:', error);
         req.flash('error_msg', 'Error al generar el contrato en PDF.');
-        return res.redirect('/contratos');
+        return res.status(500).redirect('/contratos');
     } finally {
         await prisma.$disconnect();
     }

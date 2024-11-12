@@ -30,7 +30,7 @@ exports.listModulos = async (req, res) => {
       },
     orderBy: { id: "asc" },
     });
-    res.render('pages/modulos/listado', { modulos });
+    res.render('pages/modulos/listado', { modulos, title: 'Modulos' });
   } catch (error) {
     console.error('Error al listar los módulos:', error);
     req.flash('error_msg', 'Error al listar los módulos.');
@@ -48,6 +48,7 @@ exports.renderCreateForm = (req, res) => {
       modulo: { rutas: [] },
       errors: [],
       icons: JSON.stringify(allowedIcons), // Pasar los íconos serializados a la vista
+      title: 'Modulos'
     });
   } catch (error) {
     console.error('Error al cargar los íconos:', error);
@@ -86,6 +87,7 @@ exports.createModulo = async (req, res) => {
         modulo: { rutas },
         errors: errorMessages,
         icons: JSON.stringify(allowedIcons),
+        title: 'Modulos'
       });
     }
 
@@ -124,7 +126,7 @@ exports.renderEditForm = async (req, res) => {
       req.flash('error_msg', 'Módulo no encontrado.');
       return res.redirect('/modulos');
     }
-    res.render('pages/modulos/modificar', { action: 'edit', modulo, errors: [], icons: allowedIcons });
+    res.render('pages/modulos/modificar', { action: 'edit', modulo, errors: [], icons: allowedIcons, title: 'Modulos' });
   } catch (error) {
     console.error('Error al obtener el módulo para editar:', error);
     req.flash('error_msg', 'Error al obtener el módulo.');

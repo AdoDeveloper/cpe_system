@@ -1,3 +1,5 @@
+{{!-- Hojas de estilo --}}
+<link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
 <div class="container p-4">
     <div class="row justify-content-center">
         <h1>Modificar Contrato</h1>
@@ -19,7 +21,7 @@
             <form method="POST" action="/contratos/edit/{{contrato.id}}?_method=PUT" id="alertFormEdit">
                 <div class="form-group">
                     <label for="clienteId">Cliente</label>
-                    <select class="form-control" name="clienteId" required>
+                    <select class="form-control select2" id="select-cliente" name="clienteId" required>
                         {{#each clientes}}
                             <option value="{{this.id}}" {{#eq this.id ../contrato.clienteId}}selected{{/eq}}>{{this.nombres}} {{this.apellidos}}</option>
                         {{/each}}
@@ -71,3 +73,10 @@
         </div>
     </div>
 </div>
+{{!-- Incluir jQuery --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{!-- Scripts --}}
+<script src="/plugins/select2/js/select2.full.min.js"></script>
+<script>
+    $('#select-cliente').select2();
+</script>

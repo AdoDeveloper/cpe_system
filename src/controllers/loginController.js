@@ -1,3 +1,5 @@
+// src/controllers/loginController.js
+
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
@@ -8,7 +10,7 @@ const loginController = {};
 // Renderiza el formulario de login
 loginController.renderLoginForm = (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); // Desactivar caché para esta página
-  res.render('pages/login', { layout: 'auth', title: 'Iniciar Sesión | Airlink' });
+  res.render('pages/login', { layout: 'auth', title: 'Iniciar Sesión' });
 };
 
 // Procesa el formulario de login

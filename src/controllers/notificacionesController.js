@@ -1,4 +1,5 @@
-// controllers/notificacionesController.js
+// src/controllers/notificacionesController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -46,7 +47,9 @@ exports.obtenerNotificaciones = async (userId) => {
   } catch (error) {
     console.error('Error al obtener notificaciones:', error);
     return [];
-  }
+  } finally {
+    await prisma.$disconnect();
+}
 };
 
 
@@ -62,8 +65,9 @@ exports.crearYEmitirNotificacion = async (usuarioId, tipo, mensaje, ticketId = n
           ticketId,
         },
       });
-  
     } catch (error) {
       console.error('Error al crear y emitir la notificación:', error);
-    }
+    } finally {
+      await prisma.$disconnect();
+  }
 };

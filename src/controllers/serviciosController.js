@@ -1,3 +1,5 @@
+// src/controllers/serviciosController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -6,8 +8,8 @@ exports.listServicios = async (req, res) => {
     try {
         const servicios = await prisma.servicio.findMany({
             orderBy: { id: 'asc' },
-        }); // Obtener servicios
-        res.render('pages/servicios/listado', { servicios });
+        });
+        res.render('pages/servicios/listado', { servicios, title: 'Servicios' });
     } catch (error) {
         console.error('Error al listar los servicios:', error);
         req.flash('error_msg', 'Error al listar los servicios.');
@@ -19,7 +21,7 @@ exports.listServicios = async (req, res) => {
 
 // Renderiza el formulario para crear un nuevo servicio
 exports.renderCreateForm = (req, res) => {
-    res.render('pages/servicios/agregar', { action: 'new', servicio: {}, errors: [] });
+    res.render('pages/servicios/agregar', { action: 'new', servicio: {}, errors: [], title: 'Servicios' });
 };
 
 // Controlador para crear un nuevo servicio
@@ -55,7 +57,7 @@ exports.renderEditForm = async (req, res) => {
         if (!servicio) {
             return res.redirect('/servicios');
         }
-        res.render('pages/servicios/modificar', { action: 'edit', servicio, errors: [] });
+        res.render('pages/servicios/modificar', { action: 'edit', servicio, errors: [], title: 'Servicios' });
     } catch (error) {
         console.error('Error al obtener el servicio para editar:', error);
         req.flash('error_msg', 'Error al obtener el servicio.');

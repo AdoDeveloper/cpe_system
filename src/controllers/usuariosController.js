@@ -1,3 +1,5 @@
+// src/controllers/usuariosController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs'); // Para encriptar las contraseñas
@@ -7,42 +9,41 @@ exports.listUsuarios = async (req, res) => {
     try {
         const usuarios = await prisma.usuario.findMany({
             include: {
-              rol: true, // Incluir el rol relacionado
-              cliente: true, // Incluir el cliente relacionado si aplica
+                rol: true, // Incluir el rol relacionado
+                cliente: true, // Incluir el cliente relacionado si aplica
             },
             orderBy: { id: 'asc' },
-          });
-          
-          // Remover la contraseña de cada usuario
-          const usuariosSinPassword = usuarios.map(usuario => {
+        });
+
+        // Remover la contraseña de cada usuario
+        const usuariosSinPassword = usuarios.map(usuario => {
             const { password, ...usuarioSinPassword } = usuario; // Extraer la contraseña y quedarnos con el resto
             return usuarioSinPassword; // Devolver el usuario sin la contraseña
-          });
-          
-          //console.log(usuariosSinPassword); // Mostrar los usuarios sin el campo password
-          
-          // Renderizar la vista con los usuarios sin contraseña
-          res.render('pages/usuarios/listado', { usuarios: usuariosSinPassword });
-          
+        });
+
+        // Renderizar la vista con los usuarios sin contraseña
+        res.render('pages/usuarios/listado', { usuarios: usuariosSinPassword, title: 'Usuarios' });
     } catch (error) {
         console.error('Error al listar los usuarios:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al listar los usuarios' });
+        req.flash('error_msg', 'Error al listar los usuarios.');
+        res.status(500).redirect('/usuarios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
 // Controlador para renderizar el formulario de agregar usuario
 exports.renderCreateForm = async (req, res) => {
     try {
-        const roles = await prisma.rol.findMany(); // Obtener todos los roles disponibles
-        const clientes = await prisma.cliente.findMany(); // Obtener todos los clientes
-        res.render('pages/usuarios/agregar', { roles, clientes, usuario: {}, errors: [] });
+        const roles = await prisma.rol.findMany();
+        const clientes = await prisma.cliente.findMany();
+        res.render('pages/usuarios/agregar', { roles, clientes, usuario: {}, errors: [], title: 'Usuarios' });
     } catch (error) {
         console.error('Error al cargar el formulario de usuario:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cargar el formulario de usuario' });
+        req.flash('error_msg', 'Error al cargar el formulario de usuario.');
+        res.status(500).redirect('/usuarios');
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
@@ -51,16 +52,30 @@ exports.createUsuario = async (req, res) => {
     try {
         const { email, password, nombre, rolId, clienteId, activo } = req.body;
 
+        // Verificar si el email ya existe
+        const existingUser = await prisma.usuario.findUnique({ where: { email } });
+        if (existingUser) {
+            req.flash('error_msg', 'El correo electrónico ya está en uso.');
+            return res.status(400).redirect('/usuarios/new');
+        }
+
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Verificar si el rol es Admin, en cuyo caso no se asigna clienteId
+        // Obtener el rol seleccionado
         const rol = await prisma.rol.findUnique({ where: { id: parseInt(rolId) } });
+
+        // Determinar si se debe asignar clienteId
         let clienteIdValue = null;
 
-        // Solo asignar clienteId si el rol no es Admin
-        if (rol.nombre !== 'Administrador' && clienteId) {
-            clienteIdValue = parseInt(clienteId);
+        if (!rol.esAdmin) {
+            // Si el rol no es administrador, verificar si se proporcionó clienteId
+            if (clienteId) {
+                clienteIdValue = parseInt(clienteId);
+            } else {
+                req.flash('error_msg', 'Debe asignar un cliente para este rol.');
+                return res.status(400).redirect('/usuarios/new');
+            }
         }
 
         // Crear el usuario con los datos proporcionados, incluyendo el estado (activo)
@@ -78,7 +93,8 @@ exports.createUsuario = async (req, res) => {
         res.status(201).redirect('/usuarios');
     } catch (error) {
         console.error('Error al crear el usuario:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al crear el usuario' });
+        req.flash('error_msg', 'Error al crear el usuario.');
+        res.status(500).redirect('/usuarios');
     } finally {
         await prisma.$disconnect(); // Cierra la conexión
     }
@@ -98,16 +114,18 @@ exports.renderEditForm = async (req, res) => {
         if (!usuario) return res.redirect('/usuarios');
 
         // Verifica si el rol es 'Administrador'
-        const isAdmin = usuario.rol.nombre === 'Administrador';
+        const isAdmin = usuario.rol.esAdmin;
 
-        res.render('pages/usuarios/modificar', { usuario, roles, clientes, isAdmin, errors: [] });
+        res.render('pages/usuarios/modificar', { usuario, roles, clientes, isAdmin, errors: [], title: 'Usuarios' });
     } catch (error) {
         console.error('Error al cargar el formulario de usuario:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al cargar el formulario de usuario' });
+        req.flash('error_msg', 'Error al cargar el formulario de usuario.');
+        res.status(500).redirect('/usuarios');
+    } finally {
+        await prisma.$disconnect();
     }
 };
 
-// Controlador para actualizar un usuario
 // Controlador para actualizar un usuario
 exports.updateUsuario = async (req, res) => {
     try {
@@ -120,6 +138,40 @@ exports.updateUsuario = async (req, res) => {
         if (!usuario) {
             req.flash('error_msg', 'Usuario no encontrado.');
             return res.status(404).redirect('/usuarios');
+        }
+
+        // Verificar si el email ya existe en otro usuario
+        if (email !== usuario.email) {
+            const existingUser = await prisma.usuario.findUnique({ where: { email } });
+            if (existingUser) {
+                req.flash('error_msg', 'El correo electrónico ya está en uso por otro usuario.');
+                return res.status(400).redirect(`/usuarios/edit/${id}`);
+            }
+        }
+
+        // Construir el objeto de actualización
+        let updatedData = {
+            email,
+            nombre,
+            rolId: parseInt(rolId),
+            activo: activo === 'true' // Actualizar el estado
+        };
+
+        // Obtener el rol seleccionado
+        const rol = await prisma.rol.findUnique({ where: { id: parseInt(rolId) } });
+
+        // Manejo de clienteId según el rol
+        if (rol.esAdmin) {
+            // Si el rol es administrador, no se asigna clienteId
+            updatedData.clienteId = null;
+        } else {
+            // Si el rol no es administrador, se debe asignar clienteId
+            if (clienteId) {
+                updatedData.clienteId = parseInt(clienteId);
+            } else {
+                req.flash('error_msg', 'Debe asignar un cliente para este rol.');
+                return res.status(400).redirect(`/usuarios/edit/${id}`);
+            }
         }
 
         // Verificar si se ingresó una nueva contraseña
@@ -140,65 +192,24 @@ exports.updateUsuario = async (req, res) => {
             // Encriptar la nueva contraseña
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-            // Actualizar el usuario incluyendo la nueva contraseña encriptada
-            await prisma.usuario.update({
-                where: { id: parseInt(id) },
-                data: { 
-                    email, 
-                    nombre, 
-                    rolId: parseInt(rolId), 
-                    clienteId: clienteId ? parseInt(clienteId) : null,
-                    password: hashedPassword,
-                    activo: activo === 'true' // Actualizar el estado
-                },
-            });
-
-            req.flash('success_msg', 'Contraseña actualizada exitosamente.');
-        } else {
-            // Si se cambia el rol de "Administrador" a "Cliente", establecer clienteId
-            if (usuario.rol.nombre === 'Administrador' && rolId !== usuario.rol.id) {
-                if (rolId !== '1') {  // ID 1 es el del rol de "Administrador"
-                    // Verificar si el cliente ya está vinculado a otro usuario
-                    const clienteVinculado = await prisma.usuario.findFirst({
-                        where: { clienteId: parseInt(clienteId), NOT: { id: parseInt(id) } }
-                    });
-
-                    if (clienteVinculado) {
-                        req.flash('error_msg', 'Este cliente ya está vinculado a otro usuario.');
-                        return res.status(400).redirect(`/usuarios/edit/${id}`);
-                    }
-                }
-            }
-
-            // Si se cambia el rol de "Cliente" a "Administrador", eliminar clienteId
-            let updatedData = {
-                email,
-                nombre,
-                rolId: parseInt(rolId),
-                clienteId: clienteId ? parseInt(clienteId) : null,
-                activo: activo === 'true' // Actualizar el estado
-            };
-
-            if (rolId === '1') { // Si el rol es Administrador, desvincular cliente
-                updatedData.clienteId = null;
-            }
-
-            // Actualizar el usuario sin cambiar la contraseña
-            await prisma.usuario.update({
-                where: { id: parseInt(id) },
-                data: updatedData,
-            });
-
-            req.flash('success_msg', 'Usuario actualizado exitosamente.');
+            // Agregar la contraseña al objeto de actualización
+            updatedData.password = hashedPassword;
         }
-        
-        res.status(201).redirect('/usuarios');
+
+        // Actualizar el usuario
+        await prisma.usuario.update({
+            where: { id: parseInt(id) },
+            data: updatedData,
+        });
+
+        req.flash('success_msg', 'Usuario actualizado exitosamente.');
+        res.status(200).redirect('/usuarios');
     } catch (error) {
         console.error('Error al actualizar el usuario:', error);
         req.flash('error_msg', 'Error al actualizar el usuario.');
-        return res.status(500).redirect(`/usuarios/edit/${id}`);
+        return res.status(500).redirect(`/usuarios`);
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };
 
@@ -211,8 +222,9 @@ exports.deleteUsuario = async (req, res) => {
         res.status(200).redirect('/usuarios');
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
-        return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error al eliminar el usuario' });
+        req.flash('error_msg', 'Error al eliminar el usuario.');
+        return res.status(500).redirect(`/usuarios`);
     } finally {
-        await prisma.$disconnect(); // Cierra la conexión
+        await prisma.$disconnect();
     }
 };

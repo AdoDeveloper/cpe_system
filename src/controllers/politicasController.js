@@ -1,3 +1,5 @@
+// src/controllers/politicasController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -7,7 +9,7 @@ exports.listPoliticas = async (req, res) => {
         const politicas = await prisma.politica.findMany({
             orderBy: { id: 'asc' },
         }); // Obtener todas las políticas
-        res.render('pages/politicas/listado', { politicas });
+        res.render('pages/politicas/listado', { politicas, title: 'Politicas' });
     } catch (error) {
         console.error('Error al listar las políticas:', error);
         req.flash('error_msg', 'Error al listar las políticas.');
@@ -20,7 +22,7 @@ exports.listPoliticas = async (req, res) => {
 // Renderiza el formulario para crear una nueva política
 exports.renderCreateForm = async (req, res) => {
     try {
-        res.render('pages/politicas/agregar', { politica: {}, errors: [] });
+        res.render('pages/politicas/agregar', { politica: {}, errors: [], title: 'Politicas' });
     } catch (error) {
         console.error('Error al cargar el formulario de creación:', error);
         req.flash('error_msg', 'Error al cargar el formulario.');
@@ -59,7 +61,7 @@ exports.renderEditForm = async (req, res) => {
         if (!politica) {
             return res.redirect('/politicas');
         }
-        res.render('pages/politicas/modificar', { politica, errors: [] });
+        res.render('pages/politicas/modificar', { politica, errors: [], title: 'Politicas' });
     } catch (error) {
         console.error('Error al obtener la política para editar:', error);
         req.flash('error_msg', 'Error al obtener la política.');

@@ -1,9 +1,11 @@
+// src/controllers/rolesController.js
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // Controlador para listar roles
 exports.listRoles = async (req, res) => {
-  console.log("--- INICIO listRoles ---"); // Inicio del controlador
+  //console.log("--- INICIO listRoles ---"); // Inicio del controlador
   try {
     console.log("Obteniendo roles desde la base de datos...");
     const roles = await prisma.rol.findMany({
@@ -23,7 +25,7 @@ exports.listRoles = async (req, res) => {
       orderBy: { id: "asc" },
     });
 
-    console.log("Roles obtenidos:", roles.length);
+    //console.log("Roles obtenidos:", roles.length);
 
     const rolesFormateados = roles
       .filter((rol) => rol && rol.nombre) // Filtra los roles que no tienen nombre para evitar errores
@@ -66,29 +68,26 @@ exports.listRoles = async (req, res) => {
             ),
           ],
         };
-        console.log(`Rol formateado: ${formateado.nombre}`, formateado);
+        //console.log(`Rol formateado: ${formateado.nombre}`, formateado);
         return formateado;
       });
 
-    console.log("Roles formateados:", rolesFormateados.length);
-    res.render("pages/roles/listado", { roles: rolesFormateados });
+    //console.log("Roles formateados:", rolesFormateados.length);
+    res.render("pages/roles/listado", { roles: rolesFormateados, title: 'Roles - Permisos' });
   } catch (error) {
     console.error("Error al listar los roles:", error);
     req.flash("error_msg", "Error al listar los roles.");
     res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
-    console.log("--- FIN listRoles ---");
+    //console.log("--- FIN listRoles ---");
   }
 };
 
 // Renderiza el formulario para crear un nuevo rol
 exports.renderCreateForm = async (req, res) => {
-  console.log("--- INICIO renderCreateForm ---");
   try {
-    console.log("Obteniendo módulos disponibles...");
     const modulosDisponibles = await prisma.modulo.findMany();
-    console.log("Módulos disponibles:", modulosDisponibles.length);
 
     res.render("pages/roles/agregar", {
       action: "new",
@@ -96,6 +95,7 @@ exports.renderCreateForm = async (req, res) => {
       permisos: [],
       modulosDisponibles,
       errors: [],
+      title: 'Roles - Permisos'
     });
   } catch (error) {
     console.error("Error al cargar el formulario de creación:", error);
@@ -103,7 +103,6 @@ exports.renderCreateForm = async (req, res) => {
     res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
-    console.log("--- FIN renderCreateForm ---");
   }
 };
 
@@ -169,14 +168,14 @@ exports.createRol = async (req, res) => {
 
     // Crear las relaciones en RolModulo
     for (const moduloId of modulosAsignados) {
-      console.log(`Asignando módulo ${moduloId} al rol ${createdRol.id}`);
+      //console.log(`Asignando módulo ${moduloId} al rol ${createdRol.id}`);
       await prisma.rolModulo.create({
         data: { rolId: createdRol.id, moduloId },
       });
     }
 
     req.flash("success_msg", "Rol creado correctamente.");
-    res.redirect("/roles");
+    res.status(201).redirect("/roles");
   } catch (error) {
     console.error("Error al crear el rol:", error);
     req.flash("error_msg", "Error al crear el rol.");
@@ -190,10 +189,8 @@ exports.createRol = async (req, res) => {
 
 // Renderiza el formulario para editar un rol existente
 exports.renderEditForm = async (req, res) => {
-  console.log("--- INICIO renderEditForm ---");
   try {
     const { id } = req.params;
-    console.log("Buscando rol con id:", id);
 
     const rol = await prisma.rol.findUnique({
       where: { id: parseInt(id) },
@@ -213,14 +210,11 @@ exports.renderEditForm = async (req, res) => {
     });
 
     if (!rol) {
-      console.log("Rol no encontrado.");
       req.flash("error_msg", "El rol no existe.");
       return res.redirect("/roles");
     }
 
-    console.log("Rol encontrado:", rol.nombre);
     const modulosDisponibles = await prisma.modulo.findMany();
-    console.log("Módulos disponibles:", modulosDisponibles.length);
 
     const permisosFormateados = rol.permisos.map((rolPermiso) => ({
       ruta: rolPermiso.permiso.ruta,
@@ -238,6 +232,7 @@ exports.renderEditForm = async (req, res) => {
       permisos: permisosFormateados,
       modulosDisponibles,
       errors: [],
+      title: 'Roles - Permisos'
     });
   } catch (error) {
     console.error("Error al cargar el formulario de edición:", error);
@@ -245,7 +240,6 @@ exports.renderEditForm = async (req, res) => {
     return res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
-    console.log("--- FIN renderEditForm ---");
   }
 };
 
@@ -313,13 +307,13 @@ exports.updateRol = async (req, res) => {
     }, {});
 
     const permisosAEliminar = Object.keys(permisosActualesMap);
-    console.log("Permisos actuales mapeados:", permisosActualesMap);
+    //console.log("Permisos actuales mapeados:", permisosActualesMap);
 
     for (const permiso of permisos) {
       const key = `${permiso.ruta}-${permiso.metodo}`;
 
       if (permisosActualesMap[key]) {
-        console.log(`Actualizando permiso existente para ${permiso.ruta} con método ${permiso.metodo}`);
+        //console.log(`Actualizando permiso existente para ${permiso.ruta} con método ${permiso.metodo}`);
         await prisma.permiso.update({
           where: { id: permisosActualesMap[key].permisoId },
           data: {
@@ -333,7 +327,7 @@ exports.updateRol = async (req, res) => {
         });
         permisosAEliminar.splice(permisosAEliminar.indexOf(key), 1);
       } else {
-        console.log(`Creando nuevo permiso para ${permiso.ruta} con método ${permiso.metodo}`);
+        //console.log(`Creando nuevo permiso para ${permiso.ruta} con método ${permiso.metodo}`);
         const nuevoPermiso = await prisma.permiso.create({
           data: {
             ruta: permiso.ruta,
@@ -352,10 +346,10 @@ exports.updateRol = async (req, res) => {
       }
     }
 
-    console.log("Permisos por eliminar:", permisosAEliminar);
+    //console.log("Permisos por eliminar:", permisosAEliminar);
     for (const key of permisosAEliminar) {
       const rolPermiso = permisosActualesMap[key];
-      console.log(`Eliminando permiso con id ${rolPermiso.permisoId}`);
+      //console.log(`Eliminando permiso con id ${rolPermiso.permisoId}`);
 
       await prisma.rolPermiso.delete({
         where: {
@@ -378,14 +372,14 @@ exports.updateRol = async (req, res) => {
 
     // Crear las relaciones actualizadas en RolModulo
     for (const moduloId of modulosAsignados) {
-      console.log(`Asignando módulo ${moduloId} al rol ${id}`);
+      //console.log(`Asignando módulo ${moduloId} al rol ${id}`);
       await prisma.rolModulo.create({
         data: { rolId: parseInt(id), moduloId },
       });
     }
 
     req.flash("success_msg", "Rol actualizado exitosamente.");
-    res.redirect("/roles");
+    res.status(201).redirect("/roles");
   } catch (error) {
     console.error("Error al actualizar el rol:", error);
     req.flash("error_msg", "Error al actualizar el rol.");
@@ -398,26 +392,20 @@ exports.updateRol = async (req, res) => {
 
 // Controlador para eliminar un rol
 exports.deleteRol = async (req, res) => {
-  console.log("--- INICIO deleteRol ---");
   try {
     const { id } = req.params;
-    console.log(`Eliminando rol con id: ${id}`);
 
-    console.log("Eliminando permisos asociados al rol...");
     await prisma.rolPermiso.deleteMany({ where: { rolId: parseInt(id) } });
 
-    console.log("Eliminando rol...");
     await prisma.rol.delete({ where: { id: parseInt(id) } });
 
     req.flash("success_msg", "Rol eliminado exitosamente.");
-    res.redirect("/roles");
+    res.status(200).redirect("/roles");
   } catch (error) {
     console.error("Error al eliminar el rol:", error);
     req.flash("error_msg", "Error al eliminar el rol.");
     res.status(500).redirect("/roles");
   } finally {
     await prisma.$disconnect();
-    console.log("--- FIN deleteRol ---");
   }
 };
-

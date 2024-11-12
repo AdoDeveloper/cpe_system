@@ -1,3 +1,5 @@
+// src/controllers/equiposController.js
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cloudinary = require('cloudinary').v2;
@@ -59,16 +61,18 @@ exports.listEquipos = async (req, res) => {
     const equipos = await prisma.equipoCPE.findMany({
       orderBy: { id: 'asc' },
     });
-    res.render('pages/equipos/listado', { equipos });
+    res.render('pages/equipos/listado', { equipos, title: 'Equipos' });
   } catch (error) {
     console.error('Error al listar equipos:', error);
     req.flash('error_msg', 'Error al listar los equipos.');
-    res.redirect('/equipos');
+    return res.status(500).redirect('/equipos');
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
 exports.renderCreateForm = (req, res) => {
-  res.render('pages/equipos/agregar', { equipo: {}, errors: [] });
+  res.render('pages/equipos/agregar', { equipo: {}, errors: [], title: 'Equipos' });
 };
 
 exports.createEquipo = async (req, res) => {
@@ -90,11 +94,13 @@ exports.createEquipo = async (req, res) => {
     });
 
     req.flash('success_msg', 'Equipo creado correctamente');
-    res.redirect('/equipos');
+    res.estatus(201).redirect('/equipos');
   } catch (error) {
     console.error('Error al crear el equipo:', error);
     req.flash('error_msg', 'Error al crear el equipo.');
-    res.redirect('/equipos');
+    return res.status(500).redirect('/equipos');
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
@@ -102,11 +108,13 @@ exports.renderEditForm = async (req, res) => {
   try {
     const { id } = req.params;
     const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
-    res.render('pages/equipos/modificar', { equipo });
+    res.render('pages/equipos/modificar', { equipo, title: 'Equipos' });
   } catch (error) {
     console.error('Error al obtener el equipo:', error);
     req.flash('error_msg', 'Error al obtener el equipo.');
-    res.redirect('/equipos');
+    return res.status(500).redirect('/equipos');
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
@@ -136,11 +144,13 @@ exports.updateEquipo = async (req, res) => {
     });
 
     req.flash('success_msg', 'Equipo actualizado correctamente');
-    res.redirect('/equipos');
+    res.status(201).redirect('/equipos');
   } catch (error) {
     console.error('Error al actualizar el equipo:', error);
     req.flash('error_msg', 'Error al actualizar el equipo.');
-    res.redirect('/equipos');
+    return res.status(500).redirect('/equipos');
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
@@ -176,11 +186,13 @@ exports.deleteEquipo = async (req, res) => {
     await prisma.equipoCPE.delete({ where: { id: parseInt(id) } });
 
     req.flash('success_msg', 'Equipo eliminado correctamente');
-    res.redirect('/equipos');
+    res.estatus(200).redirect('/equipos');
   } catch (error) {
     console.error('Error al eliminar el equipo:', error);
     req.flash('error_msg', 'Error al eliminar el equipo.');
-    res.redirect('/equipos');
+    return res.status(500).redirect('/equipos');
+  } finally {
+    await prisma.$disconnect();
   }
 };
 

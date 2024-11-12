@@ -1,3 +1,5 @@
+{{!-- Hojas de estilo --}}
+<link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
 <div class="container p-4">
   <div class="row justify-content-center">
     <h1>Agregar Nuevo Usuario</h1>
@@ -44,8 +46,8 @@
         </div>
 
         <div class="form-group" id="clienteSelectGroup" style="display:none;">
-          <label for="clienteId">Asignar Cliente</label>
-          <select class="form-control" name="clienteId">
+          <label for="clienteId">Asignar Cliente</label><br>
+          <select class="form-control select2" id="select-cliente" name="clienteId">
             <option value="" disabled selected>Seleccione un cliente</option>
             {{#each clientes}}
               <option value="{{this.id}}">{{this.nombres}} {{this.apellidos}}</option>
@@ -74,14 +76,26 @@
     </div>
   </div>
 </div>
-
+{{!-- Incluir jQuery --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{!-- Scripts --}}
+<script src="/plugins/select2/js/select2.full.min.js"></script>
 <script>
-  // Mostrar el selector de cliente solo si el rol no es Admin
+    $('#select-cliente').select2({
+      width: '100%'
+    });
+</script>
+
+{{!-- Mostrar el selector de cliente solo si el rol no es Admin --}}
+<script>
   document.getElementById('rolSelect').addEventListener('change', function() {
     const selectedRole = this.options[this.selectedIndex].text;
     const clienteSelectGroup = document.getElementById('clienteSelectGroup');
     
-    if (selectedRole === 'Administrador') {
+    if (selectedRole === 'Administrador' || 
+        selectedRole === 'Soporte Tecnico' ||
+        selectedRole === 'Instalador' || 
+        selectedRole === 'Tecnico') {
       clienteSelectGroup.style.display = 'none'; // Ocultar el campo cliente si es Admin
     } else {
       clienteSelectGroup.style.display = 'block'; // Mostrar el campo cliente si no es Admin
