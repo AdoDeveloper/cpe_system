@@ -1,0 +1,147 @@
+<div class="container mt-4">
+    <div class="card terminal-mac">
+        <div class="card-header terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-btn close" id="minimize-btn"></span>
+                <span class="terminal-btn maximize" id="expand-btn"></span>
+            </div>
+            <h3 class="card-title text-white">Bitácoras del Sistema</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="terminal" id="terminal-content">
+                {{#each logs}}
+                    <div class="log-entry">
+                        <span class="prefix">&gt;</span>
+                        <span class="timestamp">[{{timestamp}}]</span>
+                        <span class="user" title="{{user}}">
+                            {{truncate user 30}}
+                        </span>
+                        <span class="role">({{role}})</span>:
+                        <span class="action" style="color: {{methodColor method}};">{{method}} {{route}}</span>
+                        <span class="status" style="color: {{statusColor statusCode}};">Status: {{statusCode}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* General terminal styles */
+    .terminal-mac {
+        border-radius: 12px;
+        border: 1px solid #444;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .terminal-header {
+        background: #333;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .terminal-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .terminal-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .terminal-btn.close {
+        background-color: #ff605c;
+    }
+
+    .terminal-btn.maximize {
+        background-color: #00ca4e;
+    }
+
+    .terminal {
+        background-color: #1e1e1e;
+        color: #0f0;
+        font-family: 'Courier New', Courier, monospace;
+        overflow-y: auto;
+        max-height: 600px;
+        padding: 15px;
+        border-top: 1px solid #444;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .terminal.collapsed {
+        max-height: 0;
+        padding: 0;
+    }
+
+    .log-entry {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap; /* Mantener todos los elementos en una línea */
+        border-bottom: 1px solid #333;
+        padding: 5px 0;
+    }
+
+    .log-entry:last-child {
+        border-bottom: none;
+    }
+
+    .prefix {
+        color: #888;
+        margin-right: 5px;
+    }
+
+    .timestamp {
+        color: #888;
+        flex-shrink: 0;
+    }
+
+    .user {
+        color: #0ff;
+        flex-shrink: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .role {
+        color: #ffd700;
+        margin-right: 10px;
+    }
+
+    .action {
+        color: #ff0;
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status {
+        color: #f00;
+        margin-left: 10px;
+        flex-shrink: 0;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const terminalContent = document.getElementById("terminal-content");
+        const minimizeBtn = document.getElementById("minimize-btn");
+        const expandBtn = document.getElementById("expand-btn");
+
+        minimizeBtn.addEventListener("click", () => {
+            terminalContent.classList.add("collapsed");
+        });
+
+        expandBtn.addEventListener("click", () => {
+            terminalContent.classList.remove("collapsed");
+        });
+    });
+</script>

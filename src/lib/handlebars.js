@@ -308,4 +308,32 @@ Handlebars.registerHelper('times', function(n, options) {
     return accum;
 });
 
+// Helper para definir colores según el método HTTP
+Handlebars.registerHelper('methodColor', (method) => {
+    switch (method) {
+        case 'GET': return '#0f0'; // Verde para GET
+        case 'POST': return '#44d'; // Azul para POST
+        case 'PUT': return '#ffa500'; // Naranja para PUT
+        case 'DELETE': return '#f00'; // Rojo para DELETE
+        default: return '#ff0'; // Amarillo por defecto
+    }
+});
+
+// Helper para definir colores según el código de estado
+Handlebars.registerHelper('statusColor', (statusCode) => {
+    if (statusCode >= 200 && statusCode < 300) return '#0f0'; // Verde para códigos 2xx
+    if (statusCode >= 300 && statusCode < 400) return '#00f'; // Azul para códigos 3xx
+    if (statusCode >= 400 && statusCode < 500) return '#ffa500'; // Naranja para códigos 4xx
+    if (statusCode >= 500) return '#f00'; // Rojo para códigos 5xx
+    return '#f00'; // Rojo por defecto
+});
+
+// Helper para truncar texto si es demasiado largo
+Handlebars.registerHelper('truncate', (text, maxLength) => {
+    if (text.length > maxLength) {
+        return text.substring(0, maxLength) + '...';
+    }
+    return text;
+});
+
 module.exports = Handlebars;

@@ -71,6 +71,13 @@ app.use(flash());
 // Middleware para ver las solicitudes HTTP en la consola
 app.use(morgan('dev')); // Mostrar detalles de cada solicitud en la consola
 
+// Importar y configurar Mongoose para conectar a MongoDB
+require('./lib/mongoose');
+
+// Middleware de logging personalizado (después de la sesión y antes de las rutas)
+const loggingMiddleware = require('./middlewares/loggingMiddleware');
+app.use(loggingMiddleware);
+
 // Variables globales para almacenar mensajes flash y determinar el layout
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg'); // Mensajes de éxito
@@ -119,6 +126,7 @@ const facturacionRoutes = require('./routes/facturacionRoutes');
 const movimientosRoutes = require('./routes/movimientosRoutes');
 const pagosRoutes = require('./routes/pagosRoutes');
 const dashboardRoute = require('./routes/dashboardRoute');
+const bitacorasRoutes = require('./routes/bitacorasRoutes');
 
 // Rutas públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -141,7 +149,7 @@ app.use('/facturacion',authMiddleware, facturacionRoutes);
 app.use('/movimientos',authMiddleware, movimientosRoutes);
 app.use('/pagos',authMiddleware, pagosRoutes);
 app.use('/dashboard', authMiddleware, dashboardRoute);
-
+app.use('/bitacoras', authMiddleware, bitacorasRoutes);
 // Rutas protegidas para usuarios no admin
 app.use('/', authMiddleware, homeRoutes, loginRoutes); 
 app.use('/perfil', authMiddleware, perfilRoute);
