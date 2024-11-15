@@ -1,111 +1,90 @@
-// src/index.js
-
-require('dotenv').config(); // Cargar variables de entorno desde .env
-const express = require('express'); // Importar express para manejar el servidor
-const path = require('path'); // Para manejar rutas de archivos
-const session = require('express-session'); // Para manejar sesiones del usuario
-const flash = require('connect-flash'); // Para manejar mensajes flash en la sesión
-const morgan = require('morgan'); // Middleware para ver las solicitudes en la consola
-const exphbs = require("express-handlebars"); // Motor de plantillas handlebars
-const methodOverride = require('method-override'); // Importar method-override
-const http = require('http'); // Importar el módulo http para crear el servidor
+// Configuración Inicial
+require('dotenv').config();
+const express = require('express');
+const path = require('path');
+const session = require('express-session');
+const flash = require('connect-flash');
+const morgan = require('morgan');
+const exphbs = require('express-handlebars');
+const methodOverride = require('method-override');
+const http = require('http');
 const axios = require('axios');
-
+const cron = require('node-cron');
+const rateLimit = require('express-rate-limit');
+const { PrismaClient } = require('@prisma/client');
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
+const prisma = new PrismaClient();
 
-const app = express(); // Inicializar la aplicación express
-
-// Crear el servidor HTTP usando la aplicación Express
+const app = express();
 const server = http.createServer(app);
-
-// Inicializar Socket.IO con el servidor HTTP
 const io = require('socket.io')(server);
 
-// Configurar method-override
-app.use(methodOverride('_method')); // Usa el query parameter
+// Configuración del Servidor
+app.set('port', process.env.PORT || 4500);
+app.set('trust proxy', true);
+app.set('views', path.join(__dirname, 'views'));
 
-// Ajustes del servidor
-app.set("port", process.env.PORT || 4500); // Establecer el puerto del servidor
-app.set("views", path.join(__dirname, "views")); // Configuración de la ruta donde se encuentran las vistas
+// Configuración del Motor de Plantillas (Handlebars)
+app.engine('.hbs', exphbs.engine({
+  defaultLayout: 'main',
+  layoutsDir: path.join(app.get('views'), 'layouts'),
+  partialsDir: path.join(app.get('views'), 'partials'),
+  extname: '.hbs',
+  Handlebars: require('./lib/handlebars'),
+}));
+app.set('view engine', '.hbs');
 
-// Configuración del motor de plantillas Handlebars
-app.engine(
-  ".hbs",
-  exphbs.engine({
-    defaultLayout: "main", // Configuración del layout principal
-    layoutsDir: path.join(app.get("views"), "layouts"), // Configuración de la ruta de los layouts
-    partialsDir: path.join(app.get("views"), "partials"), // Configuración de vistas parciales
-    extname: ".hbs", // Configura la extensión que tendrán los archivos
-    Handlebars: require("./lib/handlebars"), // Configuración de funciones (helpers) personalizadas
-  })
-);
-app.set("view engine", ".hbs"); // Configuración para ejecutar el motor de plantillas
-
-// Middleware para manejar datos del cuerpo de la solicitud
-app.use(express.urlencoded({ extended: false })); // Para recibir datos de formularios
-app.use(express.json()); // Para manejar datos en formato JSON
-
-// Configurar la carpeta 'public' para archivos estáticos (CSS, imágenes, scripts)
+// Middlewares Globales
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: false, limit: '10kb' }));
+app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Configuración del middleware de sesión
+// Configuración de Sesiones
 app.use(session({
-  secret: process.env.SESSION_SECRET, // Utiliza la clave secreta del archivo .env
-  resave: false, // No guarda la sesión si no hay cambios
-  saveUninitialized: false, // No guarda sesiones no inicializadas
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // Duración de la sesión: 24 horas
-    httpOnly: true, // Previene el acceso a la cookie desde JavaScript
-    secure: false, // Solo en true si estás usando HTTPS
-    sameSite: 'lax' // Controla el acceso de la cookie en solicitudes cross-site
-  }
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    httpOnly: true,
+    secure: false, // Cambiar a true en producción con HTTPS
+    sameSite: 'lax',
+  },
 }));
 
-
-const notificacionesMiddleware = require('./middlewares/notificacionesMiddleware');
-app.use(notificacionesMiddleware);
-
-// Middleware para mostrar mensajes flash
+// Middleware para Mensajes Flash
 app.use(flash());
 
-// Middleware para ver las solicitudes HTTP en la consola
-app.use(morgan('dev')); // Mostrar detalles de cada solicitud en la consola
-
-// Importar y configurar Mongoose para conectar a MongoDB
-require('./lib/mongoose');
-
-// Middleware de logging personalizado (después de la sesión y antes de las rutas)
+// Middleware Personalizado
+const notificacionesMiddleware = require('./middlewares/notificacionesMiddleware');
 const loggingMiddleware = require('./middlewares/loggingMiddleware');
+app.use(notificacionesMiddleware);
 app.use(loggingMiddleware);
 
-// Variables globales para almacenar mensajes flash y determinar el layout
+// Variables Globales para las Vistas
 app.use((req, res, next) => {
-  res.locals.success_msg = req.flash('success_msg'); // Mensajes de éxito
-  res.locals.error_msg = req.flash('error_msg'); // Mensajes de error
-
-  // Determinar el layout según si el usuario está autenticado y su rol
-  if (req.session.user) {
-    if (req.session.isAdmin) { // Validar si es admin con el campo `isAdmin`
-      res.locals.layout = 'main'; // Layout principal para admin
-      res.locals.isAdmin = true; // Variable para validar si es admin
-    } else {
-      res.locals.layout = 'user'; // Layout de usuario estándar
-      res.locals.isAdmin = false;
-    }
-  } else {
-    res.locals.layout = 'auth'; // Layout de autenticación si no está autenticado
-  }
-
-  next(); // Continuar con la siguiente middleware
-});
-
-// Middleware global para hacer que `userName` esté disponible en las vistas
-app.use((req, res, next) => {
-  if (req.session.userName) {
-    res.locals.userName = req.session.userName;  // Hacer que userName esté disponible en las vistas
-  }
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.layout = req.session.user ? (req.session.isAdmin ? 'main' : 'user') : 'auth';
+  res.locals.isAdmin = req.session.isAdmin || false;
+  res.locals.userName = req.session.userName || null;
   next();
 });
+
+// Configuración de Límite de Solicitudes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Limita a 100 solicitudes por IP
+});
+app.use(limiter);
+
+// Desactivar Cabecera "X-Powered-By"
+app.disable('x-powered-by');
+
+// Conexión a Base de Datos
+require('./lib/mongoose');
 
 // Rutas
 const loginRoutes = require('./routes/loginRoutes');
@@ -128,13 +107,11 @@ const pagosRoutes = require('./routes/pagosRoutes');
 const dashboardRoute = require('./routes/dashboardRoute');
 const bitacorasRoutes = require('./routes/bitacorasRoutes');
 
-// Rutas públicas
+// Rutas Públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
-
-// Ruta pública para logout
 app.use('/logout', authMiddleware, logoutRoute);
 
-// Rutas protegidas para usuarios admin
+// Rutas Protegidas
 app.use('/servicios', authMiddleware, serviciosRoutes);
 app.use('/clientes', authMiddleware, clientesRoutes);
 app.use('/usuarios', authMiddleware, usuariosRoutes);
@@ -145,58 +122,47 @@ app.use('/contratos', authMiddleware, contratosRoutes);
 app.use('/politicas', authMiddleware, politicasRoutes);
 app.use('/configuraciones', authMiddleware, configuracionesRoutes);
 app.use('/tickets', authMiddleware, ticketsRoutes);
-app.use('/facturacion',authMiddleware, facturacionRoutes);
-app.use('/movimientos',authMiddleware, movimientosRoutes);
-app.use('/pagos',authMiddleware, pagosRoutes);
+app.use('/facturacion', authMiddleware, facturacionRoutes);
+app.use('/movimientos', authMiddleware, movimientosRoutes);
+app.use('/pagos', authMiddleware, pagosRoutes);
 app.use('/dashboard', authMiddleware, dashboardRoute);
 app.use('/bitacoras', authMiddleware, bitacorasRoutes);
-// Rutas protegidas para usuarios no admin
-app.use('/', authMiddleware, homeRoutes, loginRoutes); 
+app.use('/', authMiddleware, homeRoutes, loginRoutes);
 app.use('/perfil', authMiddleware, perfilRoute);
 
-// Archivos públicos (aquí se coloca todo el código al que el navegador puede acceder)
-app.use(express.static(path.join(__dirname, "public"))); // Archivos estáticos
-
-// Manejo de errores 404
+// Manejo de Errores
 app.use((req, res, next) => {
   res.status(404).render('errors/404', { layout: 'error', title: '404 - Página no encontrada' });
 });
 
-// Importar y ejecutar la función para inicializar Socket.IO
-const { initializeSocket } = require('./controllers/ticketsController');
-initializeSocket(io);
-
-// Configuración de Prisma y node-cron
-const cron = require('node-cron');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
-// Configuración de node-cron para ejecutar el procedimiento almacenado el primer día de cada mes a la medianoche
+// Configuración de Cron Jobs
 cron.schedule('0 0 1 * *', async () => {
-    console.log('Ejecutando el procedimiento almacenado el primer día de cada mes a medianoche...');
-  
-    try {
-        await prisma.$executeRaw`CALL public.generarpagosfactmensual()`;
-        console.log('Procedimiento ejecutado exitosamente');
-    } catch (error) {
-        console.error('Error al ejecutar el procedimiento:', error.message);
-    }
-});
-
-// Configuración de cron para mantener activo el servidor con una auto-petición cada 10 minutos
-cron.schedule('*/10 * * * *', async () => {
+  console.log('Ejecutando procedimiento mensual...');
   try {
-      await axios.get('https://airlinksystem.onrender.com'); // Asegúrate de que esta URL sea la de tu servidor en Render
-      console.log('Auto-petición enviada para mantener el servidor activo.');
+    await prisma.$executeRaw`CALL public.generarpagosfactmensual()`;
+    console.log('Procedimiento ejecutado exitosamente');
   } catch (error) {
-      console.error('Error al intentar mantener el servidor activo:', error.message);
+    console.error('Error al ejecutar el procedimiento:', error.message);
   }
 });
 
-// Iniciar el servidor usando `server.listen` en lugar de `app.listen`
-server.listen(app.get("port"), () => {
-  console.log(`Servidor iniciado en el puerto: http://localhost:${app.get("port")}`);
+cron.schedule('*/14 * * * *', async () => {
+  try {
+    await axios.get('https://airlinksystem.onrender.com');
+    console.log('Auto-petición enviada para mantener el servidor activo.');
+  } catch (error) {
+    console.error('Error al intentar mantener el servidor activo:', error.message);
+  }
 });
 
-// Exportar la aplicación express y Socket.IO para usar en otros módulos
+// Inicializar Socket.IO
+const { initializeSocket } = require('./controllers/ticketsController');
+initializeSocket(io);
+
+// Iniciar Servidor
+server.listen(app.get('port'), () => {
+  console.log(`Servidor iniciado en: http://localhost:${app.get('port')}`);
+});
+
+// Exportar la Aplicación
 module.exports = { app };

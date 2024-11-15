@@ -48,7 +48,7 @@ module.exports = {
                 include: {
                   permiso: {
                     include: {
-                      moduloPermisos: { include: { modulo: true } },
+                      moduloPermisos: true,
                     },
                   },
                 },
@@ -72,28 +72,46 @@ module.exports = {
         .filter((modulo) => modulo.activo)
         .sort((a, b) => a.id - b.id);
 
+      // Construir un Set de moduloIds activos para búsquedas rápidas
+      const moduloIdsActivos = new Set(modulosActivos.map((mod) => mod.id));
+
       // Obtener todas las rutas de los módulos activos en una sola consulta
       const rutas = await prisma.ruta.findMany({
-        where: { moduloId: { in: modulosActivos.map((m) => m.id) } },
+        where: { moduloId: { in: Array.from(moduloIdsActivos) } },
         orderBy: { id: 'asc' },
       });
 
-      const rutasPorModulo = rutas.reduce((acc, ruta) => {
-        if (!acc[ruta.moduloId]) acc[ruta.moduloId] = [];
-        acc[ruta.moduloId].push(ruta);
-        return acc;
-      }, {});
+      // Mapear las rutas por moduloId
+      const rutasPorModulo = new Map();
+      for (const ruta of rutas) {
+        if (!rutasPorModulo.has(ruta.moduloId)) {
+          rutasPorModulo.set(ruta.moduloId, []);
+        }
+        rutasPorModulo.get(ruta.moduloId).push(ruta);
+      }
+
+      // Construir un Map para permisos por moduloId y método
+      const permisosPorModuloYMetodo = new Map();
+      for (const permiso of permisos) {
+        for (const mp of permiso.moduloPermisos) {
+          const key = `${mp.moduloId}:${permiso.metodo}`;
+          if (!permisosPorModuloYMetodo.has(key)) {
+            permisosPorModuloYMetodo.set(key, []);
+          }
+          permisosPorModuloYMetodo.get(key).push(permiso);
+        }
+      }
 
       // Filtrar los módulos que tienen rutas permitidas para el usuario
       const modulosConPermisos = [];
       for (const modulo of modulosActivos) {
         console.log('Verificando módulo:', modulo.nombre);
-        const rutasConPermiso = (rutasPorModulo[modulo.id] || []).filter((ruta) =>
-          permisos.some((permiso) =>
-            permiso.moduloPermisos.some((mp) => mp.moduloId === modulo.id) &&
-            isMatch(permiso.ruta, ruta.ruta) &&
-            permiso.metodo === req.method
-          )
+        const rutasModulo = rutasPorModulo.get(modulo.id) || [];
+        const key = `${modulo.id}:${req.method}`;
+        const permisosModulo = permisosPorModuloYMetodo.get(key) || [];
+
+        const rutasConPermiso = rutasModulo.filter((ruta) =>
+          permisosModulo.some((permiso) => isMatch(permiso.ruta, ruta.ruta))
         );
 
         if (rutasConPermiso.length > 0) {
@@ -106,6 +124,7 @@ module.exports = {
       res.locals.modulos_menu = modulosConPermisos;
       res.locals.userId = usuario.id;
       res.locals.userRol = usuario.rol.nombre;
+
       // Si la ruta está en `authOnlyRoutes`, saltar la verificación de permisos
       if (authOnlyRoutes.has(path)) {
         return next();
@@ -116,7 +135,7 @@ module.exports = {
 
       // Verificar si el usuario tiene permiso para la ruta solicitada
       const hasPermission = permisos.some((permiso) =>
-        permiso.moduloPermisos.some((mp) => modulosActivos.map((mod) => mod.id).includes(mp.moduloId)) &&
+        permiso.moduloPermisos.some((mp) => moduloIdsActivos.has(mp.moduloId)) &&
         isMatch(permiso.ruta, path) &&
         permiso.metodo === method
       );

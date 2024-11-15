@@ -1,5 +1,3 @@
-// src/controllers/loginController.js
-
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
@@ -25,8 +23,6 @@ loginController.processLogin = async (req, res) => {
       return res.redirect('/login');
     }
 
-    //console.log('Token de hCaptcha recibido:', hCaptchaToken);
-
     // Verificar el token de hCaptcha con su API
     const hCaptchaResponse = await axios.post(
       'https://hcaptcha.com/siteverify',
@@ -38,8 +34,6 @@ loginController.processLogin = async (req, res) => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       }
     );
-
-    //console.log('Respuesta de hCaptcha:', hCaptchaResponse.data);
 
     // Validar la respuesta de hCaptcha
     if (!hCaptchaResponse.data.success) {
@@ -73,33 +67,42 @@ loginController.processLogin = async (req, res) => {
       return res.redirect('/login');
     }
 
-    // Guardar el usuario en la sesión
-    req.session.userId = usuario.id;
-    req.session.user = usuario.email;
-    req.session.isAdmin = usuario.rol.esAdmin;
-    req.session.userName = usuario.nombre;
-    req.session.userRole = usuario.rol.nombre;
+    // Regenerar la sesión para prevenir fijación de sesión
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Error al regenerar la sesión:', err);
+        req.flash('error_msg', 'Error al iniciar sesión.');
+        return res.redirect('/login');
+      }
 
-    // Si el checkbox "Recuérdame" está marcado, establecer una cookie persistente
-    if (remember) {
-      res.cookie('user_email', usuario.email, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true });
-    } else {
-      res.clearCookie('user_email');
-    }
+      // Guardar información del usuario en la nueva sesión
+      req.session.userId = usuario.id;
+      req.session.user = usuario.email;
+      req.session.isAdmin = usuario.rol.esAdmin;
+      req.session.userName = usuario.nombre;
+      req.session.userRole = usuario.rol.nombre;
 
-    // Agregar mensaje flash de éxito
-    req.flash('success_msg', 'Inicio de sesión exitoso.');
+      // Si el checkbox "Recuérdame" está marcado, establecer una cookie persistente
+      if (remember) {
+        res.cookie('user_email', usuario.email, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true });
+      } else {
+        res.clearCookie('user_email');
+      }
 
-    // Redirigir según si es administrador o no
-    if (usuario.rol.esAdmin) {
-      return res.status(200).redirect('/dashboard');
-    } else {
-      return res.status(200).redirect('/');
-    }
+      // Agregar mensaje flash de éxito
+      req.flash('success_msg', 'Inicio de sesión exitoso.');
+
+      // Redirigir según si es administrador o no
+      if (usuario.rol.esAdmin) {
+        return res.status(200).redirect('/dashboard');
+      } else {
+        return res.status(200).redirect('/');
+      }
+    });
   } catch (error) {
     console.error('Error al procesar el login:', error.message);
     req.flash('error_msg', 'Error al procesar el login.');
-    return res.status(200).redirect('/login');
+    return res.redirect('/login');
   } finally {
     await prisma.$disconnect();
   }

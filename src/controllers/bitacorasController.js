@@ -20,6 +20,8 @@ exports.listBitacoras = async (req, res) => {
             role: log.role,
             method: log.method,
             route: log.route,
+            ip: log.ip,
+            browser: log.browser,
             action: log.action,
             statusCode: log.statusCode, // Agregar el código de estado HTTP
             timestamp: log.timestamp
