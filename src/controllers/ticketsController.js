@@ -234,8 +234,8 @@ exports.createTicket = async (req, res) => {
     const numeroTicket = generateTicketNumber();
     const userId = req.session.userId;
     let tipoTicketId = parseInt(req.body.tipoTicketId);
-    let clienteId = parseInt(req.body.clienteId);
-    let resolverId = parseInt(req.body.resolverId);
+    let clienteId = parseInt(req.body.clienteId,10);
+    let resolverId = parseInt(req.body.resolverId,10);
 
     // Si el usuario es Cliente, asignar el tipo de ticket de "resolución"
     if (req.session.userRole === 'Cliente') {
@@ -359,7 +359,7 @@ exports.createTicket = async (req, res) => {
 // Renderizar el formulario de edición de ticket
 exports.renderEditForm = async (req, res) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = parseInt(req.params.id, 10);
 
     // Buscar el ticket con los datos necesarios
     const ticket = await prisma.ticket.findUnique({
@@ -423,7 +423,7 @@ exports.renderEditForm = async (req, res) => {
 // Función para actualizar un ticket
 exports.updateTicket = async (req, res) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = parseInt(req.params.id, 10);
     const { titulo, descripcion, estado, resolverId, clienteId, tipoTicketId, direccion, coordenadas } = req.body;
 
     // Registrar los datos recibidos del formulario
@@ -441,7 +441,7 @@ exports.updateTicket = async (req, res) => {
 
     // Obtener el nombre del tipo de ticket seleccionado
     let tipoTicket = await prisma.tipoTicket.findUnique({
-      where: { id: parseInt(tipoTicketId) },
+      where: { id: tipoTicketId},
     });
 
     // Validar que dirección y coordenadas se proporcionen si el tipo de ticket es mantenimiento o instalación
@@ -544,7 +544,7 @@ exports.updateTicket = async (req, res) => {
 // Función para eliminar un ticket
 exports.deleteTicket = async (req, res) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = parseInt(req.params.id, 10);
 
     // Verificar que el ticket existe antes de eliminar
     const ticket = await prisma.ticket.findUnique({
@@ -595,7 +595,7 @@ exports.showTimeline = async (req, res) => {
       req.flash('error_msg', 'El ID del ticket no es válido.');
       return res.redirect('/tickets');
     }
-    
+
     // Obtener el ticket con los datos necesarios
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },

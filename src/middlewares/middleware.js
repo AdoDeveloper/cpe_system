@@ -37,12 +37,6 @@ module.exports = {
 
       res.locals.currentRoute = path;
 
-      // Validar si la ruta está en las rutas solo de autenticación
-      if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
-        console.log('Ruta permitida sin verificación de permisos:', path);
-        return next();
-      }
-
       // Obtener usuario y sus permisos
       const usuario = await prisma.usuario.findUnique({
         where: { email: req.session.user },
@@ -132,6 +126,13 @@ module.exports = {
         isMatch(permiso.ruta, path) &&
         permiso.metodo === method
       );
+
+      // Validar si la ruta está en las rutas solo de autenticación
+      if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
+            console.log('Ruta permitida sin verificación de permisos:', path);
+            return next();
+      }
+      
 
       console.log('¿Tiene permiso?', hasPermission);
 
