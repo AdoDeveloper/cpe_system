@@ -21,7 +21,7 @@ const io = require('socket.io')(server);
 
 // Configuración del Servidor
 app.set('port', process.env.PORT || 4500);
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 app.set('views', path.join(__dirname, 'views'));
 
 // Configuración del Motor de Plantillas (Handlebars)
@@ -36,8 +36,8 @@ app.set('view engine', '.hbs');
 
 // Middlewares Globales
 app.use(morgan('dev'));
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: false, limit: '10kb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
