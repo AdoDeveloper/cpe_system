@@ -52,8 +52,7 @@ const parseUserAgent = (ua) => {
   const browserName = result.browser.name || 'Desconocido';
   const browserVersion = result.browser.version || '';
   const osName = result.os.name || 'Desconocido';
-  const osVersion = result.os.version || '';
-  const userAgentInfo = `${browserName} ${browserVersion} en ${osName} ${osVersion}`;
+  const userAgentInfo = `${browserName} ${browserVersion} en ${osName}`;
 
   // Agregar al caché
   if (userAgentCache.size >= MAX_CACHE_SIZE) {

@@ -586,10 +586,16 @@ exports.deleteTicket = async (req, res) => {
 
 exports.showTimeline = async (req, res) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = parseInt(req.params.id, 10);
     const userId = req.session.userId;
     const userRole = req.session.userRole;
 
+    // Verificar que ticketId es válido
+    if (isNaN(ticketId)) {
+      req.flash('error_msg', 'El ID del ticket no es válido.');
+      return res.redirect('/tickets');
+    }
+    
     // Obtener el ticket con los datos necesarios
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },

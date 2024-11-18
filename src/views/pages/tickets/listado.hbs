@@ -26,13 +26,9 @@
             <tr>
               <th>NUMERO DE TICKET</th>
               <th>TITULO</th>
-              <th>
-                {{#if (eq user.rol "Cliente")}}
-                  GESTIONADO POR
-                {{else}}
-                  ASIGNADO A
-                {{/if}}
-              </th>
+              {{#unless (eq user.rol "Cliente")}}
+                <th>ASIGNADO A</th>
+              {{/unless}}
               <th>ESTADO</th>
               <th>ACCIONES</th>
             </tr>
@@ -44,13 +40,15 @@
                   <span class="badge badge-{{getBadgeClass this.tipoTicket.nombre}}">{{this.numeroTicket}}</span>
                 </td>
                 <td>{{this.titulo}}</td>
-                <td>
-                  {{#if this.resolver}}
-                    {{this.resolver.nombre}}
-                  {{else}}
-                    No asignado
-                  {{/if}}
-                </td> 
+                {{#unless (eq ../user.rol "Cliente")}}
+                  <td>
+                    {{#if this.resolver}}
+                      {{this.resolver.nombre}}
+                    {{else}}
+                      No asignado
+                    {{/if}}
+                  </td>
+                {{/unless}}
                 <td>{{getStatusBadgeClass this.estado}}</td>
                 <td style="white-space: nowrap;">
                   <a href="/tickets/timeline/{{this.id}}" class="btn btn-info btn-sm" title="Ver Timeline">
