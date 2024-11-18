@@ -111,7 +111,7 @@ async function main() {
       // Dashboard Rutas
       {
         nombre: 'Inicio',
-        ruta: '/',
+        ruta: '/dashboard',
         icono: 'fas fa-chart-line',
         moduloId: dashboardModulo.id,
       },

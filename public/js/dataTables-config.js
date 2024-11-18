@@ -7,7 +7,7 @@ $(document).ready(function () {
         "lengthChange": true,
         "searching": true,
         "ordering": false,
-        "info": true,
+        "info": false,
         "autoWidth": false,
         "responsive": false,  // Desactiva responsive para habilitar scroll si es necesario
         "scrollX": false,     // Cambiar a true si deseas scroll horizontal en todas las tablas

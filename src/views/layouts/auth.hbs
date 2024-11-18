@@ -5,10 +5,14 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   {{!-- Título dinámico --}}
   <title>{{title}} | Airlink System</title>
-  
+
+  {{!-- Favicon --}}
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
   {{!-- Estilos principales --}}
   <link rel="stylesheet" href="/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
@@ -16,7 +20,7 @@
   {{!-- Fuente de Apple: San Francisco Pro Display --}}
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
   <style>
-    body{
+    body {
       font-family: 'SF Pro Display', sans-serif;
     }
   </style>
@@ -30,7 +34,7 @@
           <a href="#"><b class="text-bold">Airlink</b> WISP</a>
         </div>
       </div>
-      
+
       {{!-- Cuerpo de la tarjeta --}}
       <div class="card-body login-card-body">
         {{> messages}} {{!-- Inclusión de mensajes de error o éxito --}}

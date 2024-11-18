@@ -35,11 +35,46 @@ app.engine('.hbs', exphbs.engine({
 app.set('view engine', '.hbs');
 
 // Middlewares Globales
+
+// Registro de solicitudes HTTP
 app.use(morgan('dev'));
+
+// Parseo de solicitudes con límites de tamaño
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Sobrescritura de métodos HTTP
 app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Cachear archivos estáticos en 'public'
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  maxAge: '1d', // 1 día
+  etag: true,   // Activar ETag para validación del caché
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache'); // Evitar cachear HTML dinámico
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache de 1 día
+    }
+  },
+}));
+
+// Configuración de Límite de Solicitudes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Limita a 100 solicitudes por IP
+  message: "Demasiadas solicitudes desde esta IP, por favor intenta nuevamente más tarde.",
+});
+app.use(limiter);
+
+// Middleware para establecer encabezados de seguridad
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY'); // Evitar embebido en iframes
+  res.setHeader('X-XSS-Protection', '1; mode=block'); // Protección contra XSS
+  res.setHeader('Referrer-Policy', 'no-referrer'); // Controla la información referrer
+  res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=()'); // Controla permisos
+  next();
+});
 
 // Configuración de Sesiones
 app.use(session({
@@ -49,7 +84,7 @@ app.use(session({
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 horas
     httpOnly: true,
-    secure: false, // Cambiar a true en producción con HTTPS
+    secure: process.env.NODE_ENV === 'production', // Seguro en producción
     sameSite: 'lax',
   },
 }));
@@ -57,7 +92,7 @@ app.use(session({
 // Middleware para Mensajes Flash
 app.use(flash());
 
-// Middleware Personalizado
+// Middlewares Personalizados
 const notificacionesMiddleware = require('./middlewares/notificacionesMiddleware');
 const loggingMiddleware = require('./middlewares/loggingMiddleware');
 app.use(notificacionesMiddleware);
@@ -72,13 +107,6 @@ app.use((req, res, next) => {
   res.locals.userName = req.session.userName || null;
   next();
 });
-
-// Configuración de Límite de Solicitudes
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limita a 100 solicitudes por IP
-});
-app.use(limiter);
 
 // Desactivar Cabecera "X-Powered-By"
 app.disable('x-powered-by');
@@ -130,28 +158,28 @@ app.use('/bitacoras', authMiddleware, bitacorasRoutes);
 app.use('/', authMiddleware, homeRoutes, loginRoutes);
 app.use('/perfil', authMiddleware, perfilRoute);
 
-// Manejo de Errores
+// Manejo de Errores 404
 app.use((req, res, next) => {
   res.status(404).render('errors/404', { layout: 'error', title: '404 - Página no encontrada' });
 });
 
-// Configuración de Cron Jobs
+// Cron Jobs
 cron.schedule('0 0 1 * *', async () => {
-  console.log('Ejecutando procedimiento mensual...');
+  console.log('Ejecución mensual...');
   try {
     await prisma.$executeRaw`CALL public.generarpagosfactmensual()`;
-    console.log('Procedimiento ejecutado exitosamente');
+    console.log('Procedimiento ejecutado.');
   } catch (error) {
-    console.error('Error al ejecutar el procedimiento:', error.message);
+    console.error('Error:', error.message);
   }
 });
 
 cron.schedule('*/14 * * * *', async () => {
   try {
     await axios.get('https://airlinksystem.onrender.com');
-    console.log('Auto-petición enviada para mantener el servidor activo.');
+    console.log('Ping exitoso.');
   } catch (error) {
-    console.error('Error al intentar mantener el servidor activo:', error.message);
+    console.error('Error en el ping:', error.message);
   }
 });
 
