@@ -120,19 +120,18 @@ module.exports = {
       const method = req.method;
       console.log('Método HTTP usado:', method);
 
+      // Validar si la ruta está en las rutas solo de autenticación
+      if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
+        console.log('Ruta permitida sin verificación de permisos:', path);
+        return next();
+      }
+
       // Validar permisos
       const hasPermission = permisos.some((permiso) =>
         permiso.moduloPermisos.some((mp) => moduloIdsActivos.has(mp.moduloId)) &&
         isMatch(permiso.ruta, path) &&
         permiso.metodo === method
       );
-
-      // Validar si la ruta está en las rutas solo de autenticación
-      if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
-            console.log('Ruta permitida sin verificación de permisos:', path);
-            return next();
-      }
-      
 
       console.log('¿Tiene permiso?', hasPermission);
 
@@ -150,8 +149,12 @@ module.exports = {
 
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
-      return res.redirect('/dashboard');
+      // Validar si isAdmin está definido y es true
+      if (req.session.isAdmin === true) {
+        return res.redirect('/dashboard'); // Administrador redirigido al dashboard
+      }
+      return res.redirect('/'); // Otros usuarios autenticados redirigidos a la raíz
     }
-    next();
+    next(); // Usuarios no autenticados permitidos continuar al login
   },
 };
