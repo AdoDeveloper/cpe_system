@@ -20,7 +20,7 @@ module.exports = {
       ]);
 
       // Permitir favicon sin autenticación
-      if (req.originalUrl.includes('favicon.ico')) {
+      if (req.originalUrl.includes('favicon.png')) {
         return next();
       }
 
