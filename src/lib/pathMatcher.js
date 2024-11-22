@@ -8,11 +8,30 @@ const UrlPattern = require('url-pattern');
  * @param {string} path - Ruta solicitada (ej. '/tickets/1').
  * @returns {boolean} - True si coincide, false en caso contrario.
  */
+
 function isMatch(pattern, path) {
-  // Crear un patrón URL usando UrlPattern
-  const urlPattern = new UrlPattern(pattern);
-  const params = urlPattern.match(path); // Intenta hacer coincidir la ruta
-  return params !== null; // Si hay parámetros, la ruta coincide
+  try {
+    if (!pattern || !path) {
+      console.error('El patrón o la ruta son inválidos:', { pattern, path });
+      return false;
+    }
+
+    // Sanitizar patrón y ruta eliminando espacios innecesarios
+    const cleanPattern = pattern.trim();
+    const cleanPath = path.trim();
+
+    // Crear un patrón URL usando UrlPattern
+    const urlPattern = new UrlPattern(cleanPattern);
+
+    // Intenta hacer coincidir la ruta
+    const params = urlPattern.match(cleanPath);
+
+    // Devuelve true si hay coincidencias, false en caso contrario
+    return params !== null;
+  } catch (error) {
+    console.error('Error en el proceso de coincidencia de rutas:', error.message);
+    return false; // En caso de error, devuelve false
+  }
 }
 
 module.exports = { isMatch };

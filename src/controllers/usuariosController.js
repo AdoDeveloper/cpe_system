@@ -116,7 +116,7 @@ exports.renderEditForm = async (req, res) => {
         // Verifica si el rol es 'Administrador'
         const isAdmin = usuario.rol.esAdmin;
 
-        res.render('pages/usuarios/modificar', { usuario, roles, clientes, isAdmin, errors: [], title: 'Usuarios' });
+        res.render('pages/usuarios/modificar', { action: 'edit', usuario, roles, clientes, isAdmin, errors: [], title: 'Usuarios' });
     } catch (error) {
         console.error('Error al cargar el formulario de usuario:', error);
         req.flash('error_msg', 'Error al cargar el formulario de usuario.');

@@ -61,7 +61,7 @@ exports.renderEditForm = async (req, res) => {
         if (!politica) {
             return res.redirect('/politicas');
         }
-        res.render('pages/politicas/modificar', { politica, errors: [], title: 'Politicas' });
+        res.render('pages/politicas/modificar', { action: 'edit', politica, errors: [], title: 'Politicas' });
     } catch (error) {
         console.error('Error al obtener la política para editar:', error);
         req.flash('error_msg', 'Error al obtener la política.');

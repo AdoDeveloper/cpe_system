@@ -402,7 +402,8 @@ exports.renderEditForm = async (req, res) => {
     const tipos = await prisma.tipoTicket.findMany();
 
     // Renderizar la vista del formulario de modificación del ticket
-    res.render('pages/tickets/modificar', {
+    res.render('pages/tickets/modificar', { 
+      action: 'edit',
       ticket,
       resolutores,
       clientes,

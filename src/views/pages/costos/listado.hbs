@@ -1,0 +1,77 @@
+<div class="container-fluid">
+    <br>
+    <div class="card">
+        <div class="card-header">
+            <div class="container-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">LISTADO DE COSTOS FIJOS</h3>
+                <a href="/costos/new" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Costo Fijo
+                </a>
+            </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="costosFijos" style="white-space: nowrap;" class="table table-bordered table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>MONTO</th>
+                            <th>FECHA INICIO</th>
+                            <th>FECHA FIN</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each costosFijos}}
+                            <tr>
+                                <td>{{nombre}}</td>
+                                <td>{{descripcion}}</td>
+                                <td>${{monto}}</td>
+                                <td>{{formatDatePDF fechaInicio}}</td>
+                                <td>{{#if fechaFin}}{{formatDatePDF fechaFin}}{{else}}N/A{{/if}}</td>
+                                <td style="white-space: nowrap;">
+                                    <a href="/costos/edit/{{id}}" class="btn btn-primary btn-sm" title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form id="deleteForm-{{id}}" method="POST"
+                                        action="/costos/delete/{{id}}?_method=DELETE" style="display:inline;"
+                                        onsubmit="return confirmDeleteCosto(event, '{{id}}', '{{nombre}}')">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye SweetAlert2 para las alertas -->
+<script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+
+<script>
+    function confirmDeleteCosto(event, id, nombre) {
+        event.preventDefault(); // Evitar el envío del formulario inmediatamente
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Estás a punto de eliminar el costo fijo: ${nombre}. Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, enviar el formulario manualmente
+                document.getElementById(`deleteForm-${id}`).submit();
+            }
+        });
+    }
+</script>

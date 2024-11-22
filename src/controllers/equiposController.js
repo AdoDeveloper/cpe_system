@@ -108,7 +108,7 @@ exports.renderEditForm = async (req, res) => {
   try {
     const { id } = req.params;
     const equipo = await prisma.equipoCPE.findUnique({ where: { id: parseInt(id) } });
-    res.render('pages/equipos/modificar', { equipo, title: 'Equipos' });
+    res.render('pages/equipos/modificar', { action: 'edit', equipo, title: 'Equipos' });
   } catch (error) {
     console.error('Error al obtener el equipo:', error);
     req.flash('error_msg', 'Error al obtener el equipo.');

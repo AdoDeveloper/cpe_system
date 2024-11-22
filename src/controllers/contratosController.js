@@ -181,7 +181,7 @@ exports.renderEditForm = async (req, res) => {
         }
         const clientes = await prisma.cliente.findMany();
         const servicios = await prisma.servicio.findMany();
-        res.render('pages/contratos/modificar', { contrato, clientes, servicios, errors: [], title: 'Contratos' });
+        res.render('pages/contratos/modificar', { action: 'edit', contrato, clientes, servicios, errors: [], title: 'Contratos' });
     } catch (error) {
         console.error('Error al cargar el contrato para editar:', error);
         req.flash('error_msg', 'Error al cargar el contrato.');

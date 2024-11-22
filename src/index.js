@@ -134,6 +134,7 @@ const movimientosRoutes = require('./routes/movimientosRoutes');
 const pagosRoutes = require('./routes/pagosRoutes');
 const dashboardRoute = require('./routes/dashboardRoute');
 const bitacorasRoutes = require('./routes/bitacorasRoutes');
+const costosRoutes = require('./routes/costosRoutes');
 
 // Rutas Públicas
 app.use('/login', redirectIfAuthenticated, loginRoutes);
@@ -153,6 +154,7 @@ app.use('/tickets', authMiddleware, ticketsRoutes);
 app.use('/facturacion', authMiddleware, facturacionRoutes);
 app.use('/movimientos', authMiddleware, movimientosRoutes);
 app.use('/pagos', authMiddleware, pagosRoutes);
+app.use('/costos',authMiddleware, costosRoutes);
 app.use('/dashboard', authMiddleware, dashboardRoute);
 app.use('/bitacoras', authMiddleware, bitacorasRoutes);
 app.use('/', authMiddleware, homeRoutes, loginRoutes);

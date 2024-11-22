@@ -1,0 +1,60 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <h1>Modificar Costo Fijo</h1>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      
+      {{!-- Mostrar errores si existen --}} 
+      {{#if errors}}
+        <div class="alert alert-danger">
+          <ul>
+            {{#each errors}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+
+      {{!-- Formulario para modificar costo fijo --}} 
+      <form method="POST" action="/costos/edit/{{costoFijo.id}}?_method=PUT" id="alertFormEdit">
+        
+        <div class="form-group">
+          <label for="nombre">Nombre del Costo Fijo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del Costo Fijo" value="{{costoFijo.nombre}}" required autofocus>
+        </div>
+        
+        <div class="form-group">
+          <label for="monto">Monto</label>
+          <input type="number" step="0.01" class="form-control" id="monto" name="monto" placeholder="Monto" value="{{costoFijo.monto}}" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" placeholder="Descripción del Costo Fijo">{{costoFijo.descripcion}}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="fechaInicio">Fecha de Inicio</label>
+          <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" value="{{formatDateForInput2 costoFijo.fechaInicio}}" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="fechaFin">Fecha de Fin</label>
+          <input type="date" class="form-control" id="fechaFin" name="fechaFin" value="{{formatDateForInput2 costoFijo.fechaFin}}">
+        </div>
+        
+        <div class="form-group row">
+          <div class="col-6 pl-1">
+            <a href="/costos" class="btn btn-secondary btn-block">Cancelar</a>
+          </div>
+          <div class="col-6 pr-1">
+            <button class="btn btn-primary btn-block" type="submit">Guardar Cambios</button>
+          </div>
+        </div>
+        
+      </form>
+    </div>
+  </div>
+</div>

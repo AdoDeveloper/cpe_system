@@ -336,6 +336,21 @@ model CuentaContable {
 
   @@map("cuentas_contables")
 }
+
+model CostoFijo {
+  id            Int       @id @default(autoincrement())
+  nombre        String    // Nombre del costo fijo
+  descripcion   String?   // Descripción opcional
+  monto         Float     // Monto del costo fijo
+  fechaInicio   DateTime  // Fecha de inicio de aplicación del costo
+  fechaFin      DateTime? // Fecha opcional de finalización del costo
+  estado        Boolean   @default(true) // Indica si el costo fijo está activo o inactivo
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt      @map("updated_at")
+
+  @@map("costos_fijos")
+}
+
 model TipoTicket {
   id          Int       @id @default(autoincrement())
   nombre      String    @unique

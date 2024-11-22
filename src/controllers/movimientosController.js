@@ -84,7 +84,7 @@ exports.renderEditForm = async (req, res) => {
             return res.redirect('/movimientos');
         }
         const cuentasContables = await prisma.cuentaContable.findMany();
-        res.render('pages/movimientos/modificar', { cuentasContables, movimiento, errors: [], title: 'Movimientos' });
+        res.render('pages/movimientos/modificar', { action: 'edit', cuentasContables, movimiento, errors: [], title: 'Movimientos' });
     } catch (error) {
         console.error('Error al obtener el movimiento para editar:', error);
         req.flash('error_msg', 'Error al obtener el movimiento.');

@@ -196,6 +196,15 @@ Handlebars.registerHelper('formatDateForInput', function (date) {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 });
 
+Handlebars.registerHelper('formatDateForInput2', function (date) {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = (`0${d.getDate()}`).slice(-2);
+    const month = (`0${d.getMonth() + 1}`).slice(-2);
+    const year = d.getFullYear();
+    return `${year}-${month}-${day}`; // Formato requerido por campos de tipo 'date'
+});
+
 // Helper para verificar si un array contiene un valor específico
 Handlebars.registerHelper('contains', function(array, value) {
     return array && array.includes(value);
