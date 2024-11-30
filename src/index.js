@@ -178,7 +178,7 @@ cron.schedule('0 0 1 * *', async () => {
 
 cron.schedule('*/14 * * * *', async () => {
   try {
-    await axios.get('https://airlinksystem.onrender.com');
+    await axios.get('https://cpe-system-0pgi.onrender.com/');
     console.log('Ping exitoso.');
   } catch (error) {
     console.error('Error en el ping:', error.message);
