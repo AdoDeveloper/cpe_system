@@ -15,13 +15,13 @@ router.get('/', costosController.listCostosFijos);
 router.get('/new', costosController.renderCreateForm);
 
 // Ruta para crear un nuevo costo fijo
-router.post('/new', costosController.createCostoFijo);
+router.post('/new',costosController.validateCreateCostoFijo, costosController.createCostoFijo);
 
 // Ruta para mostrar el formulario de edición de un costo fijo
 router.get('/edit/:id', costosController.renderEditForm);
 
 // Ruta para actualizar un costo fijo
-router.put('/edit/:id', costosController.updateCostoFijo);
+router.put('/edit/:id',costosController.validateUpdateCostoFijo, costosController.updateCostoFijo);
 
 // Ruta para eliminar un costo fijo
 router.delete('/delete/:id', costosController.deleteCostoFijo);

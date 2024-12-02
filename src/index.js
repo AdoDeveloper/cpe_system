@@ -62,7 +62,7 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 // Configuración de Límite de Solicitudes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limita a 100 solicitudes por IP
+  max: 1000, // Limita a 100 solicitudes por IP
   message: "Demasiadas solicitudes desde esta IP, por favor intenta nuevamente más tarde.",
 });
 app.use(limiter);
@@ -167,10 +167,20 @@ app.use((req, res, next) => {
 
 // Cron Jobs
 cron.schedule('0 0 1 * *', async () => {
-  console.log('Ejecución mensual...');
+  console.log('Ejecución mensual (creacion de facturas)...');
   try {
     await prisma.$executeRaw`CALL public.generarpagosfactmensual()`;
-    console.log('Procedimiento ejecutado.');
+    console.log('Procedimiento ejecutado (creacion de facturas).');
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+});
+
+cron.schedule('0 0 1 * *', async () => {
+  console.log('Ejecución mensual (insercion de costos fijos a movimientos)...');
+  try {
+    await prisma.$executeRaw`CALL public.insertar_costos_fijos();`;
+    console.log('Procedimiento ejecutado (insercion de costos fijos a movimientos).');
   } catch (error) {
     console.error('Error:', error.message);
   }

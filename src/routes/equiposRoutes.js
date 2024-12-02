@@ -28,13 +28,13 @@ router.get('/', equiposController.listEquipos);
 router.get('/new', equiposController.renderCreateForm);
 
 // Crear nuevo equipo (Se usa multer para manejar la subida de imagen)
-router.post('/new', upload.single('img_equipo'), equiposController.createEquipo);
+router.post('/new', upload.single('img_equipo'),equiposController.validateCreateEquipo, equiposController.createEquipo);
 
 // Renderizar formulario para editar equipo
 router.get('/edit/:id', equiposController.renderEditForm);
 
 // Actualizar equipo (Permitir actualización de la imagen usando multer)
-router.put('/edit/:id', upload.single('img_equipo'), equiposController.updateEquipo);
+router.put('/edit/:id', upload.single('img_equipo'),equiposController.validateUpdateEquipo, equiposController.updateEquipo);
 
 // Eliminar equipo
 router.delete('/delete/:id', equiposController.deleteEquipo);

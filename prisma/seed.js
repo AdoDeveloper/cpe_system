@@ -135,6 +135,12 @@ async function main() {
         icono: 'far fa-clock',
         moduloId: facturacionModulo.id,
       },
+      {
+        nombre: 'Costos Fijos',
+        ruta: '/costos',
+        icono: 'fas fa-money-bill-wave-alt',
+        moduloId: facturacionModulo.id,
+      },
 
       // Contratos y Servicios Rutas
       {
@@ -203,6 +209,13 @@ async function main() {
         nombre: 'Gestión de Tickets',
         ruta: '/tickets',
         icono: 'fas fa-ticket-alt',
+        moduloId: helpdeskModulo.id,
+      },
+      // Rutas bitacoras
+      {
+        nombre: 'Bitacoras',
+        ruta: '/bitacoras',
+        icono: 'fas fa-clipboard-list',
         moduloId: helpdeskModulo.id,
       },
     ];
@@ -330,6 +343,22 @@ async function main() {
       //{ ruta: '/login', metodo: 'GET', descripcion: 'Acceso al login', tipo: 'lectura'},
       //{ ruta: '/login', metodo: 'POST', descripcion: 'Procesar login', tipo: 'escritura'},
       //{ ruta: '/logout', metodo: 'GET', descripcion: 'Procesar logout', tipo: 'lectura'},
+
+      // Permisos de perfil y home
+      { ruta: '/', metodo: 'GET', descripcion: 'Acceso al home', tipo: 'lectura', moduloId: dashboardModulo.id },
+      { ruta: '/perfil', metodo: 'GET', descripcion: 'Ver perfil', tipo: 'lectura', moduloId: clientesModulo.id },
+      { ruta: '/perfil', metodo: 'PUT', descripcion: 'Actualizar perfil', tipo: 'escritura', moduloId: clientesModulo.id },
+
+      // Permisos de costos
+      { ruta: '/costos', metodo: 'GET', descripcion: 'Listar  costos', tipo: 'lectura', moduloId: facturacionModulo.id },
+      { ruta: '/costos/new', metodo: 'GET', descripcion: 'Formulario agregar costos', tipo: 'lectura', moduloId: facturacionModulo.id },
+      { ruta: '/costos/new', metodo: 'POST', descripcion: 'Crear costos', tipo: 'escritura', moduloId: facturacionModulo.id },
+      { ruta: '/costos/edit/:id', metodo: 'GET', descripcion: 'Formulario editar costos', tipo: 'lectura', moduloId: facturacionModulo.id },
+      { ruta: '/costos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar costos', tipo: 'escritura', moduloId: facturacionModulo.id },
+      { ruta: '/costos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar costos', tipo: 'eliminación', moduloId: facturacionModulo.id },
+
+      // Permisos de bitacoras
+      { ruta: '/bitacoras', metodo: 'GET', descripcion: 'Listar bitacoras', tipo: 'lectura', moduloId: helpdeskModulo.id },
     ];
 
     // Crear los permisos (manteniendo la asignación actual de rutas)
@@ -491,6 +520,7 @@ async function main() {
     // Insertar registros en la tabla CuentasContables
     const cuentasContablesData = [
       { tipocc: 'CCI', nombre_cuenta: 'Cuenta de Ingreso', descripcion: null },
+      { tipocc: 'CCF', nombre_cuenta: 'Cuentas de Costos Fijos', descripcion: null },
       { tipocc: 'CCC', nombre_cuenta: 'Cuenta de Costos', descripcion: null },
       { tipocc: 'CCG', nombre_cuenta: 'Cuenta de Gastos', descripcion: null },
       { tipocc: 'CCCxP', nombre_cuenta: 'Cuentas por Pagar', descripcion: null },

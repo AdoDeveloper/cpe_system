@@ -8,8 +8,22 @@
                     <i class="fas fa-plus"></i> Agregar Movimiento
                 </a>
             </div>
-            <!-- Filtro de movimientos -->
+            <!-- Opciones de reporte y filtros -->
             <div class="mt-2">
+                <!-- Inputs para fechas de reporte -->
+                <div class="mb-2 d-flex align-items-center">
+                    <label for="reporteFechaInicio" class="mr-2">Fecha inicio del reporte:</label>
+                    <input type="date" id="reporteFechaInicio" class="form-control mr-2" style="width: auto;">
+                    <label for="reporteFechaFin" class="mr-2">Fecha fin del reporte:</label>
+                    <input type="date" id="reporteFechaFin" class="form-control mr-2" style="width: auto;">
+                    <button id="btnReportePDF" class="btn btn-danger mr-2" title="Generar Reporte PDF">
+                        <i class="fas fa-file-pdf"></i> <!-- Icono de PDF -->
+                    </button>
+                    <button id="btnReporteExcel" class="btn btn-success" title="Generar Reporte EXCEL">
+                        <i class="fas fa-file-excel"></i> <!-- Icono de Excel -->
+                    </button>
+                </div>
+                <!-- Filtro de movimientos existente -->
                 <select id="filtroMovimientos" class="form-control" style="width: auto;" onchange="filtrarMovimientos()">
                     <option value="actual">Movimientos del mes actual</option>
                     <option value="todos">Todos los movimientos</option>
@@ -18,7 +32,7 @@
                     <option value="rango">Filtrar por rango de fechas</option>
                 </select>
             </div>
-            <!-- Filtro de rango de fechas -->
+            <!-- Filtro de rango de fechas para filtrar la tabla -->
             <div id="filtroRangoFechas" class="mt-2" style="display: none;">
                 <label for="fechaInicio">Fecha inicio:</label>
                 <input type="date" id="fechaInicio" class="form-control" style="width: auto; display: inline;">
@@ -41,7 +55,7 @@
                     </thead>
                     <tbody>
                         {{#each movimientos}}
-                            <tr class="movimiento-row" data-tipocc="{{tipocc}}" data-fecha="{{fecha}}">
+                            <tr class="movimiento-row" data-tipocc="{{tipocc}}" data-fecha="{{createdAt}}">
                                 <td>{{toUpperCase concepto}}</td>
                                 <td>
                                     {{#if (eq tipocc "CCI")}}
@@ -50,7 +64,7 @@
                                         <span style="color: red;">-${{monto}}</span>
                                     {{/if}}
                                 </td>
-                                <td>{{formatDate fecha}}</td>
+                                <td>{{formatDate createdAt}}</td>
                                 <td style="white-space: nowrap;">
                                     <a href="/movimientos/edit/{{id}}" class="btn btn-primary btn-sm" title="Editar">
                                         <i class="fas fa-edit"></i>
@@ -91,10 +105,11 @@
         });
     }
 
-    // Mostrar/ocultar el filtro de rango de fechas
+    // Mostrar/ocultar el filtro de rango de fechas para la tabla
     document.getElementById('filtroMovimientos').addEventListener('change', function() {
         const filtroRango = document.getElementById('filtroRangoFechas');
         filtroRango.style.display = this.value === 'rango' ? 'block' : 'none';
+        filtrarMovimientos();
     });
 
     // Función para filtrar los movimientos según el filtro seleccionado o el rango de fechas
@@ -134,5 +149,33 @@
     }
 
     // Ejecutar el filtro al cargar la página para mostrar el mes actual
-    document.addEventListener('DOMContentLoaded', filtrarMovimientos);
+    document.addEventListener('DOMContentLoaded', function() {
+        filtrarMovimientos();
+        configurarBotonesReporte();
+    });
+
+    // Función para configurar los botones de reporte con las fechas seleccionadas
+    function configurarBotonesReporte() {
+        const btnReportePDF = document.getElementById('btnReportePDF');
+        const btnReporteExcel = document.getElementById('btnReporteExcel');
+        const fechaInicioReporte = document.getElementById('reporteFechaInicio').value;
+        const fechaFinReporte = document.getElementById('reporteFechaFin').value;
+        let queryParams = '';
+
+        if (fechaInicioReporte && fechaFinReporte) {
+            queryParams = `?startDate=${fechaInicioReporte}&endDate=${fechaFinReporte}`;
+        }
+
+        btnReportePDF.onclick = function() {
+            window.location.href = '/movimientos/report/pdf' + queryParams;
+        };
+
+        btnReporteExcel.onclick = function() {
+            window.location.href = '/movimientos/report/excel' + queryParams;
+        };
+    }
+
+    // Actualizar los botones de reporte cuando cambien las fechas
+    document.getElementById('reporteFechaInicio').addEventListener('change', configurarBotonesReporte);
+    document.getElementById('reporteFechaFin').addEventListener('change', configurarBotonesReporte);
 </script>

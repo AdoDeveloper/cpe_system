@@ -9,13 +9,13 @@ router.get('/', configuracionesController.listConfiguraciones);
 router.get('/new', configuracionesController.renderCreateForm);
 
 // Crear nueva configuración
-router.post('/new', configuracionesController.createConfiguracion);
+router.post('/new',configuracionesController.validateCreateConfiguracion, configuracionesController.createConfiguracion);
 
 // Mostrar formulario para editar configuración
 router.get('/edit/:id', configuracionesController.renderEditForm);
 
 // Actualizar configuración existente
-router.put('/edit/:id', configuracionesController.updateConfiguracion);
+router.put('/edit/:id',configuracionesController.validateUpdateConfiguracion, configuracionesController.updateConfiguracion);
 
 // Eliminar configuración
 router.delete('/delete/:id', configuracionesController.deleteConfiguracion);

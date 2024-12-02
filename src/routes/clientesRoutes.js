@@ -1,26 +1,23 @@
-// src/routes/clientesRoutes.js
 const express = require('express');
 const router = express.Router();
 const clientesController = require('../controllers/clientesController');
 
-// ruta /clientes/
-
-// Listar clientes
+// Ruta para listar clientes
 router.get('/', clientesController.listClientes);
 
-// Renderizar formulario para agregar cliente
+// Ruta para renderizar formulario para agregar un nuevo cliente
 router.get('/new', clientesController.renderCreateForm);
 
-// Crear nuevo cliente
-router.post('/new', clientesController.createCliente);
+// Ruta para crear un nuevo cliente, con validaciones
+router.post('/new', clientesController.validateCreateCliente, clientesController.createCliente);
 
-// Renderizar formulario para editar cliente
+// Ruta para renderizar formulario para editar un cliente
 router.get('/edit/:id', clientesController.renderEditForm);
 
-// Actualizar cliente
-router.put('/edit/:id', clientesController.updateCliente);
+// Ruta para actualizar un cliente, con validaciones
+router.put('/edit/:id', clientesController.validateUpdateCliente, clientesController.updateCliente);
 
-// Eliminar cliente
+// Ruta para eliminar un cliente
 router.delete('/delete/:id', clientesController.deleteCliente);
 
 module.exports = router;

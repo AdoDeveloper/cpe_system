@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const fs = require('fs');
 const path = require('path');
+const { check, validationResult } = require('express-validator');
 
 // Cargar y parsear el archivo icons.json al inicio del controlador
 let allowedIcons = [];
@@ -15,6 +16,81 @@ try {
   console.error('Error al cargar icons.json:', error);
   allowedIcons = [];
 }
+
+// Validaciones para crear un módulo
+exports.validateCreateModulo = [
+  check('nombre')
+    .notEmpty().withMessage('El nombre es obligatorio.')
+    .isLength({ max: 100 }).withMessage('El nombre no debe exceder los 100 caracteres.'),
+  check('descripcion')
+    .optional()
+    .isLength({ max: 255 }).withMessage('La descripción no debe exceder los 255 caracteres.'),
+  check('activo')
+    .notEmpty().withMessage('El estado es obligatorio.')
+    .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".'),
+  check('rutas').custom((value, { req }) => {
+    const rutas = [];
+    let i = 0;
+    while (req.body[`rutas[${i}][nombre]`] || req.body[`rutas[${i}][ruta]`]) {
+      const nombreRuta = req.body[`rutas[${i}][nombre]`];
+      const rutaRuta = req.body[`rutas[${i}][ruta]`];
+      const iconoRuta = req.body[`rutas[${i}][icono]`];
+
+      if (!nombreRuta) {
+        throw new Error(`El nombre de la ruta ${i + 1} es obligatorio.`);
+      }
+      if (!rutaRuta) {
+        throw new Error(`La ruta de la ruta ${i + 1} es obligatoria.`);
+      }
+      if (!allowedIcons.includes(iconoRuta)) {
+        throw new Error(`El ícono de la ruta ${i + 1} no es válido.`);
+      }
+      i++;
+    }
+    if (i === 0) {
+      throw new Error('Debe agregar al menos una ruta.');
+    }
+    return true;
+  }),
+];
+
+// Validaciones para actualizar un módulo
+exports.validateUpdateModulo = [
+  check('nombre')
+    .notEmpty().withMessage('El nombre es obligatorio.')
+    .isLength({ max: 100 }).withMessage('El nombre no debe exceder los 100 caracteres.'),
+  check('descripcion')
+    .optional()
+    .isLength({ max: 255 }).withMessage('La descripción no debe exceder los 255 caracteres.'),
+  check('activo')
+    .notEmpty().withMessage('El estado es obligatorio.')
+    .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".'),
+  check('rutas').custom((value, { req }) => {
+    const rutas = [];
+    let i = 0;
+    while (req.body[`rutas[${i}][nombre]`] || req.body[`rutas[${i}][ruta]`]) {
+      const nombreRuta = req.body[`rutas[${i}][nombre]`];
+      const rutaRuta = req.body[`rutas[${i}][ruta]`];
+      const iconoRuta = req.body[`rutas[${i}][icono]`];
+
+      if (!nombreRuta) {
+        throw new Error(`El nombre de la ruta ${i + 1} es obligatorio.`);
+      }
+      if (!rutaRuta) {
+        throw new Error(`La ruta de la ruta ${i + 1} es obligatoria.`);
+      }
+      if (!allowedIcons.includes(iconoRuta)) {
+        throw new Error(`El ícono de la ruta ${i + 1} no es válido.`);
+      }
+      i++;
+    }
+    if (i === 0) {
+      throw new Error('Debe agregar al menos una ruta.');
+    }
+    return true;
+  }),
+];
+
 
 // Controlador para listar los módulos
 exports.listModulos = async (req, res) => {
@@ -59,6 +135,14 @@ exports.renderCreateForm = (req, res) => {
 
 // Controlador para crear un nuevo módulo
 exports.createModulo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Unir los mensajes de error con '<br>' para saltos de línea
+    const errorMessages = errors.array().map(err => err.msg).join('<br>');
+    req.flash('error_msg', errorMessages);
+    return res.redirect('/modulos/new');
+  }
+
   try {
     const { nombre, descripcion, activo } = req.body;
     const isActive = activo === 'true';
@@ -139,6 +223,14 @@ exports.renderEditForm = async (req, res) => {
 
 // Controlador para actualizar un módulo
 exports.updateModulo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Unir los mensajes de error con '<br>' para saltos de línea
+    const errorMessages = errors.array().map(err => err.msg).join('<br>');
+    req.flash('error_msg', errorMessages);
+    return res.redirect(`/modulos/edit/${req.params.id}`);
+  }
+
   try {
     const { id } = req.params;
     const { nombre, descripcion, activo } = req.body;

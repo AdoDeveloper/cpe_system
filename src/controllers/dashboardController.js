@@ -30,10 +30,10 @@ exports.renderDashboard = async (req, res) => {
       });
       const totalIngresos = totalIngresosResult._sum.monto || 0;
 
-      // Total Egresos (tipocc in ['CCC', 'CCCxP', 'CCG', 'CCPR'])
+      // Total Egresos (tipocc in ['CCC', 'CCCxP', 'CCG', 'CCPR', 'CCF'])
       const totalEgresosResult = await prisma.movimiento.aggregate({
         where: {
-          tipocc: { in: ['CCC', 'CCCxP', 'CCG', 'CCPR'] },
+          tipocc: { in: ['CCC', 'CCCxP', 'CCG', 'CCPR', 'CCF'] },
           anio: currentYear,
           mes: currentMonth,
         },
@@ -83,17 +83,17 @@ exports.renderDashboard = async (req, res) => {
       const porFacturasTotal = porFacturasResult._sum.subtotal || 0;
 
       // **4. Datos para Gráficos**
-      // Obtener datos de movimientos del último año
+      // Obtener datos de movimientos del último año utilizando 'createdAt' en lugar de 'fecha'
 
       const metricsData = await prisma.movimiento.findMany({
         where: {
-          fecha: {
+          createdAt: {
             gte: moment().subtract(1, 'year').startOf('month').toDate(),
             lte: moment().endOf('month').toDate(),
           },
         },
         select: {
-          fecha: true,
+          createdAt: true, // Cambiado de 'fecha' a 'createdAt'
           monto: true,
           tipocc: true,
         },

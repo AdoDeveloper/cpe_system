@@ -72,7 +72,11 @@ homeController.renderHome = async (req, res) => {
         diasFaltantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (fechaPago < hoy && !facturaPagada) {
-          mensaje = `Llevas ${Math.abs(diasFaltantes)} días de retraso. Los servicios se suspenderán automáticamente luego de 3 días sin realizar el pago.`;
+          if (diasFaltantes <= -3) {
+            mensaje = `Llevas ${Math.abs(diasFaltantes)} días de retraso. Tu servicio ha sido suspendido.`;
+          } else {
+            mensaje = `Llevas ${Math.abs(diasFaltantes)} días de retraso. Los servicios se suspenderán automáticamente luego de 3 días sin realizar el pago.`;
+          }
         } else if (fechaPago < hoy && facturaPagada) {
           const proxFechaPago = new Date(fechaPago);
           proxFechaPago.setMonth(proxFechaPago.getMonth() + 1);
@@ -81,7 +85,7 @@ homeController.renderHome = async (req, res) => {
           mensaje = `Has pagado tu factura. Faltan ${diasHastaProxPago} días para la próxima fecha de pago.`;
           diasFaltantes = diasHastaProxPago;
         } else {
-          mensaje = `Faltan ${diasFaltantes} días para tu fecha de pago.`;
+          mensaje = `Faltan ${diasFaltantes} días para el vencimiento del pago de tu factura.`;
         }
       }
 
@@ -89,6 +93,27 @@ homeController.renderHome = async (req, res) => {
         return contrato.servicios.map((cs) => {
           let estadoPago = '';
           let mensajeFinal = '';
+
+          let formattedFechaPago = 'N/A';
+          if (fechaPago) {
+            // Si la fecha de pago ya pasó, se muestra la fecha del siguiente mes
+            if (fechaPago < hoy) {
+              const proxFechaPago = new Date(fechaPago);
+              proxFechaPago.setMonth(proxFechaPago.getMonth() + 1);
+              formattedFechaPago = proxFechaPago.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+            } else {
+              // Si no ha pasado, mostrar la fecha actual
+              formattedFechaPago = fechaPago.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+            }
+          }
 
           if (fechaPago) {
             if (fechaPago < hoy && !facturaPagada) {
@@ -109,13 +134,7 @@ homeController.renderHome = async (req, res) => {
             precio: cs.servicio.precio,
             descripcion: cs.servicio.descripcion,
             fechaPago,
-            formattedFechaPago: fechaPago
-              ? fechaPago.toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })
-              : 'N/A',
+            formattedFechaPago, // Aquí ya se pasa la fecha correctamente formateada
             diasFaltantes,
             estadoPago,
             mensaje: mensajeFinal,

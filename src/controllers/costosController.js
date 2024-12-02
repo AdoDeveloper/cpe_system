@@ -2,22 +2,55 @@
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { check, validationResult } = require('express-validator');
 
-// Validar datos de un costo fijo
-const validateCostoFijo = (data) => {
-    const errors = [];
-    const { nombre, monto, fechaInicio, fechaFin } = data;
+// Validaciones antes de crear costo fijo
+exports.validateCreateCostoFijo = [
+    check('nombre')
+        .notEmpty().withMessage('El nombre es obligatorio.')
+        .isLength({ max: 100 }).withMessage('El nombre no debe exceder los 100 caracteres.'),
+    check('monto')
+        .notEmpty().withMessage('El monto es obligatorio.')
+        .isNumeric().withMessage('El monto debe ser un número.')
+        .custom(value => value > 0).withMessage('El monto debe ser mayor a 0.'),
+    check('fechaInicio')
+        .notEmpty().withMessage('La fecha de inicio es obligatoria.'),
+    check('fechaFin')
+        .optional(),
+    check('fechaInicio').custom((value, { req }) => {
+        if (req.body.fechaFin && new Date(value) > new Date(req.body.fechaFin)) {
+            throw new Error('La fecha de inicio no puede ser mayor que la fecha de fin.');
+        }
+        return true;
+    }),
+    check('estado')
+        .notEmpty().withMessage('El estado es obligatorio.')
+        .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".'),
+];
 
-    if (!nombre || nombre.trim().length === 0) errors.push('El nombre es obligatorio.');
-    if (!monto || isNaN(monto) || monto <= 0) errors.push('El monto debe ser un número positivo.');
-    if (!fechaInicio || isNaN(Date.parse(fechaInicio))) errors.push('La fecha de inicio es obligatoria y debe ser válida.');
-    if (fechaFin && isNaN(Date.parse(fechaFin))) errors.push('La fecha de fin debe ser válida.');
-    if (fechaInicio && fechaFin && new Date(fechaInicio) > new Date(fechaFin)) {
-        errors.push('La fecha de inicio no puede ser mayor que la fecha de fin.');
-    }
-
-    return errors;
-};
+// Validaciones antes de actualizar costo fijo
+exports.validateUpdateCostoFijo = [
+    check('nombre')
+        .notEmpty().withMessage('El nombre es obligatorio.')
+        .isLength({ max: 100 }).withMessage('El nombre no debe exceder los 100 caracteres.'),
+    check('monto')
+        .notEmpty().withMessage('El monto es obligatorio.')
+        .isNumeric().withMessage('El monto debe ser un número.')
+        .custom(value => value > 0).withMessage('El monto debe ser mayor a 0.'),
+    check('fechaInicio')
+        .notEmpty().withMessage('La fecha de inicio es obligatoria.'),
+    check('fechaFin')
+        .optional(),
+    check('fechaInicio').custom((value, { req }) => {
+        if (req.body.fechaFin && new Date(value) > new Date(req.body.fechaFin)) {
+            throw new Error('La fecha de inicio no puede ser mayor que la fecha de fin.');
+        }
+        return true;
+    }),
+    check('estado')
+        .notEmpty().withMessage('El estado es obligatorio.')
+        .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".'),
+];
 
 // Validar ID
 const validateId = (id) => {
@@ -50,24 +83,23 @@ exports.renderCreateForm = (req, res) => {
 
 // Controlador para crear un nuevo costo fijo
 exports.createCostoFijo = async (req, res) => {
-    const { nombre, descripcion, monto, fechaInicio, fechaFin } = req.body;
-    const errors = validateCostoFijo({ nombre, monto: parseFloat(monto), fechaInicio, fechaFin });
-
-    if (errors.length > 0) {
-        return res.render('pages/costos/agregar', {
-            action: 'new',
-            costoFijo: req.body,
-            errors,
-            title: 'Costos Fijos',
-        });
+    const errors = validationResult(req); // Verificar si hay errores de validación
+    if (!errors.isEmpty()) {
+        // Unir los mensajes de error con '<br>' para saltos de línea
+        const errorMessages = errors.array().map(err => err.msg).join('<br>');
+        req.flash('error_msg', errorMessages);
+        return res.redirect('/costos/new'); // Redirigir al formulario de nuevo
     }
 
     try {
+        const { nombre, descripcion, monto, estado, fechaInicio, fechaFin } = req.body;
+
         await prisma.costoFijo.create({
             data: {
                 nombre,
                 descripcion,
                 monto: parseFloat(monto),
+                estado: estado === 'true',
                 fechaInicio: new Date(fechaInicio),
                 fechaFin: fechaFin ? new Date(fechaFin) : null,
             },
@@ -120,7 +152,6 @@ exports.renderEditForm = async (req, res) => {
 // Controlador para actualizar un costo fijo existente
 exports.updateCostoFijo = async (req, res) => {
     const { id } = req.params;
-    const { nombre, descripcion, monto, fechaInicio, fechaFin } = req.body;
 
     const idError = validateId(id);
     if (idError) {
@@ -128,18 +159,17 @@ exports.updateCostoFijo = async (req, res) => {
         return res.redirect('/costos');
     }
 
-    const errors = validateCostoFijo({ nombre, monto: parseFloat(monto), fechaInicio, fechaFin });
-
-    if (errors.length > 0) {
-        return res.render('pages/costos/modificar', {
-            action: 'edit',
-            costoFijo: { id, ...req.body },
-            errors,
-            title: 'Costos Fijos',
-        });
+    const errors = validationResult(req); // Verificar si hay errores de validación
+    if (!errors.isEmpty()) {
+        // Unir los mensajes de error con '<br>' para saltos de línea
+        const errorMessages = errors.array().map(err => err.msg).join('<br>');
+        req.flash('error_msg', errorMessages);
+        return res.redirect(`/costos/edit/${id}`); // Redirigir al formulario de edición
     }
 
     try {
+        const { nombre, descripcion, monto, estado, fechaInicio, fechaFin } = req.body;
+
         const existingCostoFijo = await prisma.costoFijo.findUnique({ where: { id: parseInt(id) } });
         if (!existingCostoFijo) {
             req.flash('error_msg', 'El costo fijo no existe.');
@@ -152,6 +182,7 @@ exports.updateCostoFijo = async (req, res) => {
                 nombre,
                 descripcion,
                 monto: parseFloat(monto),
+                estado: estado === 'true',
                 fechaInicio: new Date(fechaInicio),
                 fechaFin: fechaFin ? new Date(fechaFin) : null,
             },

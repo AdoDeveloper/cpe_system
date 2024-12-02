@@ -8,17 +8,7 @@
     <div class="row justify-content-center mt-4">
         <div class="col-md-6">
 
-            {{#if errors}}
-            <div class="alert alert-danger">
-                <ul>
-                    {{#each errors}}
-                    <li>{{this.msg}}</li>
-                    {{/each}}
-                </ul>
-            </div>
-            {{/if}}
-
-            <form method="POST" action="/contratos/new" id="alertFormSave">
+            <form method="POST" action="/contratos/new" id="alertFormSave" class="bg-white p-4 rounded shadow-sm">
                 <div class="form-group">
                     <label for="clienteId">Cliente</label>
                     <select class="form-control select2" id="select-cliente" name="clienteId" required>
@@ -57,7 +47,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="estado">Estado</label>
+                    <label for="activo">Estado</label>
                     <select class="form-control" name="activo" required>
                         <option value="true">Activo</option>
                         <option value="false">Inactivo</option>

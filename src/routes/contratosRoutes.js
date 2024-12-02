@@ -9,13 +9,13 @@ router.get('/', contratosController.listContratos);
 router.get('/new', contratosController.renderCreateForm);
 
 // Ruta para crear un nuevo contrato
-router.post('/new', contratosController.createContrato);
+router.post('/new',contratosController.validateCreateContrato, contratosController.createContrato);
 
 // Ruta para mostrar el formulario de edición de un contrato
 router.get('/edit/:id', contratosController.renderEditForm);
 
 // Ruta para actualizar un contrato
-router.put('/edit/:id', contratosController.updateContrato);
+router.put('/edit/:id',contratosController.validateUpdateContrato, contratosController.updateContrato);
 
 // Ruta para eliminar un contrato
 router.delete('/delete/:id', contratosController.deleteContrato);

@@ -7,18 +7,9 @@
 
   <div class="row justify-content-center mt-4">
     <div class="col-md-6">
-      {{#if errors}}
-        <div class="alert alert-danger">
-          <ul>
-            {{#each errors}}
-              <li>{{this.msg}}</li>
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
 
       {{!-- Formulario para agregar nuevo usuario --}}
-      <form method="POST" action="/usuarios/new" id="alertFormSave">
+      <form method="POST" action="/usuarios/new" id="alertFormSave" class="bg-white p-4 rounded shadow-sm">
         
         <div class="form-group">
           <label for="email">Correo electrónico</label>

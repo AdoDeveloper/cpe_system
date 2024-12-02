@@ -4,7 +4,52 @@ const PDFDocument = require('pdfkit');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const axios = require('axios'); // Para descargar la imagen del logo
-const { htmlToText } = require('html-to-text');// Importar striptags para limpiar etiquetas HTML
+const { htmlToText } = require('html-to-text'); // Importar striptags para limpiar etiquetas HTML
+const { check, validationResult } = require('express-validator');
+
+// Validaciones para crear un contrato
+exports.validateCreateContrato = [
+    check('clienteId')
+        .notEmpty().withMessage('El cliente es obligatorio.')
+        .isInt({ min: 1 }).withMessage('El ID del cliente debe ser un número entero positivo.'),
+    check('servicioIds')
+        .isArray().withMessage('Debes seleccionar al menos un servicio.')
+        .bail()
+        .custom(value => value.length > 0).withMessage('Debes seleccionar al menos un servicio válido.')
+        .custom((value) => {
+            if (value.some(id => isNaN(parseInt(id)))) {
+                throw new Error('Todos los servicios seleccionados deben tener IDs válidos.');
+            }
+            return true;
+        }),
+    check('fecha_contrato')
+        .notEmpty().withMessage('La fecha del contrato es obligatoria.'),
+    check('activo')
+        .notEmpty().withMessage('El estado es obligatorio.')
+        .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".')
+];
+
+// Validaciones para actualizar un contrato
+exports.validateUpdateContrato = [
+    check('clienteId')
+        .notEmpty().withMessage('El cliente es obligatorio.')
+        .isInt({ min: 1 }).withMessage('El ID del cliente debe ser un número entero positivo.'),
+    check('servicioIds')
+        .isArray().withMessage('Debes seleccionar al menos un servicio.')
+        .bail()
+        .custom(value => value.length > 0).withMessage('Debes seleccionar al menos un servicio válido.')
+        .custom((value) => {
+            if (value.some(id => isNaN(parseInt(id)))) {
+                throw new Error('Todos los servicios seleccionados deben tener IDs válidos.');
+            }
+            return true;
+        }),
+    check('fecha_contrato')
+        .notEmpty().withMessage('La fecha del contrato es obligatoria.'),
+    check('activo')
+        .notEmpty().withMessage('El estado es obligatorio.')
+        .isIn(['true', 'false']).withMessage('El estado debe ser "true" o "false".')
+];
 
 // Controlador para listar los contratos
 exports.listContratos = async (req, res) => {
@@ -39,9 +84,23 @@ exports.listContratos = async (req, res) => {
 // Renderiza el formulario para crear un nuevo contrato
 exports.renderCreateForm = async (req, res) => {
     try {
-        const clientes = await prisma.cliente.findMany(); // Obtener todos los clientes
+        // Obtener solo los clientes que no tienen contrato
+        const clientesSinContrato = await prisma.cliente.findMany({
+            where: {
+                contratos: {
+                    none: {} // Filtrar clientes sin contratos asociados
+                }
+            }
+        });
+
         const servicios = await prisma.servicio.findMany(); // Obtener todos los servicios
-        res.render('pages/contratos/agregar', { action: 'new', clientes, servicios, errors: [], title: 'Contratos' });
+        res.render('pages/contratos/agregar', {
+            action: 'new',
+            clientes: clientesSinContrato, // Pasar solo clientes sin contrato
+            servicios,
+            errors: [],
+            title: 'Contratos'
+        });
     } catch (error) {
         console.error('Error al cargar el formulario de contrato:', error);
         req.flash('error_msg', 'Error al cargar el formulario de contrato.');
@@ -52,14 +111,16 @@ exports.renderCreateForm = async (req, res) => {
 };
 
 exports.createContrato = async (req, res) => {
+    const errors = validationResult(req); // Verificar si hay errores de validación
+    if (!errors.isEmpty()) {
+        // Unir los mensajes de error con '<br>' para saltos de línea
+        const errorMessages = errors.array().map(err => err.msg).join('<br>');
+        req.flash('error_msg', errorMessages);
+        return res.redirect('/contratos/new'); // Redirigir al formulario de nuevo
+    }
+
     try {
         const { clienteId, servicioIds, anexo, fecha_contrato, activo } = req.body;
-
-        // Verificar si se seleccionaron servicios
-        if (!servicioIds) {
-            req.flash('error_msg', 'Debes seleccionar al menos un servicio.');
-            return res.redirect('/contratos/new');
-        }
 
         // Asegurarse de que servicioIds sea un array
         const serviciosSeleccionados = Array.isArray(servicioIds) ? servicioIds : [servicioIds];
@@ -68,12 +129,6 @@ exports.createContrato = async (req, res) => {
         const serviciosValidos = serviciosSeleccionados
             .map(servicioId => parseInt(servicioId, 10))
             .filter(servicioId => !isNaN(servicioId));
-
-        // Verificar si hay servicios válidos
-        if (serviciosValidos.length === 0) {
-            req.flash('error_msg', 'Debes seleccionar al menos un servicio válido.');
-            return res.redirect('/contratos/new');
-        }
 
         // Crear el contrato
         await prisma.contrato.create({
@@ -169,19 +224,43 @@ exports.createContrato = async (req, res) => {
 exports.renderEditForm = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Obtener el contrato con el cliente y los servicios asociados
         const contrato = await prisma.contrato.findUnique({
             where: { id: parseInt(id) },
             include: {
-                cliente: true,
+                cliente: true, // Incluye los datos del cliente del contrato
                 servicios: { include: { servicio: true } }
             }
         });
+
+        // Si no se encuentra el contrato, redirigir a la lista de contratos
         if (!contrato) {
             return res.redirect('/contratos');
         }
-        const clientes = await prisma.cliente.findMany();
+
+        // Obtener todos los clientes que no tienen contratos activos, pero incluir al cliente actual
+        const clientes = await prisma.cliente.findMany({
+            where: {
+                OR: [
+                    { contratos: { none: {} } }, // Clientes sin contrato
+                    { id: contrato.clienteId } // Incluir el cliente actual
+                ]
+            }
+        });
+
+        // Obtener todos los servicios disponibles
         const servicios = await prisma.servicio.findMany();
-        res.render('pages/contratos/modificar', { action: 'edit', contrato, clientes, servicios, errors: [], title: 'Contratos' });
+
+        // Renderizar la vista de edición con los datos correspondientes
+        res.render('pages/contratos/modificar', {
+            action: 'edit',
+            contrato,
+            clientes, // Pasar todos los clientes, incluyendo al cliente del contrato
+            servicios,
+            errors: [],
+            title: 'Contratos'
+        });
     } catch (error) {
         console.error('Error al cargar el contrato para editar:', error);
         req.flash('error_msg', 'Error al cargar el contrato.');
@@ -193,11 +272,19 @@ exports.renderEditForm = async (req, res) => {
 
 // Controlador para actualizar un contrato existente
 exports.updateContrato = async (req, res) => {
+    const errors = validationResult(req); // Verificar si hay errores de validación
+    if (!errors.isEmpty()) {
+        // Unir los mensajes de error con '<br>' para saltos de línea
+        const errorMessages = errors.array().map(err => err.msg).join('<br>');
+        req.flash('error_msg', errorMessages);
+        return res.redirect(`/contratos/edit/${req.params.id}`); // Redirigir al formulario de nuevo
+    }
+
     try {
         const { id } = req.params;
-        const { clienteId, servicioIds, anexo, fecha_contrato, activo} = req.body;
+        const { clienteId, servicioIds, anexo, fecha_contrato, activo } = req.body;
 
-        // Asegurarse de que servicioIds sea un array, igual que en la creación
+        // Asegurarse de que servicioIds sea un array
         const serviciosSeleccionados = Array.isArray(servicioIds) ? servicioIds : [servicioIds];
 
         await prisma.contrato.update({

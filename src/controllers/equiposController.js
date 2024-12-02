@@ -1,10 +1,9 @@
-// src/controllers/equiposController.js
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const path = require('path');
+const { check, validationResult } = require('express-validator');
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -56,6 +55,23 @@ const deleteFileFromCloudinary = async (folder, publicId) => {
   });
 };
 
+// Validaciones para la creación de un equipo
+exports.validateCreateEquipo = [
+  check('nombre_equipo').notEmpty().withMessage('El nombre del equipo es obligatorio.').isLength({ max: 50 }).withMessage('El nombre no puede exceder los 50 caracteres.'),
+  check('marca').notEmpty().withMessage('La marca del equipo es obligatoria.').isLength({ max: 50 }).withMessage('La marca no puede exceder los 50 caracteres.'),
+  check('tipo').notEmpty().withMessage('El tipo de equipo es obligatorio.').isIn(['ANTENA', 'ROUTER']).withMessage('El tipo de equipo debe ser "ANTENA" o "ROUTER".'),
+  check('descripcion').optional().isLength({ max: 500 }).withMessage('La descripción no puede exceder los 500 caracteres.')
+];
+
+// Validaciones para la actualización de un equipo
+exports.validateUpdateEquipo = [
+  check('nombre_equipo').notEmpty().withMessage('El nombre del equipo es obligatorio.').isLength({ max: 50 }).withMessage('El nombre no puede exceder los 50 caracteres.'),
+  check('marca').notEmpty().withMessage('La marca del equipo es obligatoria.').isLength({ max: 50 }).withMessage('La marca no puede exceder los 50 caracteres.'),
+  check('tipo').notEmpty().withMessage('El tipo de equipo es obligatorio.').isIn(['ANTENA', 'ROUTER']).withMessage('El tipo de equipo debe ser "ANTENA" o "ROUTER".'),
+  check('descripcion').optional().isLength({ max: 500 }).withMessage('La descripción no puede exceder los 500 caracteres.')
+];
+
+// Controlador para listar los equipos
 exports.listEquipos = async (req, res) => {
   try {
     const equipos = await prisma.equipoCPE.findMany({
@@ -71,11 +87,21 @@ exports.listEquipos = async (req, res) => {
   }
 };
 
+// Renderiza el formulario para crear un nuevo equipo
 exports.renderCreateForm = (req, res) => {
   res.render('pages/equipos/agregar', { equipo: {}, errors: [], title: 'Equipos' });
 };
 
+// Controlador para crear un equipo
 exports.createEquipo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Unir los mensajes de error con '<br>' para saltos de línea
+    const errorMessages = errors.array().map(err => err.msg).join('<br>');
+    req.flash('error_msg', errorMessages);
+    return res.redirect('/equipos/new');
+  }
+
   try {
     const { nombre_equipo, marca, tipo, descripcion } = req.body;
 
@@ -94,7 +120,7 @@ exports.createEquipo = async (req, res) => {
     });
 
     req.flash('success_msg', 'Equipo creado correctamente');
-    res.estatus(201).redirect('/equipos');
+    res.status(201).redirect('/equipos');
   } catch (error) {
     console.error('Error al crear el equipo:', error);
     req.flash('error_msg', 'Error al crear el equipo.');
@@ -104,6 +130,7 @@ exports.createEquipo = async (req, res) => {
   }
 };
 
+// Renderiza el formulario para editar un equipo
 exports.renderEditForm = async (req, res) => {
   try {
     const { id } = req.params;
@@ -118,7 +145,16 @@ exports.renderEditForm = async (req, res) => {
   }
 };
 
+// Controlador para actualizar un equipo
 exports.updateEquipo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Unir los mensajes de error con '<br>' para saltos de línea
+    const errorMessages = errors.array().map(err => err.msg).join('<br>');
+    req.flash('error_msg', errorMessages);
+    return res.redirect(`/equipos/edit/${req.params.id}`);
+  }
+
   try {
     const { id } = req.params;
     const { nombre_equipo, marca, tipo, descripcion } = req.body;
@@ -154,6 +190,7 @@ exports.updateEquipo = async (req, res) => {
   }
 };
 
+// Controlador para eliminar un equipo
 exports.deleteEquipo = async (req, res) => {
   try {
     const { id } = req.params;
@@ -186,7 +223,7 @@ exports.deleteEquipo = async (req, res) => {
     await prisma.equipoCPE.delete({ where: { id: parseInt(id) } });
 
     req.flash('success_msg', 'Equipo eliminado correctamente');
-    res.estatus(200).redirect('/equipos');
+    res.status(200).redirect('/equipos');
   } catch (error) {
     console.error('Error al eliminar el equipo:', error);
     req.flash('error_msg', 'Error al eliminar el equipo.');
@@ -195,4 +232,3 @@ exports.deleteEquipo = async (req, res) => {
     await prisma.$disconnect();
   }
 };
-

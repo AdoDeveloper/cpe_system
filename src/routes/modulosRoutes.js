@@ -11,13 +11,13 @@ router.get('/', modulosController.listModulos);
 router.get('/new', modulosController.renderCreateForm);
 
 // Ruta para crear un nuevo módulo
-router.post('/new', [], modulosController.createModulo);
+router.post('/new', [], modulosController.validateCreateModulo, modulosController.createModulo);
 
 // Ruta para mostrar el formulario de edición de un módulo
 router.get('/edit/:id', modulosController.renderEditForm);
 
 // Ruta para actualizar un módulo
-router.put('/edit/:id', [], modulosController.updateModulo);
+router.put('/edit/:id', [], modulosController.validateUpdateModulo, modulosController.updateModulo);
 
 // Ruta para eliminar un módulo
 router.delete('/delete/:id', modulosController.deleteModulo);

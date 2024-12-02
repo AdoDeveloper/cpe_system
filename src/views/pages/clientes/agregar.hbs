@@ -1,4 +1,4 @@
-<div class="container p-4"> 
+<div class="container p-4">
   <div class="row justify-content-center">
     <h1>Agregar Nuevo Cliente</h1>
   </div>
@@ -6,53 +6,42 @@
   <div class="row justify-content-center mt-4">
     <div class="col-md-6">
 
-      {{!-- Mostrar errores si existen --}}
-      {{#if errors}}
-        <div class="alert alert-danger">
-          <ul>
-            {{#each errors}}
-              <li>{{this.msg}}</li>
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
-
       {{!-- Formulario para agregar un nuevo cliente --}}
-      <form method="POST" action="/clientes/new" id="alertFormSave">
+      <form method="POST" action="/clientes/new" id="alertFormSave" class="bg-white p-4 rounded shadow-sm">
 
         <div class="form-group">
           <label for="nombres">Nombres</label>
-          <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Ejemplo: Juan Carlos" value="" required autofocus>
+          <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Ejemplo: Juan Carlos" value="{{cliente.nombres}}" required autofocus>
         </div>
 
         <div class="form-group">
           <label for="apellidos">Apellidos</label>
-          <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Ejemplo: Pérez García" value="" required>
+          <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Ejemplo: Pérez García" value="{{cliente.apellidos}}" required>
         </div>
 
         <div class="form-group">
           <label for="alias">Alias</label>
-          <input type="text" class="form-control" id="alias" name="alias" placeholder="Ejemplo: FAMILIA PEREZ" value="" required>
+          <input type="text" class="form-control" id="alias" name="alias" placeholder="Ejemplo: FAMILIA PEREZ" value="{{cliente.alias}}" required>
         </div>
 
         <div class="form-group">
           <label for="telefono">Teléfono</label>
-          <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ejemplo: 12345678" value="" required>
+          <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ejemplo: 12345678" value="{{cliente.telefono}}" required>
         </div>
 
         <div class="form-group">
           <label for="correo">Correo Electrónico</label>
-          <input type="email" class="form-control" id="correo" name="correo" placeholder="Ejemplo: juan.perez@gmail.com" value="" required>
+          <input type="email" class="form-control" id="correo" name="correo" placeholder="Ejemplo: juan.perez@gmail.com" value="{{cliente.correo}}" required>
         </div>
 
         <div class="form-group">
           <label for="dui">DUI</label>
-          <input type="text" class="form-control" id="dui" name="dui" placeholder="Ejemplo: 01234567-8" value="" required>
+          <input type="text" class="form-control" id="dui" name="dui" placeholder="Ejemplo: 01234567-8" value="{{cliente.dui}}" required>
         </div>
 
         <div class="form-group row">
             <div class="col-6 pl-1">
-              <a href="/clientes" class="btn btn-secondary btn-block">Cancelar</a> <!-- Botón para cancelar -->
+              <a href="/clientes" class="btn btn-secondary btn-block">Cancelar</a> 
             </div>
             <div class="col-6 pr-1">
               <button class="btn btn-success btn-block" type="submit">Agregar Cliente</button>

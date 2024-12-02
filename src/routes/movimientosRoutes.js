@@ -24,4 +24,10 @@ router.put('/edit/:id', movimientosController.updateMovimiento);
 // Ruta para eliminar un movimiento
 router.delete('/delete/:id', movimientosController.deleteMovimiento);
 
+// Ruta para generar reporte en PDF
+router.get('/report/pdf', movimientosController.generatePDFReport);
+
+// Ruta para generar reporte en Excel
+router.get('/report/excel', movimientosController.generateExcelReport);
+
 module.exports = router;

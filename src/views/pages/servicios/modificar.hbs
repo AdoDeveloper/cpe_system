@@ -6,19 +6,8 @@
   <div class="row justify-content-center mt-4">
     <div class="col-md-6">
       
-      {{!-- Mostrar errores si existen --}} 
-      {{#if errors}}
-        <div class="alert alert-danger">
-          <ul>
-            {{#each errors}}
-              <li>{{this.msg}}</li>
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
-
       {{!-- Formulario para modificar servicio --}} 
-      <form method="POST" action="/servicios/edit/{{servicio.id}}?_method=PUT" id="alertFormEdit">
+      <form method="POST" action="/servicios/edit/{{servicio.id}}?_method=PUT" id="alertFormEdit" class="bg-white p-4 rounded shadow-sm">
         
         <div class="form-group">
           <label for="servicio">Nombre del Servicio</label>

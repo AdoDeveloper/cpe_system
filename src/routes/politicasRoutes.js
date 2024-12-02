@@ -9,13 +9,13 @@ router.get('/', politicasController.listPoliticas);
 router.get('/new', politicasController.renderCreateForm);
 
 // Ruta para crear una nueva política
-router.post('/new', politicasController.createPolitica);
+router.post('/new',politicasController.validateCreatePolitica, politicasController.createPolitica);
 
 // Ruta para mostrar el formulario de edición de una política
 router.get('/edit/:id', politicasController.renderEditForm);
 
 // Ruta para actualizar una política
-router.put('/edit/:id', politicasController.updatePolitica);
+router.put('/edit/:id',politicasController.validateUpdatePolitica, politicasController.updatePolitica);
 
 // Ruta para eliminar una política
 router.delete('/delete/:id', politicasController.deletePolitica);

@@ -109,44 +109,80 @@ Handlebars.registerHelper('toUpperCase', function(str) {
 Handlebars.registerHelper('formatDateBitacora', function (date) {
     if (!date) return '';
 
-    // Opciones para formatear la fecha en la zona horaria América Central/El Salvador
-    const options = {
-        timeZone: 'America/El_Salvador',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true, // Mostrar formato a.m./p.m.
-    };
+    // Si la fecha es un objeto Date, convertimos a string en formato 'YYYY-MM-DD'
+    if (date instanceof Date) {
+        date = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    }
 
-    // Convertir y formatear la fecha
-    const formattedDate = new Date(date).toLocaleString('es-SV', options);
+    // Ahora que date es una cadena, la dividimos y la formateamos
+    const [year, month, day] = date.split('-');
 
-    // Eliminar la coma para obtener el formato deseado
-    return formattedDate.replace(',', '');
+    // Creamos una nueva fecha para obtener la hora
+    const dateObject = new Date(date);
+    let hours = dateObject.getHours();
+    let minutes = dateObject.getMinutes();
+    let seconds = dateObject.getSeconds();
+    let ampm = hours >= 12 ? 'pm' : 'am';
+
+    // Ajustamos el formato de 12 horas
+    hours = hours % 12;
+    hours = hours ? hours : 12; // La hora 0 debe ser 12
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 });
 
-// Helper para formatear una fecha en formato dd/mm/aaaa hh:mm:ss en horario América Central/El Salvador
 Handlebars.registerHelper('formatDate', function (date) {
     if (!date) return '';
 
-    // Convertir la fecha a la zona horaria América Central/El Salvador (UTC-6)
-    const options = {
-        timeZone: 'America/El_Salvador',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-    };
+    // Asegúrate de que la fecha es un string válido o un objeto Date
+    let dateObject = new Date(date);
     
-    const formattedDate = new Date(date).toLocaleString('es-SV', options);
+    // Si la fecha no es válida, retornar vacío
+    if (isNaN(dateObject.getTime())) return '';
+
+    // Extraemos los componentes de la fecha
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Mes comienza desde 0
+    const year = dateObject.getFullYear();
     
-    return formattedDate.replace(',', ''); // Eliminar la coma para obtener el formato deseado
+    // Extraemos la hora, minutos y segundos
+    let hours = String(dateObject.getHours()).padStart(2, '0');
+    let minutes = String(dateObject.getMinutes()).padStart(2, '0');
+    let seconds = String(dateObject.getSeconds()).padStart(2, '0');
+
+    // Devolvemos el formato esperado
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+});
+
+// Helper para formatear una fecha de tipo timestamp en formato dd/mm/aaaa hh:mm:ss
+Handlebars.registerHelper('formatDateTimestamp', function (timestamp) {
+    if (!timestamp) return '';
+
+    // Aseguramos que timestamp es un número
+    if (typeof timestamp !== 'number') {
+        return ''; // Si no es un número, retornamos vacío
+    }
+
+    // Creamos un objeto Date a partir del timestamp (milisegundos desde la época Unix)
+    const dateObject = new Date(timestamp);
+
+    // Extraemos la fecha y hora
+    const year = dateObject.getFullYear();
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Mes 0-11, se ajusta a 1-12
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    let hours = dateObject.getHours();
+    let minutes = dateObject.getMinutes();
+    let seconds = dateObject.getSeconds();
+
+    // Ajustamos el formato de 24 horas
+    hours = String(hours).padStart(2, '0');
+    minutes = String(minutes).padStart(2, '0');
+    seconds = String(seconds).padStart(2, '0');
+
+    // Devolvemos el formato dd/mm/aaaa hh:mm:ss
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 });
 
 Handlebars.registerHelper('formatDuration', function(durationMs) {
@@ -167,42 +203,36 @@ Handlebars.registerHelper('formatDuration', function(durationMs) {
     return result;
   });
 
+// Helper para formatear una fecha en formato PDF sin modificarla
 Handlebars.registerHelper('formatDatePDF', function (date) {
     if (!date) return '';
 
-    // Convertir la fecha a la zona horaria América Central/El Salvador (UTC-6)
-    const options = {
-        timeZone: 'America/El_Salvador',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    };
-    
-    const formattedDate = new Date(date).toLocaleString('es-SV', options);
-    
-    return formattedDate.replace(',', ''); // Eliminar la coma para obtener el formato deseado
+    // Si la fecha es un objeto Date, convertimos a string en formato 'YYYY-MM-DD'
+    if (date instanceof Date) {
+        date = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    }
+
+    // Ahora que date es una cadena, la dividimos y la formateamos
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
 });
 
 // Helper para formatear una fecha en formato aaaa-mm-dd para inputs de tipo date
 Handlebars.registerHelper('formatDateForInput', function (date) {
     if (!date) return '';
-    const d = new Date(date);
-    const day = (`0${d.getDate()}`).slice(-2);
-    const month = (`0${d.getMonth() + 1}`).slice(-2);
-    const year = d.getFullYear();
-    const hours = (`0${d.getHours()}`).slice(-2);
-    const minutes = (`0${d.getMinutes()}`).slice(-2);
-    const seconds = (`0${d.getSeconds()}`).slice(-2);
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    // Convertir directamente la fecha a cadena ISO y ajustarla al formato requerido
+    const isoDate = new Date(date).toISOString(); // Formato ISO UTC
+    const [datePart, timePart] = isoDate.split('T'); // Separar la fecha y la hora
+    const timeWithoutMs = timePart.split('.')[0]; // Eliminar los milisegundos
+    return `${datePart}T${timeWithoutMs}`; // Formato aaaa-mm-ddThh:mm:ss
 });
 
 Handlebars.registerHelper('formatDateForInput2', function (date) {
     if (!date) return '';
-    const d = new Date(date);
-    const day = (`0${d.getDate()}`).slice(-2);
-    const month = (`0${d.getMonth() + 1}`).slice(-2);
-    const year = d.getFullYear();
-    return `${year}-${month}-${day}`; // Formato requerido por campos de tipo 'date'
+    // Convertir directamente la fecha al formato ISO y tomar solo la parte de la fecha
+    const isoDate = new Date(date).toISOString(); // Formato ISO UTC
+    const [datePart] = isoDate.split('T'); // Tomar solo la parte de la fecha
+    return datePart; // Formato aaaa-mm-dd
 });
 
 // Helper para verificar si un array contiene un valor específico

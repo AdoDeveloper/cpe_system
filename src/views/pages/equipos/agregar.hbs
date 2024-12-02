@@ -6,19 +6,8 @@
   <div class="row justify-content-center mt-4">
     <div class="col-md-6">
 
-      {{!-- Mostrar errores si existen --}}
-      {{#if errors}}
-        <div class="alert alert-danger">
-          <ul>
-            {{#each errors}}
-              <li>{{this.msg}}</li>
-            {{/each}}
-          </ul>
-        </div>
-      {{/if}}
-
       {{!-- Formulario para agregar un nuevo equipo CPE --}}
-      <form method="POST" action="/equipos/new" enctype="multipart/form-data" id="alertFormSave">
+      <form method="POST" action="/equipos/new" enctype="multipart/form-data" id="alertFormSave" class="bg-white p-4 rounded shadow-sm">
 
         {{!-- <div class="form-group">
           <label for="hash">Hash del Equipo</label>
@@ -37,7 +26,8 @@
 
         <div class="form-group">
           <label for="tipo">Tipo</label>
-          <select class="form-control" name="tipo" id="tipo" required>
+          <select class="form-control" id="tipo" name="tipo" required>
+            <option value="" disabled selected>Selecciona el tipo de equipo</option>
             <option value="ANTENA">Antena</option>
             <option value="ROUTER">Router</option>
           </select>

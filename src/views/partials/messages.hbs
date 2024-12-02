@@ -1,6 +1,7 @@
 <!-- Incluir CSS de SweetAlert2 -->
 <link rel="stylesheet" href="/plugins/sweetalert2/sweetalert2.min.css">
 
+<!-- Incluir SweetAlert2 -->
 <script src="/plugins/sweetalert2/sweetalert2.all.js"></script>
 
 <script>
@@ -21,9 +22,9 @@
   Swal.fire({
     icon: 'error',
     title: '¡Error!',
-    text: '{{error_msg}}',
+    html: '{{{error_msg}}}',
     showConfirmButton: false,
-    timer: 3000,
+    timer: 7000,
     timerProgressBar: true,
     toast: true,
     position: 'top-end'

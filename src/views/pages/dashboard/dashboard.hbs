@@ -136,7 +136,7 @@
       let egresosGrouped = {};
 
       rawMetricsData.forEach(data => {
-        let date = new Date(data.fecha);
+        let date = new Date(data.createdAt);
 
         let label;
         if (view === 'year') {
@@ -154,7 +154,7 @@
         // Clasificar los movimientos en ingresos y egresos
         if (data.tipocc === 'CCI') {
           ingresosGrouped[label] += data.monto;
-        } else if (['CCC', 'CCCxP', 'CCG', 'CCPR'].includes(data.tipocc)) {
+        } else if (['CCC', 'CCCxP', 'CCG', 'CCPR', 'CCF'].includes(data.tipocc)) {
           egresosGrouped[label] += data.monto;
         }
       });
