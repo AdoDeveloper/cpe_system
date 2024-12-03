@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
@@ -5,10 +6,14 @@ const prisma = new PrismaClient();
 
 const loginController = {};
 
-// Renderiza el formulario de login
+// Renderiza el formulario de login con la clave pública de hCaptcha
 loginController.renderLoginForm = (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); // Desactivar caché para esta página
-  res.render('pages/login', { layout: 'auth', title: 'Iniciar Sesión' });
+  res.render('pages/login', {
+    layout: 'auth',
+    title: 'Iniciar Sesión',
+    HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY, // Enviar clave pública de hCaptcha a la vista
+  });
 };
 
 // Procesa el formulario de login
@@ -89,6 +94,25 @@ loginController.processLogin = async (req, res) => {
         res.clearCookie('user_email');
       }
 
+           // Crear un token JWT
+     const token = jwt.sign(
+        {
+          userId: usuario.id,
+          email: usuario.email,
+          userRole: usuario.rol.nombre,
+          isAdmin: usuario.rol.esAdmin,
+        },
+        process.env.JWT_SECRET_KEY, // Clave secreta para firmar el token
+        { expiresIn: '1h' } // Duración del token
+      );
+
+      // Configurar la cookie del token
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Solo para HTTPS en producción
+        maxAge: 60 * 60 * 1000, // 1 hora
+      });
+
       // Agregar mensaje flash de éxito
       req.flash('success_msg', 'Inicio de sesión exitoso.');
 
@@ -99,6 +123,7 @@ loginController.processLogin = async (req, res) => {
         return res.status(200).redirect('/');
       }
     });
+
   } catch (error) {
     console.error('Error al procesar el login:', error.message);
     req.flash('error_msg', 'Error al procesar el login.');
@@ -116,6 +141,7 @@ loginController.logout = (req, res) => {
       req.flash('error_msg', 'Error al cerrar sesión.');
       return res.redirect('/login');
     }
+    res.clearCookie('auth_token'); // Eliminar la cookie del token JWT
     res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
     res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
     res.status(200).redirect('/login');

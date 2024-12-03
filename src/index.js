@@ -14,8 +14,13 @@ const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
 const { authMiddleware, redirectIfAuthenticated } = require('./middlewares/middleware');
 const prisma = new PrismaClient();
+const cookieParser = require('cookie-parser');
 
 const app = express();
+
+// Configurar middlewares
+app.use(cookieParser());
+
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 

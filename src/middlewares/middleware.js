@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { isMatch } = require('../lib/pathMatcher');
 const prisma = new PrismaClient();
@@ -7,7 +8,6 @@ module.exports = {
     try {
       console.log('--- INICIO MIDDLEWARE ---');
 
-      // Rutas que requieren solo autenticación
       const authOnlyRoutes = new Set([
         '/logout',
         '/perfil',
@@ -19,27 +19,43 @@ module.exports = {
         '/tickets/:id/updatestatus',
       ]);
 
-      // Permitir favicon sin autenticación
-      if (req.originalUrl.includes('favicon.png')) {
-        return next();
+      const token = req.cookies?.auth_token;
+
+      if (!token) {
+        console.log('Token JWT no proporcionado.');
+        res.clearCookie('auth_token'); // Eliminar la cookie del token JWT
+        res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
+        res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
+        return res.status(401).redirect('/login');
       }
 
-      // Si no está autenticado, redirigir al login
-      if (!req.session.user) {
-        console.log('Usuario no autenticado. Redirigiendo a login.');
-        return res.redirect('/login');
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        req.user = decoded;
+        console.log('JWT válido para usuario:', decoded.email);
+      } catch (err) {
+        console.error('JWT inválido o expirado:', err.message);
+        res.clearCookie('auth_token'); // Eliminar la cookie del token JWT
+        res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
+        res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
+        return res.status(401).redirect('/login');
       }
 
-      // Obtener ruta y eliminar parámetros de consulta
-      let path = req.originalUrl.split('?')[0].toLowerCase();
-      if (path === '') path = '/';
+      if (!req.session.user && !req.user) {
+        console.log('Usuario no autenticado.');
+        res.clearCookie('auth_token'); // Eliminar la cookie del token JWT
+        res.clearCookie('connect.sid'); // Eliminar la cookie de sesión
+        res.clearCookie('user_email'); // Eliminar la cookie de "Recuérdame"
+        return res.status(401).redirect('/login');
+      }
+
+      const path = req.originalUrl.split('?')[0].toLowerCase() || '/';
       console.log('Ruta solicitada:', path);
-
       res.locals.currentRoute = path;
 
-      // Obtener usuario y sus permisos
+      const email = req.session.user || req.user?.email;
       const usuario = await prisma.usuario.findUnique({
-        where: { email: req.session.user },
+        where: { email },
         include: {
           rol: {
             include: {
@@ -56,7 +72,11 @@ module.exports = {
 
       if (!usuario || !usuario.rol) {
         console.log('Usuario o rol no encontrado en la base de datos.');
-        return res.redirect('/login');
+        return res.status(403).render('errors/403', {
+          layout: 'error',
+          title: '403 - Acceso denegado',
+          message: 'No tienes permisos para acceder a este recurso.',
+        });
       }
 
       console.log('Usuario:', usuario.email, 'Rol:', usuario.rol.nombre);
@@ -70,7 +90,6 @@ module.exports = {
 
       const moduloIdsActivos = new Set(modulosActivos.map((mod) => mod.id));
 
-      // Obtener rutas activas
       const rutas = await prisma.ruta.findMany({
         where: { moduloId: { in: Array.from(moduloIdsActivos) } },
         orderBy: { id: 'asc' },
@@ -84,7 +103,6 @@ module.exports = {
         rutasPorModulo.get(ruta.moduloId).push(ruta);
       }
 
-      // Permisos por módulo y método
       const permisosPorModuloYMetodo = new Map();
       for (const permiso of permisos) {
         for (const mp of permiso.moduloPermisos) {
@@ -120,13 +138,11 @@ module.exports = {
       const method = req.method;
       console.log('Método HTTP usado:', method);
 
-      // Validar si la ruta está en las rutas solo de autenticación
       if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
         console.log('Ruta permitida sin verificación de permisos:', path);
         return next();
       }
 
-      // Validar permisos
       const hasPermission = permisos.some((permiso) =>
         permiso.moduloPermisos.some((mp) => moduloIdsActivos.has(mp.moduloId)) &&
         isMatch(permiso.ruta, path) &&
@@ -137,24 +153,31 @@ module.exports = {
 
       if (!hasPermission) {
         console.log('Acceso denegado a la ruta:', path);
-        return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
+        return res.status(403).render('errors/403', {
+          layout: 'error',
+          title: '403 - Acceso denegado',
+          message: 'No tienes permisos para acceder a este recurso.',
+        });
       }
 
       next();
     } catch (error) {
       console.error('Error en el middleware de autenticación:', error);
-      return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
+      return res.status(500).render('errors/500', {
+        layout: 'error',
+        title: '500 - Error interno del servidor',
+        message: 'Ocurrió un error inesperado. Por favor, inténtalo nuevamente.',
+      });
     }
   },
 
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
-      // Validar si isAdmin está definido y es true
       if (req.session.isAdmin === true) {
-        return res.redirect('/dashboard'); // Administrador redirigido al dashboard
+        return res.redirect('/dashboard');
       }
-      return res.redirect('/'); // Otros usuarios autenticados redirigidos a la raíz
+      return res.redirect('/');
     }
-    next(); // Usuarios no autenticados permitidos continuar al login
+    next();
   },
 };

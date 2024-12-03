@@ -293,7 +293,7 @@ async function main() {
       { ruta: '/contratos/edit/:id', metodo: 'PUT', descripcion: 'Actualizar contrato', tipo: 'escritura', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/delete/:id', metodo: 'DELETE', descripcion: 'Eliminar contrato', tipo: 'eliminación', moduloId: contratosServiciosModulo.id },
       { ruta: '/contratos/pdf/:id', metodo: 'GET', descripcion: 'Generar contrato', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
-      
+
       // Permisos de politicas
       { ruta: '/politicas', metodo: 'GET', descripcion: 'Listar politicas', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
       { ruta: '/politicas/new', metodo: 'GET', descripcion: 'Formulario agregar politica', tipo: 'lectura', moduloId: contratosServiciosModulo.id },
@@ -400,7 +400,7 @@ async function main() {
     const hashedPassword = await bcrypt.hash('adminpassword', 10); // Cambia la contraseña si es necesario
     await prisma.usuario.create({
       data: {
-        email: 'admin@airlink.com',
+        email: 'admin@airlink.lat',
         password: hashedPassword,
         nombre: 'Administrador',
         activo: true,
@@ -409,16 +409,16 @@ async function main() {
     });
 
     // Insertar un cliente
-    await prisma.cliente.create({
-      data: {
-        nombres: 'Juan Carlos',
-        apellidos: 'Cortez Barrera',
-        alias: 'FAMILIA CORTEZ',
-        telefono: '76542388',
-        correo: 'juan@gmail.com',
-        dui: '9834567-5',
-      },
-    });
+    // await prisma.cliente.create({
+    //   data: {
+    //     nombres: 'Juan Carlos',
+    //     apellidos: 'Cortez Barrera',
+    //     alias: 'FAMILIA CORTEZ',
+    //     telefono: '76542388',
+    //     correo: 'juan@gmail.com',
+    //     dui: '9834567-5',
+    //   },
+    // });
 
     console.log('Creando los servicios.');
     // Insertar servicios
@@ -804,19 +804,19 @@ async function main() {
   // Definir los datos de los nuevos usuarios
   const nuevosUsuarios = [
     {
-      email: 'carlos.instalador@airlink.com',
+      email: 'carlos.instalador@airlink.lat',
       password: 'PasswordInstalador123',
       nombre: 'Carlos Alberto González Hernández',
       rol: 'Instalador',
     },
     {
-      email: 'sergio.tecnico@airlink.com',
+      email: 'sergio.tecnico@airlink.lat',
       password: 'PasswordTecnico123',
       nombre: 'Sergio Agustin Rivas Torres',
       rol: 'Tecnico',
     },
     {
-      email: 'maria.soporte@airlink.com',
+      email: 'maria.soporte@airlink.lat',
       password: 'PasswordSoporte123',
       nombre: 'María Isabel Ramírez Leonor',
       rol: 'Soporte Tecnico',
@@ -881,4 +881,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  });
+});
