@@ -17,8 +17,14 @@ module.exports = {
         '/tickets/timeline/:id',  // Ver timeline de un ticket
         '/tickets/:id/messages',  // Responder al ticket
         '/tickets/:id/updatestatus',
+        '/dashboard'
       ]);
 
+             // Permitir favicon sin autenticación
+             if (req.originalUrl.includes('favicon.png')) {
+              return next();
+             }
+             
       const token = req.cookies?.auth_token;
 
       if (!token) {
@@ -49,13 +55,22 @@ module.exports = {
         return res.status(401).redirect('/login');
       }
 
-      const path = req.originalUrl.split('?')[0].toLowerCase() || '/';
+      // Si no está autenticado, redirigir al login
+      if (!req.session.user) {
+        console.log('Usuario no autenticado. Redirigiendo a login.');
+        return res.redirect('/login');
+      }
+
+      // Obtener ruta y eliminar parámetros de consulta
+      let path = req.originalUrl.split('?')[0].toLowerCase();
+      if (path === '') path = '/';
       console.log('Ruta solicitada:', path);
+
       res.locals.currentRoute = path;
 
-      const email = req.session.user || req.user?.email;
+      // Obtener usuario y sus permisos
       const usuario = await prisma.usuario.findUnique({
-        where: { email },
+        where: { email: req.session.user },
         include: {
           rol: {
             include: {
@@ -72,11 +87,7 @@ module.exports = {
 
       if (!usuario || !usuario.rol) {
         console.log('Usuario o rol no encontrado en la base de datos.');
-        return res.status(403).render('errors/403', {
-          layout: 'error',
-          title: '403 - Acceso denegado',
-          message: 'No tienes permisos para acceder a este recurso.',
-        });
+        return res.redirect('/login');
       }
 
       console.log('Usuario:', usuario.email, 'Rol:', usuario.rol.nombre);
@@ -90,6 +101,7 @@ module.exports = {
 
       const moduloIdsActivos = new Set(modulosActivos.map((mod) => mod.id));
 
+      // Obtener rutas activas
       const rutas = await prisma.ruta.findMany({
         where: { moduloId: { in: Array.from(moduloIdsActivos) } },
         orderBy: { id: 'asc' },
@@ -103,6 +115,7 @@ module.exports = {
         rutasPorModulo.get(ruta.moduloId).push(ruta);
       }
 
+      // Permisos por módulo y método
       const permisosPorModuloYMetodo = new Map();
       for (const permiso of permisos) {
         for (const mp of permiso.moduloPermisos) {
@@ -138,11 +151,13 @@ module.exports = {
       const method = req.method;
       console.log('Método HTTP usado:', method);
 
+      // Validar si la ruta está en las rutas solo de autenticación
       if ([...authOnlyRoutes].some((pattern) => isMatch(pattern, path))) {
         console.log('Ruta permitida sin verificación de permisos:', path);
         return next();
       }
 
+      // Validar permisos
       const hasPermission = permisos.some((permiso) =>
         permiso.moduloPermisos.some((mp) => moduloIdsActivos.has(mp.moduloId)) &&
         isMatch(permiso.ruta, path) &&
@@ -153,31 +168,24 @@ module.exports = {
 
       if (!hasPermission) {
         console.log('Acceso denegado a la ruta:', path);
-        return res.status(403).render('errors/403', {
-          layout: 'error',
-          title: '403 - Acceso denegado',
-          message: 'No tienes permisos para acceder a este recurso.',
-        });
+        return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
       }
 
       next();
     } catch (error) {
       console.error('Error en el middleware de autenticación:', error);
-      return res.status(500).render('errors/500', {
-        layout: 'error',
-        title: '500 - Error interno del servidor',
-        message: 'Ocurrió un error inesperado. Por favor, inténtalo nuevamente.',
-      });
+      return res.status(500).render('errors/500', { layout: 'error', title: '500 - Error interno del servidor' });
     }
   },
 
   redirectIfAuthenticated: (req, res, next) => {
     if (req.session.user) {
+      // Validar si isAdmin está definido y es true
       if (req.session.isAdmin === true) {
-        return res.redirect('/dashboard');
+        return res.redirect('/dashboard'); // Administrador redirigido al dashboard
       }
-      return res.redirect('/');
+      return res.redirect('/'); // Otros usuarios autenticados redirigidos a la raíz
     }
-    next();
+    next(); // Usuarios no autenticados permitidos continuar al login
   },
 };

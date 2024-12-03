@@ -568,7 +568,15 @@ async function main() {
     const instaladorRole = createdRoles.find(r => r.nombre === 'Instalador');
     const soporteTecnicoRole = createdRoles.find(r => r.nombre === 'Soporte Tecnico');
 
-    // Asignar módulos a Tecnico
+    // Asignar módulos a Cliente
+    await prisma.rolModulo.create({
+      data: { rolId: clienteRole.id, moduloId: dashboardModulo.id },
+    });
+
+    // Asignar módulos a Técnico
+    await prisma.rolModulo.create({
+      data: { rolId: tecnicoRole.id, moduloId: dashboardModulo.id },
+    });
     await prisma.rolModulo.create({
       data: { rolId: tecnicoRole.id, moduloId: gestionCpesModulo.id },
     });
@@ -578,13 +586,19 @@ async function main() {
 
     // Asignar módulos a Instalador
     await prisma.rolModulo.create({
+      data: { rolId: instaladorRole.id, moduloId: dashboardModulo.id },
+    });
+    await prisma.rolModulo.create({
       data: { rolId: instaladorRole.id, moduloId: gestionCpesModulo.id },
     });
     await prisma.rolModulo.create({
       data: { rolId: instaladorRole.id, moduloId: helpdeskModulo.id },
     });
 
-    // Asignar módulos a Soporte Tecnico
+    // Asignar módulos a Soporte Técnico
+    await prisma.rolModulo.create({
+      data: { rolId: soporteTecnicoRole.id, moduloId: dashboardModulo.id },
+    });
     await prisma.rolModulo.create({
       data: { rolId: soporteTecnicoRole.id, moduloId: helpdeskModulo.id },
     });

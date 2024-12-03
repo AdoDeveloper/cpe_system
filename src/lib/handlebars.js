@@ -111,25 +111,30 @@ Handlebars.registerHelper('formatDateBitacora', function (date) {
 
     // Si la fecha es un objeto Date, convertimos a string en formato 'YYYY-MM-DD'
     if (date instanceof Date) {
-        date = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+        date = date.toISOString(); // Mantenemos el timestamp completo con zona horaria
     }
 
-    // Ahora que date es una cadena, la dividimos y la formateamos
-    const [year, month, day] = date.split('-');
-
-    // Creamos una nueva fecha para obtener la hora
+    // Convertimos el timestamp a un objeto Date
     const dateObject = new Date(date);
+
+    // Obtenemos la fecha (día, mes, año)
+    const year = dateObject.getFullYear();
+    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Los meses van de 0 a 11, así que sumamos 1
+    const day = dateObject.getDate().toString().padStart(2, '0');
+
+    // Obtenemos la hora (12 horas)
     let hours = dateObject.getHours();
     let minutes = dateObject.getMinutes();
     let seconds = dateObject.getSeconds();
-    let ampm = hours >= 12 ? 'pm' : 'am';
+    const ampm = hours >= 12 ? 'pm' : 'am';
 
-    // Ajustamos el formato de 12 horas
+    // Ajustamos la hora a formato de 12 horas
     hours = hours % 12;
     hours = hours ? hours : 12; // La hora 0 debe ser 12
     minutes = minutes < 10 ? '0' + minutes : minutes;
     seconds = seconds < 10 ? '0' + seconds : seconds;
 
+    // Devolvemos el formato deseado
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 });
 

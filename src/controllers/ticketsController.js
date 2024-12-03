@@ -233,7 +233,7 @@ exports.createTicket = async (req, res) => {
     const { titulo, descripcion, direccion, coordenadas } = req.body;
     const numeroTicket = generateTicketNumber();
     const userId = req.session.userId;
-    let tipoTicketId = parseInt(req.body.tipoTicketId);
+    let tipoTicketId = parseInt(req.body.tipoTicketId,10);
     let clienteId = parseInt(req.body.clienteId,10);
     let resolverId = parseInt(req.body.resolverId,10);
 
@@ -442,7 +442,7 @@ exports.updateTicket = async (req, res) => {
 
     // Obtener el nombre del tipo de ticket seleccionado
     let tipoTicket = await prisma.tipoTicket.findUnique({
-      where: { id: tipoTicketId},
+      where: { id: parseInt(tipoTicketId,10) },
     });
 
     // Validar que dirección y coordenadas se proporcionen si el tipo de ticket es mantenimiento o instalación
