@@ -95,6 +95,8 @@ exports.listTickets = async (req, res) => {
         }
       });
 
+      //console.log("Cliente: ", cliente)
+
       if (cliente) {
         tickets = await prisma.ticket.findMany({
           where: {
@@ -591,20 +593,51 @@ exports.showTimeline = async (req, res) => {
     const userId = req.session.userId;
     const userRole = req.session.userRole;
 
-    // Verificar que ticketId es válido
+    // Verificar que el ticketId sea válido
     if (isNaN(ticketId)) {
-      req.flash('error_msg', 'El ID del ticket no es válido.');
+      console.log('El ID del ticket no es válido, o se realizo regreso forzado.');
       return res.redirect('/tickets');
     }
 
-    // Obtener el ticket con los datos necesarios
+    // Obtener el ticket con clienteId y demás datos necesarios
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
       include: {
         cliente: true,
         tipoTicket: true,
-        usuario: true,
-        resolver: true,
+        usuario: {
+          select: {
+            id: true,
+            email: true,
+            nombre: true,
+            activo: true,
+            clienteId: true,
+            createdAt: true,
+            updatedAt: true,
+            rol: {
+              select: {
+                id: true,
+                nombre: true,
+              },
+            },
+          },
+        },
+        resolver: {
+          select: {
+            id: true,
+            email: true,
+            nombre: true,
+            activo: true,
+            createdAt: true,
+            updatedAt: true,
+            rol: {
+              select: {
+                id: true,
+                nombre: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -614,11 +647,28 @@ exports.showTimeline = async (req, res) => {
       return res.redirect('/tickets');
     }
 
+    //console.log('Ticket encontrado:', ticket);
+
+    let clientUserId = null;
+
+    // Si el ticket tiene un clienteId, buscar el usuario asociado al cliente
+    if (ticket.clienteId) {
+      const usuarioCliente = await prisma.usuario.findFirst({
+        where: { clienteId: ticket.clienteId },
+      });
+
+      if (usuarioCliente) {
+        clientUserId = usuarioCliente.id;
+      }
+    }
+
+    //console.log('Usuario asociado al cliente:', clientUserId);
+
     // Validar que el usuario tiene acceso al ticket
     if (
-      (userRole === 'Cliente' && ticket.usuarioId !== userId) ||
-      (userRole === 'Tecnico' && ticket.resolverId !== userId) ||
-      (userRole === 'Instalador' && ticket.resolverId !== userId)
+      (userRole === 'Cliente' && clientUserId !== userId) || // Cliente debe ser dueño del ticket o asignado
+      (userRole === 'Tecnico' && ticket.resolverId !== userId) || // Técnico debe ser el asignado
+      (userRole === 'Instalador' && ticket.resolverId !== userId) // Instalador debe ser el asignado
     ) {
       req.flash('error_msg', 'No tienes permiso para ver este ticket.');
       return res.status(403).render('errors/403', { layout: 'error', title: '403 - Acceso denegado' });
@@ -640,7 +690,7 @@ exports.showTimeline = async (req, res) => {
       mensajes,
       user: { id: userId, rol: userRole },
       mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN,
-      title: 'Soporte'
+      title: 'Soporte',
     });
   } catch (error) {
     console.error('Error al mostrar el timeline del ticket:', error);
@@ -648,7 +698,7 @@ exports.showTimeline = async (req, res) => {
     res.status(500).redirect('/tickets');
   } finally {
     await prisma.$disconnect();
-}
+  }
 };
 
 let ioInstance; // Variable para almacenar la instancia de io

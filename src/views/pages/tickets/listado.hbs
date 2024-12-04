@@ -28,6 +28,7 @@
               <th>TITULO</th>
               {{#unless (eq user.rol "Cliente")}}
                 <th>ASIGNADO A</th>
+                <th>CREADO POR</th>
               {{/unless}}
               <th>ESTADO</th>
               <th>ACCIONES</th>
@@ -44,6 +45,13 @@
                   <td>
                     {{#if this.resolver}}
                       {{this.resolver.nombre}}
+                    {{else}}
+                      No asignado
+                    {{/if}}
+                  </td>
+                  <td>
+                    {{#if this.usuario}}
+                      {{this.usuario.nombre}}
                     {{else}}
                       No asignado
                     {{/if}}

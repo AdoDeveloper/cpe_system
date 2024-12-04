@@ -69,7 +69,7 @@
                       <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
                     {{/if}}
                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
-                    <small class="d-block text-right">{{formatDate this.createdAt}}</small>
+                    <small class="d-block text-right">{{formatDateBitacora this.createdAt}}</small>
                   </div>
                 </div>
               {{else}}
@@ -80,7 +80,7 @@
                       <img src="{{this.mediaUrl}}" alt="Imagen adjunta" class="img-thumbnail mb-2" style="max-width: 200px;">
                     {{/if}}
                     <p class="mb-1"><strong>{{this.usuario.nombre}}:</strong> {{this.mensaje}}</p>
-                    <small class="d-block text-left">{{formatDate this.createdAt}}</small>
+                    <small class="d-block text-left">{{formatDateBitacora this.createdAt}}</small>
                   </div>
                 </div>
               {{/if}}

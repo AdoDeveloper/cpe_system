@@ -14,8 +14,8 @@ const bitacoraSchema = new mongoose.Schema({
     browser: { type: String }, // Información del navegador (user-agent)
 });
 
-// Crear un índice TTL para eliminar documentos después de 30 días (2592000 segundos)
-bitacoraSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 });
+// Crear un índice TTL para eliminar documentos después de 30 días (2592000 segundos) (Opcional)
+// bitacoraSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 });
 
 const Bitacora = mongoose.model('Bitacora', bitacoraSchema);
 

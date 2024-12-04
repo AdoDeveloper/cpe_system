@@ -569,8 +569,13 @@ async function main() {
     const soporteTecnicoRole = createdRoles.find(r => r.nombre === 'Soporte Tecnico');
 
     // Asignar módulos a Cliente
+// Asignar módulos al rol Cliente
     await prisma.rolModulo.create({
       data: { rolId: clienteRole.id, moduloId: dashboardModulo.id },
+    });
+
+    await prisma.rolModulo.create({
+      data: { rolId: clienteRole.id, moduloId: helpdeskModulo.id },
     });
 
     // Asignar módulos a Técnico
